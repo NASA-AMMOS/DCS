@@ -70,13 +70,12 @@ export const ENC_CYPHERS = Object.freeze({
         value: 1,
         name: 'AES256-GCM',
         hex: '01'
-    }
-    /** ,
-    AES256_GCM: {
+    },
+    AES256_CBC: {
         value: 2,
         name: 'AES256-CBC',
         hex: '02'
-    }*/
+    }
 })
 
 /**
