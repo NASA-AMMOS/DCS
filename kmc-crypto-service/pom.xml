@@ -266,7 +266,7 @@
     <dependency>
       <groupId>org.bouncycastle</groupId>
       <artifactId>bctls-fips</artifactId>
-      <version>2.1.20</version>
+      <version>${bctls-fips.version}</version>
     </dependency>
   </dependencies>
 
