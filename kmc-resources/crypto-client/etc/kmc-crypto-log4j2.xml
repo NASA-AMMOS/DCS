@@ -2,42 +2,52 @@
 <Configuration status="info">
 
   <Properties>
-    <Property name="kmcClientPath">/opt/ammos/kmc/logs</Property>
-    <Property name="kmcClientDebug">kmc-crypto-client-debug</Property>
-    <Property name="kmcClientAudit">kmc-crypto-client-audit</Property>
+    <Property name="KmcClientDebugFilePath">${sys:user.home}/dcs_logs/kmc-crypto-client-debug</Property>
   </Properties>
 
   <Appenders>
     <Console name="LogToConsole" target="SYSTEM_OUT">
       <PatternLayout pattern="%m%n"/>
     </Console>
-    <RollingFile name="LogKmcClientDebug" fileName="${kmcClientPath}/${kmcClientDebug}.log"
-                 filePattern="${kmcClientPath}/${kmcClientDebug}-%d{yyMMdd}-%i.log.gz">
+    <RollingFile name="KmcClientDebugFileAppender" fileName="${KmcClientDebugFilePath}.log"
+                 filePattern="${KmcClientDebugFilePath}-%d{yyMMdd}-%i.log.gz">
       <PatternLayout pattern="[%d{ISO8601}{UTC} UTC] [%t] %-5p %c - %m%n"/>
       <Policies>
         <SizeBasedTriggeringPolicy size="100MB"/>
       </Policies>
       <DefaultRolloverStrategy max="30"/>
     </RollingFile>
-    <RollingFile name="LogKmcClientAudit" fileName="${kmcClientPath}/${kmcClientAudit}.log"
-                 filePattern="${kmcClientPath}/${kmcClientAudit}-%d{yyMMdd}-%i.log.gz">
-      <PatternLayout pattern="[%d{ISO8601}{UTC} UTC] %m%n"/>
-      <Policies>
-        <SizeBasedTriggeringPolicy size="100MB"/>
-      </Policies>
-      <DefaultRolloverStrategy max="30"/>
-    </RollingFile>
+
+    <Syslog name="KmcClientAuditSyslogAppender"
+            includeMDC="true"
+            host="localhost"
+            port="514"
+            protocol="UDP"
+            facility="LOCAL4"
+            format="RFC5424"
+            appName="kmc-crypto-client-audit"
+            messageId="AUDIT"
+            enterpriseNumber="18060"
+            newLine="true">
+      <RFC5424Layout
+        includeMDC="true"
+        messageId="AUDIT"
+        appName="kmc-crypto-client-audit"
+        enterpriseNumber="18060"
+        newLine="true"
+      />
+    </Syslog>
   </Appenders>
 
   <Loggers>
     <Logger name="gov.nasa.jpl.ammos.kmc" level="info" additivity="false">
-      <AppenderRef ref="LogKmcClientDebug"/>
+      <AppenderRef ref="KmcClientDebugFileAppender"/>
     </Logger>
     <Logger name="ch.ntb.inf.kmip" level="info" additivity="false">
-      <AppenderRef ref="LogKmcClientDebug"/>
+      <AppenderRef ref="KmcClientDebugFileAppender"/>
     </Logger>
     <Logger name="AUDIT" level="info" additivity="false">
-      <AppenderRef ref="LogKmcClientAudit"/>
+      <AppenderRef ref="KmcClientAuditSyslogAppender"/>
     </Logger>
     <Root level="error">
       <AppenderRef ref="LogToConsole"/>
