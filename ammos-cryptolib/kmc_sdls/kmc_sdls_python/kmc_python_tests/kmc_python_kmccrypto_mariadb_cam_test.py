@@ -55,10 +55,10 @@ class TestConfigMethods(unittest.TestCase):
         tc_data_expect = "0001"
         print(reversed_tc)
         #Verify that the processed security result's data matches the original unencrypted data.
-        print("PDU:",reversed_tc.tc_pdu.hex())
-        print("IV:",reversed_tc.tc_security_header.iv.hex())
-        print("MAC:",reversed_tc.tc_security_trailer.mac.hex())
-        self.assertEqual(tc_data_expect,reversed_tc.tc_pdu.hex())
+        print("PDU:", reversed_tc.tc_pdu.to_hex())
+        print("IV:", reversed_tc.tc_security_header.iv.to_hex())
+        print("MAC:", reversed_tc.tc_security_trailer.mac.to_hex())
+        self.assertEqual(tc_data_expect, reversed_tc.tc_pdu.to_hex())
         k.shutdown()
         #print(result.hex())
         #result_string = binascii.hexlify(result)

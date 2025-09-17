@@ -41,6 +41,9 @@ foreach(PY_VER IN LISTS PYTHON_VERSIONS)
 				COMMAND ${CMAKE_COMMAND} -E copy
 				${CMAKE_CURRENT_SOURCE_DIR}/kmc_python_c_sdls_interface${PythonExtSuffix_${PY_VER}}
 				${PROJECT_BINARY_DIR}/lib/python${PythonVersionDot_${PY_VER}}/site-packages/kmc_python_c_sdls_interface${PythonExtSuffix_${PY_VER}}
+				COMMAND ${CMAKE_COMMAND} -E copy
+				${CMAKE_CURRENT_SOURCE_DIR}/kmc_python_c_sdls_interface${PythonExtSuffix_${PY_VER}}
+				${PROJECT_BINARY_DIR}/lib/python${PythonVersionDot_${PY_VER}}/site-packages/kmc_python_c_sdls_interface.so
 				COMMENT "Created ${PROJECT_BINARY_DIR}/lib/python${PythonVersionDot_${PY_VER}}/site-packages/kmc_python_c_sdls_interface${PythonExtSuffix_${PY_VER}}")
 
 		install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/kmc_python_c_sdls_interface${PythonExtSuffix_${PY_VER}}
