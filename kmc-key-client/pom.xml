@@ -9,6 +9,13 @@
   <version>4.0.0</version>
   <name>DCS Key Client</name>
 
+  <parent>
+    <groupId>gov.nasa.jpl.ammos.kmc</groupId>
+    <artifactId>asec-kmc</artifactId>
+    <version>4.0.0</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
@@ -150,17 +157,17 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.13.2</version>
+      <version>${junit.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bouncycastle</groupId>
       <artifactId>bc-fips</artifactId>
-      <version>2.0.0</version>
+      <version>${bcfips.version}</version>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
-      <version>2.0.16</version>
+      <version>${slf4j.version}</version>
     </dependency>
   </dependencies>
 

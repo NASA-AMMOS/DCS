@@ -1,0 +1,47 @@
+name: DCS_Build
+
+on:
+  pull_request:
+    branches: [main, dev]
+
+permissions:
+  packages: read
+
+jobs:
+  # Build using ubuntu image
+  dcs_build_ubuntu:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/nasa-ammos/dcs/build-image/dcs-builder-ubuntu-20.04:2025.08.19
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: DCS
+          submodules: recursive
+      - name: build DCS
+        run: |
+          cd ./DCS
+          export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+          ./kmc-resources/scripts/build.sh
+
+  # Build using rocky image
+  dcs_build_rocky:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/nasa-ammos/dcs/build-image/dcs-builder-rocky-9:2025.08.19
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: DCS
+          submodules: recursive
+      - name: build DCS
+        run: |
+          cd ./DCS
+          export JAVA_HOME=/usr/lib/jvm/java-17-openjdk
+          ./kmc-resources/scripts/build.sh

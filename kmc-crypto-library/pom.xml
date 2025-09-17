@@ -16,12 +16,6 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <log4j.version>2.24.2</log4j.version>
-  </properties>
-
   <build>
     <resources>
       <resource>
@@ -222,7 +216,7 @@
     <dependency>
       <groupId>org.bouncycastle</groupId>
       <artifactId>bc-fips</artifactId>
-      <version>2.0.0</version>
+      <version>${bcfips.version}</version>
     </dependency>
 
     <dependency>
@@ -249,7 +243,7 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.13.2</version>
+      <version>${junit.version}</version>
     </dependency>
   </dependencies>
 

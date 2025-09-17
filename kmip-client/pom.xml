@@ -18,7 +18,6 @@
 
   <properties>
     <project.build.sourceEncoding>cp1252</project.build.sourceEncoding>
-    <log4j.version>2.24.2</log4j.version>
   </properties>
 
   <build>
@@ -140,7 +139,7 @@
    <dependency>
       <groupId>org.bouncycastle</groupId>
       <artifactId>bc-fips</artifactId>
-      <version>2.0.0</version>
+      <version>${bcfips.version}</version>
    </dependency>
 
   </dependencies>

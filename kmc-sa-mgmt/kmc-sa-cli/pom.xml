@@ -193,15 +193,15 @@
                         <configuration>
                             <fileSets>
                                 <fileSet>
-                                    <sourceFile>target/appassembler/lib/kmc-sa-cli-${version}.jar</sourceFile>
+                                    <sourceFile>target/appassembler/lib/kmc-sa-cli-${project.version}.jar</sourceFile>
                                     <destinationFile>target/appassembler/lib/kmc-sa-cli.jar</destinationFile>
                                 </fileSet>
                                 <fileSet>
-                                    <sourceFile>target/appassembler/lib/kmc-sa-db-api-${version}.jar</sourceFile>
+                                    <sourceFile>target/appassembler/lib/kmc-sa-db-api-${project.version}.jar</sourceFile>
                                     <destinationFile>target/appassembler/lib/kmc-sa-db-api.jar</destinationFile>
                                 </fileSet>
                                 <fileSet>
-                                    <sourceFile>target/appassembler/lib/kmc-sa-db-lib-${version}.jar</sourceFile>
+                                    <sourceFile>target/appassembler/lib/kmc-sa-db-lib-${project.version}.jar</sourceFile>
                                     <destinationFile>target/appassembler/lib/kmc-db-lib.jar</destinationFile>
                                 </fileSet>
                             </fileSets>

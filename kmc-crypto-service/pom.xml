@@ -16,8 +16,6 @@
   </parent>
 
   <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <log4j.version>2.24.2</log4j.version>
     <spring.boot.version>2.7.17</spring.boot.version>
     <final.name>crypto-service</final.name>
     <app.profiles>mTLS</app.profiles>
@@ -189,7 +187,7 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
-      <version>2.0.16</version>
+      <version>${slf4j.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
@@ -258,17 +256,17 @@
     <dependency>
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
-      <version>2.10.1</version>
+      <version>${gson.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bouncycastle</groupId>
       <artifactId>bc-fips</artifactId>
-      <version>2.0.0</version>
+      <version>${bcfips.version}</version>
     </dependency>
     <dependency>
       <groupId>org.bouncycastle</groupId>
       <artifactId>bctls-fips</artifactId>
-      <version>2.0.19</version>
+      <version>${bctls-fips.version}</version>
     </dependency>
   </dependencies>
 

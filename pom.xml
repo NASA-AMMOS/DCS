@@ -19,6 +19,16 @@
     <DEFAULT_LIBPATH>${DEFAULT_PREFIX}/lib</DEFAULT_LIBPATH>
     <DEFAULT_CFGPATH>${DEFAULT_PREFIX}/etc</DEFAULT_CFGPATH>
     <DEFAULT_LOGPATH>${DEFAULT_PREFIX}/logs</DEFAULT_LOGPATH>
+
+    <!-- common 3rd-party software versions -->
+    <slf4j.version>2.0.17</slf4j.version>
+    <log4j.version>2.25.1</log4j.version>
+    <gson.version>2.13.1</gson.version>
+    <bcfips.version>2.0.1</bcfips.version>
+    <bctls-fips.version>2.0.20</bctls-fips.version>
+    <junit.version>4.13.2</junit.version>
+
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
   <modules>
