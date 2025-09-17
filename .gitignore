@@ -51,8 +51,8 @@ ammos-cryptolib/Cryptolib/DartConfiguration.tcl
 ammos-cryptolib/kmc_sdls/kmc_perf_test/performance_test
 ammos-cryptolib/kmc_sdls/kmc_sdls_java/kmc_sdls_java/src/main/java/gov/nasa/jpl/ammos/asec/kmc/*.java
 ammos-cryptolib/kmc_sdls/kmc_sdls_java/kmc_sdls_java/src/main/java/gov/nasa/jpl/ammos/asec/kmc/*.c
-!ammos-cryptolib/kmc_sdls/kmc_sdls_java/kmc_sdls_java/src/main/java/gov/nasa/jpl/ammos/asec/kmc/KmcSdlsEngine.java
-!ammos-cryptolib/kmc_sdls/kmc_sdls_java/kmc_sdls_java/src/main/java/gov/nasa/jpl/ammos/asec/kmc/SDLS_TC_TransferFrame.java
+!ammos-cryptolib/kmc_sdls/kmc_sdls_java/gov/nasa/jpl/ammos/asec/kmc/KmcSdlsEngine.java
+!ammos-cryptolib/kmc_sdls/kmc_sdls_java/gov/nasa/jpl/ammos/asec/kmc/SDLS_TC_TransferFrame.java
 
 
 # IDE / Editor files

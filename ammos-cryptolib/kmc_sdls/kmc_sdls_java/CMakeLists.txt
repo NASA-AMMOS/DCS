@@ -17,7 +17,7 @@ include(UseJava)
 include(UseSWIG)
 include_directories(${JNI_INCLUDE_DIRS})
 
-set(SWIGJAVADIR kmc_sdls_java/src/main/java/gov/nasa/jpl/ammos/asec/kmc)
+set(SWIGJAVADIR gov/nasa/jpl/ammos/asec/kmc)
 set(SWIGJAVAPKG gov.nasa.jpl.ammos.asec.kmc)
 set(CMAKE_SWIG_OUTDIR ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR})
 set(CMAKE_SWIG_FLAGS -package ${SWIGJAVAPKG})
