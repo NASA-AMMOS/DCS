@@ -301,34 +301,41 @@ def main():
 def print_tc(frame):
     print("SPI: ", frame.tc_security_header.spi)
     if(len(frame.tc_security_header.iv) != 0):
-        print("IV: ", frame.tc_security_header.iv.to_hex())
+        print("IV: ", frame.tc_security_header.iv.hex())
     if(len(frame.tc_security_header.sn) != 0):
-        print("SN: ", frame.tc_security_header.sn.to_hex())
-    print("PDU: ", frame.tc_pdu.to_hex())
-    print("MAC: ", frame.tc_security_trailer.mac.to_hex())
+        print("SN: ", frame.tc_security_header.sn.hex())
+    print("PDU: ", frame.tc_pdu.hex())
+    print("MAC: ", frame.tc_security_trailer.mac.hex())
     print("FECF: ", hex(frame.tc_security_trailer.fecf))
 
 
 def print_aos(frame):
-    print("SPI: ", frame.aos_security_header.spi)
-    if(len(frame.aos_security_header.iv) != 0):
-        print("IV: ", frame.aos_security_header.iv.hex())
-    if(len(frame.aos_security_header.sn) != 0):
-        print("SN: ", frame.aos_security_header.sn.hex())
+    print("header: ", frame.aos_header.hex())
+    print("header len: ", len(frame.aos_header.hex()) / 2)
+    print("sec header: ", frame.aos_security_header.hex())
+    print("sec header len: ", len(frame.aos_security_header.hex()) / 2)
     print("PDU: ", frame.aos_pdu.hex())
+    print("PDU len: ", len(frame.aos_pdu.hex()) / 2)
+    print("sec trailer: " , frame.aos_security_trailer.hex())
+    print("sec trailer len: ", len(frame.aos_security_trailer.hex()) / 2)
     print("MAC: ", frame.aos_security_trailer.mac.hex())
     print("FECF: ", hex(frame.aos_security_trailer.fecf))
-
+    print("frame: ", frame.hex())
+    print("frame len: ", len(frame.hex()) / 2)
 
 def print_tm(frame):
-    print("SPI: ", frame.tm_security_header.spi)
-    if(len(frame.tm_security_header.iv) != 0):
-        print("IV: ", frame.tm_security_header.iv.hex())
-    if(len(frame.tm_security_header.sn) != 0):
-        print("SN: ", frame.tm_security_header.sn.hex())
+    print("header: ", frame.tm_header.hex())
+    print("header len: ", len(frame.tm_header.hex()) / 2)
+    print("sec header: ", frame.tm_security_header.hex())
+    print("sec header len: ", len(frame.tm_security_header.hex()) / 2)
     print("PDU: ", frame.tm_pdu.hex())
+    print("PDU len: ", len(frame.tm_pdu.hex()) / 2)
+    print("sec trailer: " , frame.tm_security_trailer.hex())
+    print("sec trailer len: ", len(frame.tm_security_trailer.hex()) / 2)
     print("MAC: ", frame.tm_security_trailer.mac.hex())
     print("FECF: ", hex(frame.tm_security_trailer.fecf))
+    print("frame: ", frame.hex())
+    print("frame len: ", len(frame.hex()) / 2)
 
 if __name__ == "__main__":
     try:

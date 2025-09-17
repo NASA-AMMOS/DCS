@@ -5,6 +5,7 @@ import gov.nasa.jpl.ammos.asec.kmc.api.sa.ISecAssn;
 import gov.nasa.jpl.ammos.asec.kmc.api.sadb.IKmcDao;
 import gov.nasa.jpl.ammos.asec.kmc.sadb.DaoFactory;
 import gov.nasa.jpl.ammos.asec.kmc.sadb.config.Config;
+import gov.nasa.jpl.ammos.asec.kmc.saserver.app.sa.SaController;
 import gov.nasa.jpl.ammos.asec.kmc.saserver.app.sa.SecAssnDeserializer;
 import jakarta.annotation.PreDestroy;
 import jakarta.servlet.DispatcherType;
@@ -36,7 +37,7 @@ import org.springframework.web.filter.CommonsRequestLoggingFilter;
 import java.io.IOException;
 import java.security.Security;
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackageClasses = SaController.class)
 @Configuration
 public class KmcSaMgmt extends SpringBootServletInitializer {
     static {
