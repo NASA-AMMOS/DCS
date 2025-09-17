@@ -15,7 +15,7 @@
 
 <Configuration status="ERROR">
     <Properties>
-        <Property name="logFilePath">${sys:user.home}/kmc-sa-mgmt</Property>
+        <Property name="logFilePath">${sys:user.home}/dcs_logs/kmc-sa-mgmt</Property>
     </Properties>
     <Appenders>
         <RollingFile

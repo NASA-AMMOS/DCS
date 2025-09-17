@@ -2,7 +2,7 @@
 <Configuration status="info">
 
   <Properties>
-    <Property name="KmcClientDebugFilePath">${sys:user.home}/kmc-crypto-client-debug</Property>
+    <Property name="KmcClientDebugFilePath">${sys:user.home}/dcs_logs/kmc-crypto-client-debug</Property>
   </Properties>
 
   <Appenders>
