@@ -79,3 +79,7 @@ kmc-resources/packaging/container/kmcroot/*
 
 # OS specific non-project files #
 **/.DS_Store
+
+# .devcontainer
+.devcontainer
+.devcontainer/
