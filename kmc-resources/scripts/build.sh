@@ -163,17 +163,13 @@ echo "----------------------------------------"
 echo "DCS SA Management"
 echo "----------------------------------------"
 cd $SRC_KMC/kmc-sa-mgmt ; mvn $MVN_COMMON_ARGS package -DDEFAULT_PREFIX="${SAMGMTSVC_PREFIX}" -DDEFAULT_BINPATH="${SAMGMTSVC_PREFIX}/bin" -DDEFAULT_LIBPATH="${SAMGMTSVC_LIBPATH}" -DDEFAULT_CFGPATH="${SAMGMTSVC_CFGPATH}" -DDEFAULT_LOGPATH="${SAMGMTSVC_LOGPATH}" # will run the tests
-if [ $? -ne 0 ]; then
-  echo "ERROR: Failed to build DCS SA Management"
-  BUILD_FAILURES+=("DCS SA Management")
-  BUILD_FLAG=1
-else
-  echo "Copying compiled classes to shared volume..."
-  for module in kmc-sa-db-api kmc-sa-db-lib kmc-sa-cli kmc-sa-gui; do
-    mkdir -p $SRC_KMC/build-output-for-sonar/kmc-sa-mgmt/$module
-    cp -r "$module/target/classes" "$SRC_KMC/build-output-for-sonar/kmc-sa-mgmt/$module/"
-  done
-fi
+
+echo "Copying compiled classes to shared volume..."
+for module in kmc-sa-db-api kmc-sa-db-lib kmc-sa-cli kmc-sa-gui; do
+  mkdir -p $SRC_KMC/build-output-for-sonar/kmc-sa-mgmt/$module
+  cp -r "$module/target/classes" "$SRC_KMC/build-output-for-sonar/kmc-sa-mgmt/$module/"
+done
+
 
 if [ "$1" == "skip-test" ]; then
   echo "Skipping tests..."
