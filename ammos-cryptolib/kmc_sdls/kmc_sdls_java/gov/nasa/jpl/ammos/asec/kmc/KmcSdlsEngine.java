@@ -220,8 +220,8 @@ public class KmcSdlsEngine
     }
 
     public int configureCryptoLib(sadbType sadbTypeEnum, cryptographyType cryptographyTypeEnum, boolean cryptoCreateFecf, boolean processSdlsPdus,
-                                               boolean hasPusHdr, boolean ignoreSaState, boolean ignoreAntiReplay,
-                                               boolean uniqueSaPerMapid, boolean cryptoCheckFecf, int vcidBitmask, boolean cryptoIncrementNontransmittedIv) throws Exception
+                                  boolean hasPusHdr, boolean ignoreSaState, boolean ignoreAntiReplay,
+                                  boolean uniqueSaPerMapid, boolean cryptoCheckFecf, int vcidBitmask, boolean cryptoIncrementNontransmittedIv) throws Exception
     {
         short sadb_type, cryptography_type, crypto_create_fecf, process_sdls_pdus, has_pus_hdr, ignore_sa_state, ignore_anti_replay,
                 unique_sa_per_mapid, crypto_check_fecf, vcid_bitmask, crypto_increment_nontransmitted_iv;
@@ -376,7 +376,7 @@ public class KmcSdlsEngine
     }
 
     public int configureCam(boolean camEnabled, String cookieFilePath, String keytabFilePath,
-                loginMethod loginMethodEnum, String accessManagerUri, String username, String camHome) throws Exception
+                            loginMethod loginMethodEnum, String accessManagerUri, String username, String camHome) throws Exception
     {
         short cam_enabled, login_method;
 
@@ -405,7 +405,7 @@ public class KmcSdlsEngine
         }
 
         int status = this.kmcCInterface.sdls_config_cam(cam_enabled, cookieFilePath, keytabFilePath,
-                                                         login_method, accessManagerUri, username, camHome);
+                login_method, accessManagerUri, username, camHome);
         this.engineStatus = status;
 
         if(status != KMC_ENGINE_SUCCESS)
@@ -413,7 +413,7 @@ public class KmcSdlsEngine
 
         return status;
     }
-    
+
     public int init() throws Exception
     {
         int status = this.kmcCInterface.sdls_init();

@@ -197,7 +197,7 @@ typedef struct
     uint8_t iv_field_len;
     uint8_t sn[16];
     uint8_t sn_field_len;
-    uint8_t pad[32];
+    uint8_t pad[2];
     uint8_t pad_field_len;
 } TC_FrameSecurityHeader_t;
 
@@ -295,12 +295,19 @@ typedef struct
 {
     uint16_t spi;
     uint8_t iv[16];
+    uint8_t iv_field_len;
+    uint8_t sn[16];
+    uint8_t sn_field_len;
+    uint16_t pad;
+    uint8_t pad_field_len;
 } TM_FrameSecurityHeader_t;
 
 typedef struct
 {
     uint8_t mac[64];
+    uint8_t mac_field_len;
     uint8_t ocf[4];
+    uint8_t ocf_field_len;
     uint16_t fecf;
 } TM_FrameSecurityTrailer_t;
 
@@ -309,6 +316,7 @@ typedef struct
     TM_FramePrimaryHeader_t tm_header;
     TM_FrameSecurityHeader_t tm_sec_header;
     uint8_t tm_pdu[1786];
+    uint16_t tm_pdu_len;
     TM_FrameSecurityTrailer_t tm_sec_trailer;
 } TM_t;
 
@@ -322,27 +330,36 @@ typedef struct
     uint8_t sf : 1;
     uint8_t spare : 2;
     uint8_t vfcc : 4;
-    uint16_t fhp : 16;
+    uint16_t fhecf : 16;
 } AOS_FramePrimaryHeader_t;
 
 typedef struct
 {
+    uint8_t iz[32];
     uint16_t spi;
     uint8_t iv[16];
+    uint8_t iv_field_len;
+    uint8_t sn[16];
+    uint8_t sn_field_len;
+    uint16_t pad;
+    uint8_t pad_field_len;
 } AOS_FrameSecurityHeader_t;
 
 typedef struct
 {
     uint8_t mac[64];
+    uint8_t mac_field_len;
     uint8_t ocf[4];
+    uint8_t ocf_field_len;
     uint16_t fecf;
 } AOS_FrameSecurityTrailer_t;
 
 typedef struct
 {
-    AOS_FramePrimaryHeader_t tm_header;
-    AOS_FrameSecurityHeader_t tm_sec_header;
+    AOS_FramePrimaryHeader_t aos_header;
+    AOS_FrameSecurityHeader_t aos_sec_header;
     uint8_t aos_pdu[1786];
+    uint16_t aos_pdu_len;
     AOS_FrameSecurityTrailer_t aos_sec_trailer;
 } AOS_t;
 
@@ -637,6 +654,14 @@ extern int32_t process_security_tc (char* sdls_transfer_frame, int* length, TC_t
 extern int32_t apply_security_tc_cam (const uint8_t* p_in_frame, const uint16_t in_frame_length, uint8_t **pp_enc_frame, uint16_t *p_enc_frame_len,char* cam_cookies);
 
 extern int32_t process_security_tc_cam (char* sdls_transfer_frame, int* length, TC_t* tc_sdls_processed_frame, char* cam_cookies);
+
+extern int32_t apply_security_tm (uint8_t* p_in_frame, uint16_t in_frame_length);
+
+extern int32_t process_security_tm (uint8_t *ptBuffer, uint16_t length, TM_t* p_enc_frame, uint16_t *p_enc_frame_len);
+
+extern int32_t apply_security_aos (uint8_t* p_in_frame, uint16_t in_frame_length);
+
+extern int32_t process_security_aos (uint8_t *ptBuffer, uint16_t length, AOS_t* p_enc_frame, uint16_t *p_enc_frame_len);
 
 extern char* sdls_get_error_code_enum_string(int32_t crypto_error_code);
 

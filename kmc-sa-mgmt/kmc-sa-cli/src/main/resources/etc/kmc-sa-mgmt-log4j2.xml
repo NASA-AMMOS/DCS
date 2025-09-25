@@ -14,11 +14,14 @@
   -->
 
 <Configuration status="ERROR">
+    <Properties>
+        <Property name="logFilePath">${sys:user.home}/dcs_logs/kmc-sa-mgmt</Property>
+    </Properties>
     <Appenders>
         <RollingFile
                 name="file"
-                fileName="${sys:app.home}/logs/kmc-sa-mgmt.log"
-                filePattern="${sys:app.home}/logs/kmc-sa-mgmt.%d{yyyy-MM-dd}.log.gz"
+                fileName="${logFilePath}.log"
+                filePattern="${logFilePath}.%d{yyyy-MM-dd}.log.gz"
                 ignoreExceptions="false">
             <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
             <Policies>

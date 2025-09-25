@@ -369,7 +369,9 @@ export default function SaModalForm({
                                 lookup={parseInt}
                                 onChange={handleEcsChange}
                                 helperText={`Encryption Cipher Suite: ${ENC_CYPHERS.NONE.name} = ${ENC_CYPHERS.NONE.value}, 
-                            ${ENC_CYPHERS.AES256_GCM.name} = ${ENC_CYPHERS.AES256_GCM.value}`}
+                            ${ENC_CYPHERS.AES256_GCM.name} = ${ENC_CYPHERS.AES256_GCM.value},
+                            ${ENC_CYPHERS.AES256_CBC} = ${ENC_CYPHERS.AES256_CBC.value}`}
+
                             >
                                 <MenuItem value={0}>{ENC_CYPHERS.NONE.name}</MenuItem>
                                 <MenuItem value={1}>{ENC_CYPHERS.AES256_GCM.name}</MenuItem>
@@ -403,7 +405,7 @@ export default function SaModalForm({
                                 id={"shsnfLen"}
                                 name={"shsnfLen"}
                                 label={"SHSNF Length"}
-                                helperText={"Security Header SN? Field Length"}
+                                helperText={"Security Header SN Field Length"}
                             />
                             <SaTextField
                                 formik={formik}

@@ -43,6 +43,12 @@ extern int32_t process_security_tc (char* sdls_transfer_frame, int* length, TC_t
 extern int32_t apply_security_tc_cam (const uint8_t* p_in_frame, const uint16_t in_frame_length, uint8_t **pp_enc_frame, uint16_t *p_enc_frame_len,char* cam_cookies);
 extern int32_t process_security_tc_cam (char* sdls_transfer_frame, int* length, TC_t* tc_sdls_processed_frame, char* cam_cookies);
 
+extern int32_t apply_security_tm (uint8_t* p_in_frame, uint16_t in_frame_length);
+extern int32_t process_security_tm (uint8_t *ptBuffer, uint16_t length, TM_t* p_enc_frame, uint16_t *p_enc_frame_len);
+
+extern int32_t apply_security_aos (uint8_t* p_in_frame, uint16_t in_frame_length);
+extern int32_t process_security_aos (uint8_t *ptBuffer, uint16_t length, AOS_t* p_enc_frame, uint16_t *p_enc_frame_len);
+
 extern char* sdls_get_error_code_enum_string(int32_t crypto_error_code);
 
 #endif //AMMOS_CRYPTOLIB_KMC_SDLS_H

@@ -47,12 +47,12 @@ class TestConfigMethods(unittest.TestCase):
         #Set a variable for the expected data from the original telecommand transfer frame (0001 is a CMD_NO_OP)
         tc_data_expect = "0001"
         print(reversed_tc)
-        print("IV: ",reversed_tc.tc_security_header.iv.hex())
-        print("SN: ",reversed_tc.tc_security_header.sn.hex())
-        print("PAD: ",reversed_tc.tc_security_header.pad.hex())
-        print("MAC: ",reversed_tc.tc_security_trailer.mac.hex())
+        print("IV: ", reversed_tc.tc_security_header.iv.to_hex())
+        print("SN: ", reversed_tc.tc_security_header.sn.to_hex())
+        print("PAD: ", reversed_tc.tc_security_header.pad.to_hex())
+        print("MAC: ", reversed_tc.tc_security_trailer.mac.to_hex())
         #Verify that the processed security result's data matches the original unencrypted data.
-        self.assertEqual(tc_data_expect,reversed_tc.tc_pdu.hex())
+        self.assertEqual(tc_data_expect, reversed_tc.tc_pdu.to_hex())
         k.shutdown()
         #print(result.hex())
         #result_string = binascii.hexlify(result)
