@@ -14,10 +14,10 @@ jobs:
   dcs_build_ubuntu:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/omm-sonarcloud-test/dcs/build-image/dcs-builder-ubuntu-20.04:2025.08.19
+      image: ghcr.io/nasa-ammos/dcs/build-image/dcs-builder-ubuntu-20.04:2025.08.19
       credentials:
         username: ${{ github.actor }}
-        password: ${{ secrets.PACKAGE_TOKEN }}
+        password: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -41,10 +41,10 @@ jobs:
   dcs_build_rocky:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/omm-sonarcloud-test/dcs/build-image/dcs-builder-rocky-9:2025.08.19
+      image: ghcr.io/nasa-ammos/dcs/build-image/dcs-builder-rocky-9:2025.08.19
       credentials:
         username: ${{ github.actor }}
-        password: ${{ secrets.PACKAGE_TOKEN }}
+        password: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -176,10 +176,10 @@ jobs:
       - name: SonarCloud Scan
         uses: SonarSource/sonarqube-scan-action@v5.3.1
         env:
-          GITHUB_TOKEN: ${{ secrets.PACKAGE_TOKEN }} # Needed to get PR information, if any
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           projectBaseDir: .
           args: >
-            -Dsonar.organization=omm-sonarcloud-test
-            -Dsonar.projectKey=OMM-SonarCloud-Test_DCS
+            -Dsonar.organization=nasa-ammos
+            -Dsonar.projectKey=NASA-AMMOS_KMC
