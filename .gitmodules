@@ -1,4 +1,4 @@
 [submodule "ammos-cryptolib/CryptoLib"]
 	path = ammos-cryptolib/CryptoLib
 	url = https://github.com/nasa/CryptoLib
-	branch = b22a8b96929268b6a1b95661e3c56bedcc0403a9
+	branch = e27cacb09bacc3af70fab56a6e0c839deafce2b8
