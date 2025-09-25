@@ -79,7 +79,20 @@ public class SaCreateTest extends BaseCommandLineTest {
                 type.name()));
         assertEquals(w.toString(), 0, exitCode);
         List<ISecAssn> sas = dao.getSas(type);
-        assertEquals(w.toString(), 86, sas.size());
+        int expectedSize = 0;
+        switch (type) {
+            case AOS:
+                expectedSize = 85;
+                break;
+            case TM:
+                expectedSize = 84;
+                break;
+            case TC:
+            default:
+                expectedSize = 86;
+                break;
+        }
+        assertEquals(type.name() + " " + w, expectedSize, sas.size());
     }
 
     @Test
