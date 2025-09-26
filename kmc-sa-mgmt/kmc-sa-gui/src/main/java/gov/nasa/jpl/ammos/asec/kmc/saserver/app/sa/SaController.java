@@ -213,9 +213,14 @@ public class SaController {
         return newSa;
     }
 
-    @PostMapping(value = "/sa", consumes = {MediaType.APPLICATION_JSON_VALUE})
-    public ISecAssn postSa(@RequestBody ISecAssn sa, HttpServletRequest request) throws KmcException {
-        LOG.info("{} updating SA ({}/{})", request.getRemoteAddr(), sa.getSpi(), sa.getScid());
+    @PostMapping(value = {"/sa/{type}", "/sa"}, consumes = {MediaType.APPLICATION_JSON_VALUE})
+    public ISecAssn postSa(@RequestBody ISecAssn sa, @PathVariable(name = "type", required = false) String type,
+                           HttpServletRequest request) throws KmcException {
+        FrameType frameType = StringUtils.hasText(type) ? FrameType.fromString(type) : FrameType.TC;
+        if (frameType == FrameType.UNKNOWN) {
+            throw new KmcException(String.format("%s is an unknown frame type", type));
+        }
+        LOG.info("{} updating {} SA ({}/{})", request.getRemoteAddr(), frameType.name(), sa.getSpi(), sa.getScid());
         checkEncryption(sa);
         checkAuthentication(sa);
         ISecAssn original = dao.getSa(sa.getId(), sa.getType());
@@ -531,7 +536,7 @@ public class SaController {
         return new ResponseEntity<>(node, status ? HttpStatus.OK : HttpStatus.SERVICE_UNAVAILABLE);
     }
 
-    @GetMapping(value = "/api/health")
+    @GetMapping(value = "/health")
     public String health() {
         // This method will simply return HTTP 200 status with the following string
         return "Service is UP\n";
