@@ -138,7 +138,7 @@ public class KmcSaMgmt extends SpringBootServletInitializer {
                     "/health")) {
                 // Enforce client cert for all resources except for /health
                 if (request.getConnector().getSecure()) {
-                    Object cert = request.getAttribute("javax.servlet.request.X509Certificate");
+                    Object cert = request.getAttribute("jakarta.servlet.request.X509Certificate");
                     if (cert == null) {
                         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                         response.setContentType("text/plain");
