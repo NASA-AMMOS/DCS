@@ -75,6 +75,9 @@ if [ $? -ne 0 ]; then
   echo "ERROR: Failed to build KMIP Client Library"
   BUILD_FAILURES+=("KMIP Client Library")
   BUILD_FLAG=1
+else
+  mkdir -p $SRC_KMC/build-output-for-sonar/kmip-client
+  cp -r target/classes $SRC_KMC/build-output-for-sonar/kmip-client/
 fi
 echo "----------------------------------------"
 echo "DCS Key Client Library"
@@ -84,6 +87,9 @@ if [ $? -ne 0 ]; then
   echo "ERROR: Failed to build DCS Key Client Library"
   BUILD_FAILURES+=("DCS Key Client Library")
   BUILD_FLAG=1
+else
+  mkdir -p $SRC_KMC/build-output-for-sonar/kmc-key-client
+  cp -r target/classes $SRC_KMC/build-output-for-sonar/kmc-key-client/
 fi
 echo "----------------------------------------"
 echo "DCS Crypto Interface"
@@ -93,6 +99,9 @@ if [ $? -ne 0 ]; then
   echo "ERROR: Failed to build DCS Crypto Interface"
   BUILD_FAILURES+=("DCS Crypto Interface")
   BUILD_FLAG=1
+else
+  mkdir -p $SRC_KMC/build-output-for-sonar/kmc-crypto
+  cp -r target/classes $SRC_KMC/build-output-for-sonar/kmc-crypto/
 fi
 echo "----------------------------------------"
 echo "DCS Crypto Library"
@@ -102,6 +111,9 @@ if [ $? -ne 0 ]; then
   echo "ERROR: Failed to build DCS Crypto Library"
   BUILD_FAILURES+=("DCS Crypto Library")
   BUILD_FLAG=1
+else
+  mkdir -p $SRC_KMC/build-output-for-sonar/kmc-crypto-library
+  cp -r target/classes $SRC_KMC/build-output-for-sonar/kmc-crypto-library/
 fi
 echo "----------------------------------------"
 echo "DCS Crypto Service"
@@ -111,6 +123,9 @@ if [ $? -ne 0 ]; then
   echo "ERROR: Failed to build DCS Crypto Service"
   BUILD_FAILURES+=("DCS Crypto Service")
   BUILD_FLAG=1
+else
+  mkdir -p $SRC_KMC/build-output-for-sonar/kmc-crypto-service
+  cp -r target/classes $SRC_KMC/build-output-for-sonar/kmc-crypto-service/
 fi
 
 echo "----------------------------------------"
@@ -134,6 +149,9 @@ if [ $? -ne 0 ]; then
   echo "ERROR: Failed mvn package for DCS SDLS Service"
   BUILD_FAILURES+=("DCS SDLS Service package")
   BUILD_FLAG=1
+else
+  mkdir -p $SRC_KMC/build-output-for-sonar/kmc-sdls-service
+  cp -r target/classes $SRC_KMC/build-output-for-sonar/kmc-sdls-service/
 fi
 
 echo "----------------------------------------"
@@ -144,6 +162,12 @@ if [ $? -ne 0 ]; then
   echo "ERROR: Failed to build DCS SA Management"
   BUILD_FAILURES+=("DCS SA Management")
   BUILD_FLAG=1
+else
+  echo "Copying compiled classes to shared volume..."
+  for module in kmc-sa-db-api kmc-sa-db-lib kmc-sa-cli kmc-sa-gui; do
+    mkdir -p $SRC_KMC/build-output-for-sonar/kmc-sa-mgmt/$module
+    cp -r "$module/target/classes" "$SRC_KMC/build-output-for-sonar/kmc-sa-mgmt/$module/"
+  done
 fi
 
 if [ "$1" == "skip-test" ]; then
