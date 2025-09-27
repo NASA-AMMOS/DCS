@@ -3,6 +3,8 @@ name: DCS_Build
 on:
   pull_request:
     branches: [main, dev]
+  push:
+    branches: [ "main", "dev" ]
 
 permissions:
   packages: read
@@ -141,7 +143,8 @@ jobs:
           done
 
           echo "RESULTS_DIR=$results_dir" >> $GITHUB_ENV
-
+          echo "Results generated: "
+          echo $results_dir
       # This step makes the analysis artifacts available for download
       # This can be helpful for debugging and archive purposes
       - name: Upload Artifacts
@@ -159,6 +162,16 @@ jobs:
 
       - name: Verify downloaded classes
         run: ls -R build-output-for-sonar/
+
+      # Download SARIF files for Sonar scan
+      - name: Download SARIF Files
+        uses: actions/download-artifact@v5.0.0
+        with:
+          name: codeql-artifacts
+          path: codeql-artifacts-for-sonar/
+
+      - name: Verify downloaded SARIF files
+        run: pwd; ls -R codeql-artifacts-for-sonar/
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarqube-scan-action@v5.3.1
