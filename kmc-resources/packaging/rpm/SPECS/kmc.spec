@@ -188,10 +188,9 @@ if [ $1 = 1 ]; then
     ADDUSER=`echo $E | cut -f1 -d:`
     ADDGROUP=`echo $E | cut -f2 -d:`
     ADDUID=`echo $E | cut -f3 -d:`
-    ADDGID=`echo $E | cut -f4 -d:`
-    ADDDIR=`echo $E | cut -f5 -d:`
-    ADDCOMMENT=`echo $E | cut -f6 -d:`
-    ADDSHELL=`echo $E | cut -f7 -d:`
+    ADDDIR=`echo $E | cut -f4 -d:`
+    ADDCOMMENT=`echo $E | cut -f5 -d:`
+    ADDSHELL=`echo $E | cut -f6 -d:`
 
     NUMU=`/bin/getent passwd "${ADDUSER}" | /bin/wc -l`
     if [ $NUMU -eq 0 ]; then
@@ -258,10 +257,9 @@ if [ $1 = 1 ]; then
     ADDUSER=`echo $E | cut -f1 -d:`
     ADDGROUP=`echo $E | cut -f2 -d:`
     ADDUID=`echo $E | cut -f3 -d:`
-    ADDGID=`echo $E | cut -f4 -d:`
-    ADDDIR=`echo $E | cut -f5 -d:`
-    ADDCOMMENT=`echo $E | cut -f6 -d:`
-    ADDSHELL=`echo $E | cut -f7 -d:`
+    ADDDIR=`echo $E | cut -f4 -d:`
+    ADDCOMMENT=`echo $E | cut -f5 -d:`
+    ADDSHELL=`echo $E | cut -f6 -d:`
 
     NUMU=`/bin/getent passwd "${ADDUSER}" | /bin/wc -l`
     if [ $NUMU -eq 0 ]; then
@@ -328,10 +326,9 @@ if [ $1 = 1 ]; then
     ADDUSER=`echo $E | cut -f1 -d:`
     ADDGROUP=`echo $E | cut -f2 -d:`
     ADDUID=`echo $E | cut -f3 -d:`
-    ADDGID=`echo $E | cut -f4 -d:`
-    ADDDIR=`echo $E | cut -f5 -d:`
-    ADDCOMMENT=`echo $E | cut -f6 -d:`
-    ADDSHELL=`echo $E | cut -f7 -d:`
+    ADDDIR=`echo $E | cut -f4 -d:`
+    ADDCOMMENT=`echo $E | cut -f5 -d:`
+    ADDSHELL=`echo $E | cut -f6 -d:`
 
     NUMU=`/bin/getent passwd "${ADDUSER}" | /bin/wc -l`
     if [ $NUMU -eq 0 ]; then
@@ -398,10 +395,9 @@ if [ $1 = 1 ]; then
     ADDUSER=`echo $E | cut -f1 -d:`
     ADDGROUP=`echo $E | cut -f2 -d:`
     ADDUID=`echo $E | cut -f3 -d:`
-    ADDGID=`echo $E | cut -f4 -d:`
-    ADDDIR=`echo $E | cut -f5 -d:`
-    ADDCOMMENT=`echo $E | cut -f6 -d:`
-    ADDSHELL=`echo $E | cut -f7 -d:`
+    ADDDIR=`echo $E | cut -f4 -d:`
+    ADDCOMMENT=`echo $E | cut -f5 -d:`
+    ADDSHELL=`echo $E | cut -f6 -d:`
 
     NUMU=`/bin/getent passwd "${ADDUSER}" | /bin/wc -l`
     if [ $NUMU -eq 0 ]; then
