@@ -59,44 +59,66 @@ class KmcSdlsClient:
 
         cryptolib_process_tc_ignore_antireplay = distutils.util.strtobool(
             config_dict.get("cryptolib.process_tc.ignore_antireplay", "true"))
+        cryptolib_process_tm_ignore_antireplay = distutils.util.strtobool(
+            config_dict.get("cryptolib.process_tm.ignore_antireplay", "true"))
+        cryptolib_process_aos_ignore_antireplay = distutils.util.strtobool(
+            config_dict.get("cryptolib.process_aos.ignore_antireplay", "true"))
         cryptolib_process_tc_ignore_sa_state = distutils.util.strtobool(
             config_dict.get("cryptolib.process_tc.ignore_sa_state", "true"))
         cryptolib_process_tc_process_pdus = distutils.util.strtobool(
             config_dict.get("cryptolib.process_tc.process_pdus", "false"))
-        if "cryptolib.apply_tm.create_ecf" in config_dict:
-            cryptolib_apply_create_ecf = distutils.util.strtobool(
-                config_dict.get("cryptolib.apply_tm.create_ecf", "false")) + 2
-        elif "cryptolib.apply_aos.create_ecf" in config_dict:
-            cryptolib_apply_create_ecf = distutils.util.strtobool(
-                config_dict.get("cryptolib.apply_aos.create_ecf", "false")) + 4
-        else:
-            cryptolib_apply_create_ecf = distutils.util.strtobool(
-                config_dict.get("cryptolib.apply_tc.create_ecf", "false"))
+        cryptolib_apply_create_ecf_tm = distutils.util.strtobool(
+            config_dict.get("cryptolib.apply_tm.create_ecf", "false")) + 2
+        cryptolib_apply_create_ecf_aos = distutils.util.strtobool(
+            config_dict.get("cryptolib.apply_aos.create_ecf", "false")) + 4
+        cryptolib_apply_create_ecf_tc = distutils.util.strtobool(
+            config_dict.get("cryptolib.apply_tc.create_ecf", "false"))
 
         cryptolib_tc_has_pus_header = distutils.util.strtobool(config_dict.get("cryptolib.tc.has_pus_header", "false"))
         cryptolib_tc_unique_sa_per_mapid = distutils.util.strtobool(
             config_dict.get("cryptolib.tc.unique_sa_per_mapid", "false"))
-        if "cryptolib.process_tm.check_fecf" in config_dict:
-            cryptolib_check_fecf = distutils.util.strtobool(
-                config_dict.get("cryptolib.process_tm.check_fecf", "false")) + 2
-        elif "cryptolib.process_aos.check_fecf" in config_dict:
-            cryptolib_check_fecf = distutils.util.strtobool(
-                config_dict.get("cryptolib.process_aos.check_fecf", "false")) + 4
-        else:
-            cryptolib_check_fecf = distutils.util.strtobool(config_dict.get("cryptolib.process_tc.check_fecf", "false"))
+        cryptolib_check_fecf_tm = distutils.util.strtobool(
+            config_dict.get("cryptolib.process_tm.check_fecf", "false")) + 2
+        cryptolib_check_fecf_aos = distutils.util.strtobool(
+            config_dict.get("cryptolib.process_aos.check_fecf", "false")) + 4
+        cryptolib_check_fecf_tc = distutils.util.strtobool(config_dict.get("cryptolib.process_tc.check_fecf", "false"))
 
-        if "cryptolib.tm.vcid_bitmask" in config_dict:
-            cryptolib_vcid_bitmask = int(config_dict.get("cryptolib.tm.vcid_bitmask", "0x3F"), 16)
-        elif "cryptolib.aos.vcid_bitmask" in config_dict:
-            cryptolib_vcid_bitmask = int(config_dict.get("cryptolib.aos.vcid_bitmask", "0x3F"), 16)
-        else:
-            cryptolib_vcid_bitmask = int(config_dict.get("cryptolib.tc.vcid_bitmask", "0x3F"), 16)
+        cryptolib_vcid_bitmask_tm = int(config_dict.get("cryptolib.tm.vcid_bitmask", "0x3F"), 16)
+        cryptolib_vcid_bitmask_aos = int(config_dict.get("cryptolib.aos.vcid_bitmask", "0x3F"), 16)
+        cryptolib_vcid_bitmask_tc = int(config_dict.get("cryptolib.tc.vcid_bitmask", "0x3F"), 16)
 
         cryptolib_tc_on_rollover_increment_nontransmitted_counter = distutils.util.strtobool(
             config_dict.get("cryptolib.tc.on_rollover_increment_nontransmitted_counter", "true"))
+        cryptolib_tm_on_rollover_increment_nontransmitted_counter = distutils.util.strtobool(
+            config_dict.get("cryptolib.tm.on_rollover_increment_nontransmitted_counter", "true"))
+        cryptolib_aos_on_rollover_increment_nontransmitted_counter = distutils.util.strtobool(
+            config_dict.get("cryptolib.aos.on_rollover_increment_nontransmitted_counter", "true"))
         kmc_python_c_sdls_interface.lib.sdls_config_cryptolib(self.ffi.cast("uint8_t", cryptolib_sadb_type)
                                                               , self.ffi.cast("uint8_t", cryptolib_crypto_type)
                                                               )
+        kmc_python_c_sdls_interface.lib.sdls_config_cryptolib_tc(
+            self.ffi.cast("uint8_t", cryptolib_apply_create_ecf_tc),
+            self.ffi.cast("uint8_t", cryptolib_process_tc_process_pdus),
+            self.ffi.cast("uint8_t", cryptolib_tc_has_pus_header),
+            self.ffi.cast("uint8_t", cryptolib_process_tc_ignore_antireplay),
+            self.ffi.cast("uint8_t", cryptolib_process_tc_ignore_sa_state),
+            self.ffi.cast("uint8_t", cryptolib_tc_unique_sa_per_mapid),
+            self.ffi.cast("uint8_t", cryptolib_check_fecf_tc),
+            self.ffi.cast("uint8_t", cryptolib_vcid_bitmask_tc),
+            self.ffi.cast("uint8_t", cryptolib_tc_on_rollover_increment_nontransmitted_counter))
+        kmc_python_c_sdls_interface.lib.sdls_config_cryptolib_tm(
+            self.ffi.cast("uint8_t", cryptolib_apply_create_ecf_tm),
+            self.ffi.cast("uint8_t", cryptolib_process_tm_ignore_antireplay),
+            self.ffi.cast("uint8_t", cryptolib_check_fecf_tm),
+            self.ffi.cast("uint8_t", cryptolib_vcid_bitmask_tm),
+            self.ffi.cast("uint8_t", cryptolib_tm_on_rollover_increment_nontransmitted_counter))
+        kmc_python_c_sdls_interface.lib.sdls_config_cryptolib_aos(
+            self.ffi.cast("uint8_t", cryptolib_apply_create_ecf_aos),
+            self.ffi.cast("uint8_t", cryptolib_process_aos_ignore_antireplay),
+            self.ffi.cast("uint8_t", cryptolib_check_fecf_aos),
+            self.ffi.cast("uint8_t", cryptolib_vcid_bitmask_aos),
+            self.ffi.cast("uint8_t", cryptolib_aos_on_rollover_increment_nontransmitted_counter)
+            )
 
         # MariaDB Property Keys
         mariadb_tls_cacert_property_key = "cryptolib.sadb.mariadb.tls.cacert"
