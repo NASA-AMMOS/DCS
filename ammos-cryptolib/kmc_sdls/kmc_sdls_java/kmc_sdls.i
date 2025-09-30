@@ -32,7 +32,7 @@
 
 
     extern int32_t sdls_init(void);
-    extern int32_t sdls_init_with_configs(CryptoConfig_t* crypto_config_p,GvcidManagedParameters_t* gvcid_managed_parameters_p,SadbMariaDBConfig_t* sadb_mariadb_config_p, CryptographyKmcCryptoServiceConfig_t *cryptography_kmc_crypto_config_p);
+    extern int32_t sdls_init_with_configs(CryptoConfigGlobal_t* crypto_config_p,TCGvcidManagedParameters_t* gvcid_managed_parameters_p,SadbMariaDBConfig_t* sadb_mariadb_config_p, CryptographyKmcCryptoServiceConfig_t *cryptography_kmc_crypto_config_p);
     extern int32_t sdls_init_unit_test(void);
 
     extern int32_t sdls_shutdown(void);

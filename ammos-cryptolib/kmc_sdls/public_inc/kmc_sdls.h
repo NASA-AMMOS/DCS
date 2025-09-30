@@ -33,7 +33,7 @@ extern int32_t sdls_config_kmc_crypto_service(char* protocol, char* kmc_crypto_h
 extern int32_t sdls_config_cam(uint8_t cam_enabled, char* cookie_file_path, char* keytab_file_path, uint8_t login_method, char* access_manager_uri, char* username, char* cam_home);
 
 extern int32_t sdls_init(void);
-extern int32_t sdls_init_with_configs(CryptoConfig_t* crypto_config_p,GvcidManagedParameters_t* gvcid_managed_parameters_p,SadbMariaDBConfig_t* sadb_mariadb_config_p, CryptographyKmcCryptoServiceConfig_t *cryptography_kmc_crypto_config_p);
+extern int32_t sdls_init_with_configs(CryptoConfigGlobal_t* crypto_config_p,TCGvcidManagedParameters_t* gvcid_managed_parameters_p,SadbMariaDBConfig_t* sadb_mariadb_config_p, CryptographyKmcCryptoServiceConfig_t *cryptography_kmc_crypto_config_p);
 extern int32_t sdls_init_unit_test(void);
 
 extern int32_t sdls_shutdown(void);

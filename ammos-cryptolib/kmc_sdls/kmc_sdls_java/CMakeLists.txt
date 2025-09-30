@@ -64,8 +64,10 @@ set(SWIG_GENERATED_SRCS
         ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/CryptographyType.java
         ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/EncCipherSuite.java
         ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/AuthCipherSuite.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/CryptoConfig_t.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/_GvcidManagedParameters_t.java
+        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/CryptoConfigGlobal_t.java
+        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/_TCGvcidManagedParameters_t.java
+        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/_TMGvcidManagedParameters_t.java
+        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/_AOSGvcidManagedParameters_t.java
         ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/SadbMariaDBConfig_t.java
         ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/CryptographyKmcCryptoServiceConfig_t.java
         ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/crypto_gvcid_t.java

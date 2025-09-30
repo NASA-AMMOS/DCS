@@ -15,13 +15,13 @@
 #include "kmc_sdls.h"
 #include <crypto.h>
 
-extern CryptoConfig_t crypto_config;
+extern CryptoConfigGlobal_t crypto_config_global;
 
 int32_t sdls_init(void)
 {
     return Crypto_Init();
 }
-int32_t sdls_init_with_configs(CryptoConfig_t* crypto_config_p,GvcidManagedParameters_t* gvcid_managed_parameters_p,SadbMariaDBConfig_t* sadb_mariadb_config_p, CryptographyKmcCryptoServiceConfig_t *cryptography_kmc_crypto_config_p)
+int32_t sdls_init_with_configs(CryptoConfigGlobal_t* crypto_config_p,TCGvcidManagedParameters_t* gvcid_managed_parameters_p,SadbMariaDBConfig_t* sadb_mariadb_config_p, CryptographyKmcCryptoServiceConfig_t *cryptography_kmc_crypto_config_p)
 {
     return Crypto_Init_With_Configs(crypto_config_p,gvcid_managed_parameters_p,sadb_mariadb_config_p,cryptography_kmc_crypto_config_p);
 }
@@ -66,7 +66,7 @@ int32_t process_security_tm(uint8_t *ptBuffer, uint16_t length, TM_t* p_enc_fram
 
 int32_t sdls_config_cryptolib(uint8_t sadb_type, uint8_t cryptography_type, uint8_t crypto_create_fecf, uint8_t process_sdls_pdus, uint8_t has_pus_hdr, uint8_t ignore_sa_state, uint8_t ignore_anti_replay, uint8_t unique_sa_per_mapid, uint8_t crypto_check_fecf, uint8_t vcid_bitmask, uint8_t crypto_increment_nontransmitted_iv)
 {
-    return Crypto_Config_CryptoLib(KEY_TYPE_KMC, MC_TYPE_DISABLED, sadb_type, cryptography_type, IV_INTERNAL, crypto_create_fecf, process_sdls_pdus, has_pus_hdr, ignore_sa_state, ignore_anti_replay, unique_sa_per_mapid, crypto_check_fecf, vcid_bitmask, crypto_increment_nontransmitted_iv);
+    return Crypto_Config_CryptoLib(KEY_TYPE_KMC, MC_TYPE_DISABLED, sadb_type, cryptography_type, IV_INTERNAL);
 }
 int32_t sdls_config_mariadb(char* mysql_hostname, char* mysql_database, uint16_t mysql_port,
                             uint8_t mysql_require_secure_transport, uint8_t mysql_tls_verify_server,
@@ -79,8 +79,8 @@ int32_t sdls_config_mariadb(char* mysql_hostname, char* mysql_database, uint16_t
 }
 int32_t sdls_config_add_gvcid_managed_parameter(uint8_t tfvn, uint16_t scid, uint8_t vcid, uint8_t has_fecf, uint8_t has_segmentation_hdr, uint16_t max_tc_frame_size)
 {
-    GvcidManagedParameters_t TC_UT_Managed_Parameters = {tfvn, scid, vcid, has_fecf, AOS_FHEC_NA, AOS_IZ_NA, 0, has_segmentation_hdr, max_tc_frame_size, TC_OCF_NA, 1};
-    return Crypto_Config_Add_Gvcid_Managed_Parameters(TC_UT_Managed_Parameters);
+    TCGvcidManagedParameters_t TC_UT_Managed_Parameters = {tfvn, scid, vcid, has_fecf, has_segmentation_hdr, max_tc_frame_size, 1};
+    return Crypto_Config_Add_TC_Gvcid_Managed_Parameters(TC_UT_Managed_Parameters);
 }
 int32_t sdls_config_kmc_crypto_service(char* protocol, char* kmc_crypto_hostname, uint16_t kmc_crypto_port,
                                        char* kmc_crypto_app, char* kmc_tls_ca_bundle, char* kmc_tls_ca_path,
@@ -101,7 +101,7 @@ char* sdls_get_error_code_enum_string(int32_t crypto_error_code)
 }
 int32_t sdls_shutdown(void)
 {
-    if (crypto_config.init_status == UNITIALIZED) {
+    if (crypto_config_global.init_status == UNINITIALIZED) {
         return CRYPTO_LIB_SUCCESS;
     } else {
         return Crypto_Shutdown();
