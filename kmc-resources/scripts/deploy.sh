@@ -542,6 +542,7 @@ for FILE in `/bin/ls -1 "${INST_CFGPATH}/sa_mariadb_sql"`; do
   echo "${INST_CFGPATH}/sa_mariadb_sql/${FILE}" >> "${INST_CFGPATH}/install_manifest.txt"
 done
 
+/bin/cp -r "${SRC_CRYPTO_LIB}"/install/libcryptolib* "${INST_LIBPATH}/"
 /bin/cp -r "${SRC_CRYPTO_LIB}"/install/lib/* "${INST_LIBPATH}/"
 /bin/chown -R "${INST_ROOTUSR}":"${INST_ROOTGRP}" "${INST_LIBPATH}"
 /bin/find "${INST_LIBPATH}" -type f -exec /bin/chmod 0644 {} \;
