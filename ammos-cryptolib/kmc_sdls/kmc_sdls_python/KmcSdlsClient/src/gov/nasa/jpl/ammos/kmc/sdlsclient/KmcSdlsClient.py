@@ -96,20 +96,6 @@ class KmcSdlsClient:
             config_dict.get("cryptolib.tc.on_rollover_increment_nontransmitted_counter", "true"))
         kmc_python_c_sdls_interface.lib.sdls_config_cryptolib(self.ffi.cast("uint8_t", cryptolib_sadb_type)
                                                               , self.ffi.cast("uint8_t", cryptolib_crypto_type)
-                                                              , self.ffi.cast("uint8_t", cryptolib_apply_create_ecf)
-                                                              , self.ffi.cast("uint8_t",
-                                                                              cryptolib_process_tc_process_pdus)
-                                                              , self.ffi.cast("uint8_t", cryptolib_tc_has_pus_header)
-                                                              , self.ffi.cast("uint8_t",
-                                                                              cryptolib_process_tc_ignore_sa_state)
-                                                              , self.ffi.cast("uint8_t",
-                                                                              cryptolib_process_tc_ignore_antireplay)
-                                                              ,
-                                                              self.ffi.cast("uint8_t", cryptolib_tc_unique_sa_per_mapid)
-                                                              , self.ffi.cast("uint8_t", cryptolib_check_fecf)
-                                                              , self.ffi.cast("uint8_t", cryptolib_vcid_bitmask)
-                                                              , self.ffi.cast("uint8_t",
-                                                                              cryptolib_tc_on_rollover_increment_nontransmitted_counter)
                                                               )
 
         # MariaDB Property Keys

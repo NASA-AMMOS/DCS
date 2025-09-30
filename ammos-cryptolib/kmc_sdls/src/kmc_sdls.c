@@ -64,10 +64,33 @@ int32_t process_security_tm(uint8_t *ptBuffer, uint16_t length, TM_t* p_enc_fram
     return Crypto_TM_ProcessSecurity(ptBuffer, length, p_enc_frame, p_enc_frame_len);
 }
 
-int32_t sdls_config_cryptolib(uint8_t sadb_type, uint8_t cryptography_type, uint8_t crypto_create_fecf, uint8_t process_sdls_pdus, uint8_t has_pus_hdr, uint8_t ignore_sa_state, uint8_t ignore_anti_replay, uint8_t unique_sa_per_mapid, uint8_t crypto_check_fecf, uint8_t vcid_bitmask, uint8_t crypto_increment_nontransmitted_iv)
+int32_t sdls_config_cryptolib(uint8_t sadb_type, uint8_t cryptography_type)
 {
     return Crypto_Config_CryptoLib(KEY_TYPE_KMC, MC_TYPE_DISABLED, sadb_type, cryptography_type, IV_INTERNAL);
 }
+
+int32_t sdls_config_cryptolib_tc(uint8_t crypto_create_fecf, uint8_t process_sdls_pdus, uint8_t has_pus_hdr,
+                                uint8_t ignore_anti_replay, uint8_t ignore_sa_state, uint8_t unique_sa_per_mapid,
+                                uint8_t crypto_check_fecf, uint8_t vcid_bitmask,
+                                uint8_t crypto_increment_nontransmitted_iv) {
+    return Crypto_Config_TC(crypto_create_fecf, process_sdls_pdus, has_pus_hdr,
+                                ignore_anti_replay, ignore_sa_state, unique_sa_per_mapid,
+                                crypto_check_fecf, vcid_bitmask,
+                                crypto_increment_nontransmitted_iv);
+}
+
+int32_t sdls_config_cryptolib_tm(uint8_t crypto_create_fecf, uint8_t ignore_anti_replay, uint8_t crypto_check_fecf,
+                                uint8_t vcid_bitmask, uint8_t crypto_increment_nontransmitted_iv) {
+    return Crypto_Config_TM(crypto_create_fecf, ignore_anti_replay, crypto_check_fecf,
+                                vcid_bitmask, crypto_increment_nontransmitted_iv);
+}
+
+int32_t sdls_config_cryptolib_aos(uint8_t crypto_create_fecf, uint8_t ignore_anti_replay, uint8_t crypto_check_fecf,
+                                 uint8_t vcid_bitmask, uint8_t crypto_increment_nontransmitted_iv) {
+    return Crypto_Config_AOS(crypto_create_fecf, ignore_anti_replay, crypto_check_fecf,
+                                 vcid_bitmask, crypto_increment_nontransmitted_iv);
+}
+
 int32_t sdls_config_mariadb(char* mysql_hostname, char* mysql_database, uint16_t mysql_port,
                             uint8_t mysql_require_secure_transport, uint8_t mysql_tls_verify_server,
                             char* mysql_tls_ca, char* mysql_tls_capath, char* mysql_mtls_cert,

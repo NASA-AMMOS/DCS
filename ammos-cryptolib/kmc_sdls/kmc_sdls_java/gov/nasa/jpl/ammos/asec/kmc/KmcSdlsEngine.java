@@ -292,9 +292,7 @@ public class KmcSdlsEngine
 
         vcid_bitmask = (short)vcidBitmask;
 
-        int status = this.kmcCInterface.sdls_config_cryptolib(sadb_type, cryptography_type, crypto_create_fecf, process_sdls_pdus,
-                has_pus_hdr, ignore_sa_state, ignore_anti_replay, unique_sa_per_mapid, crypto_check_fecf, vcid_bitmask,
-                crypto_increment_nontransmitted_iv);
+        int status = this.kmcCInterface.sdls_config_cryptolib(sadb_type, cryptography_type);
         this.engineStatus = status;
 
         if(status != KMC_ENGINE_SUCCESS)

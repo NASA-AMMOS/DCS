@@ -863,9 +863,7 @@ int main(int argc, char **argv)
 
     // Setup & Initialize CryptoLib
 
-    sdls_config_cryptolib(sadb_type, cryptography_type, create_fecf, process_sdls_pdus, has_pus_hdr,
-                          ignore_sa_state, ignore_anti_replay, unique_sa_per_mapid,
-                          check_fecf, vcid_bitmask, increment_nontransmitted_iv);
+    sdls_config_cryptolib(sadb_type, cryptography_type);
     sdls_config_mariadb(mysql_hostname, mysql_database, mysql_port, mysql_require_secure_transport, mysql_tls_verify_server, mysql_tls_ca, mysql_tls_ca_path, mysql_mtls_cert, mysql_mtls_key, mysql_mtls_client_key_password, mysql_username, mysql_password);
     sdls_config_kmc_crypto_service(protocol, kmc_crypto_hostname, kmc_crypto_port, kmc_crypto_app, kmc_tls_ca_bundle, kmc_tls_ca_path, kmc_ignore_ssl_hostname_validation, mtls_client_cert_path, mtls_client_cert_type, mtls_client_key_path, mtls_client_key_pass, mtls_issuer_cert);
     sdls_config_add_gvcid_managed_parameter(tfvn, scid, vcid, has_fecf, has_segmentation_hdr, max_tc_frame_size);
