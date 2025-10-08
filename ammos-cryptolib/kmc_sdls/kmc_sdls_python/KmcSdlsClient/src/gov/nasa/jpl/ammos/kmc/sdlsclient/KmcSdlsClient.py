@@ -118,7 +118,7 @@ class KmcSdlsClient:
             self.ffi.cast("uint8_t", cryptolib_check_fecf_aos),
             self.ffi.cast("uint8_t", cryptolib_vcid_bitmask_aos),
             self.ffi.cast("uint8_t", cryptolib_aos_on_rollover_increment_nontransmitted_counter)
-            )
+        )
 
         # MariaDB Property Keys
         mariadb_tls_cacert_property_key = "cryptolib.sadb.mariadb.tls.cacert"
@@ -323,9 +323,8 @@ class KmcSdlsClient:
                 managed_parameter_tfvn = key_parts[4]
                 managed_parameter_has_ecf = distutils.util.strtobool(
                     config_dict.get(key))  # ECF is required per managed parameter and has no default.
-                managed_parameter_max_frame_length = int(config_dict.get(
-                    "cryptolib." + frame_type + "." + managed_parameter_scid + "." + managed_parameter_vcid + "." + managed_parameter_tfvn + ".max_frame_length",
-                    1024))
+                config_key = "cryptolib." + frame_type + "." + managed_parameter_scid + "." + managed_parameter_vcid + "." + managed_parameter_tfvn
+                managed_parameter_max_frame_length = int(config_dict.get(config_key + ".max_frame_length", 1024))
                 managed_parameter_has_ecf_enum = managed_parameter_has_ecf
                 if frame_type != 'tc':
                     if frame_type == 'tm':
@@ -339,23 +338,71 @@ class KmcSdlsClient:
                             managed_parameter_has_ecf_enum = 5
                         else:
                             managed_parameter_has_ecf_enum = 4
-                # managed_parameter_vcid_bitmask = int(config_dict.get("cryptolib.tc."+managed_parameter_scid+"."+managed_parameter_vcid+"."+managed_parameter_tfvn+".vcid_bitmask", 0x3F),16)
-                managed_parameter_has_segmentation_header = distutils.util.strtobool(config_dict.get(
-                    "cryptolib." + frame_type + "." + managed_parameter_scid + "." + managed_parameter_vcid + "." + managed_parameter_tfvn + ".has_segmentation_header",
-                    "false"))
-                kmc_python_c_sdls_interface.lib.sdls_config_add_gvcid_managed_parameter(
-                    self.ffi.cast("uint8_t", managed_parameter_tfvn)
-                    , self.ffi.cast("uint16_t", int(managed_parameter_scid))
-                    , self.ffi.cast("uint8_t", int(managed_parameter_vcid))
-                    , self.ffi.cast("uint8_t", managed_parameter_has_ecf_enum)
-                    , self.ffi.cast("uint8_t", managed_parameter_has_segmentation_header)
-                    , self.ffi.cast("uint16_t", int(managed_parameter_max_frame_length)))
+                managed_parameter_has_segmentation_header = distutils.util.strtobool(
+                    config_dict.get(config_key + ".has_segmentation_header", "false"))
+                if (frame_type == 'tc'):
+                    kmc_python_c_sdls_interface.lib.sdls_config_add_gvcid_managed_parameter_tc(
+                        self.cast_uint8_t(managed_parameter_tfvn),
+                        self.cast_uint16_t(int(managed_parameter_scid)),
+                        self.cast_uint8_t(int(managed_parameter_vcid)),
+                        self.cast_uint8_t(managed_parameter_has_ecf_enum),
+                        self.cast_uint8_t(managed_parameter_has_segmentation_header),
+                        self.cast_uint16_t(int(managed_parameter_max_frame_length)))
+                elif frame_type == 'tm':
+                    if distutils.util.strtobool(config_dict.get(config_key + ".has_ocf", "false")):
+                        managed_parameter_has_ocf = kmc_python_c_sdls_interface.lib.TM_HAS_OCF
+                    else:
+                        managed_parameter_has_ocf = kmc_python_c_sdls_interface.lib.TM_NO_OCF
+
+                    kmc_python_c_sdls_interface.lib.sdls_config_add_gvcid_managed_parameter_tm(
+                        self.cast_uint8_t(managed_parameter_tfvn),
+                        self.cast_uint16_t(int(managed_parameter_scid)),
+                        self.cast_uint8_t(int(managed_parameter_vcid)),
+                        self.cast_uint8_t(managed_parameter_has_ecf_enum),
+                        self.cast_uint16_t(managed_parameter_max_frame_length),
+                        self.cast_uint8_t(managed_parameter_has_ocf)
+                    )
+                elif frame_type == 'aos':
+                    managed_parameter_has_ocf = int(
+                        distutils.util.strtobool(config_dict.get(config_key + ".has_ocf", "false"))) + 3
+
+                    if config_dict.get(config_key + ".has_fehc", "false"):
+                        managed_parameter_has_fehc = kmc_python_c_sdls_interface.lib.AOS_HAS_FHEC
+                    else:
+                        managed_parameter_has_fehc = kmc_python_c_sdls_interface.lib.AOS_FHEC_NA
+
+                    if distutils.util.strtobool(config_dict.get(config_key + ".has_iz", "false")):
+                        managed_parameter_has_iz = kmc_python_c_sdls_interface.lib.AOS_HAS_IZ
+                    else:
+                        managed_parameter_has_iz = kmc_python_c_sdls_interface.lib.AOS_NO_IZ
+
+                    managed_parameter_iz_len = int(config_dict.get(config_key + ".iz_len", 0))
+                    kmc_python_c_sdls_interface.lib.sdls_config_add_gvcid_managed_parameter_aos(
+                        self.cast_uint8_t(managed_parameter_tfvn),
+                        self.cast_uint16_t(int(managed_parameter_scid)),
+                        self.cast_uint8_t(int(managed_parameter_vcid)),
+                        self.cast_uint8_t(managed_parameter_has_ecf_enum),
+                        self.cast_uint8_t(managed_parameter_has_fehc),  # has fehc
+                        self.cast_uint8_t(managed_parameter_has_iz),  # has iz
+                        self.cast_uint16_t(managed_parameter_iz_len),  # iz len
+                        self.cast_uint16_t(managed_parameter_max_frame_length),
+                        self.cast_uint8_t(managed_parameter_has_ocf)
+                    )
 
         init_status = kmc_python_c_sdls_interface.lib.sdls_init()
         if (init_status != SUCCESS):
             raise SdlsClientException(SdlsClientException.SDLS_INITIALIZATION_ERROR,
                                       "Unable to Initialize KMC SDLS CryptoLib with provided configuration.",
                                       init_status)
+
+    def cast_uint8_t(self, arg):
+        return self.cast("uint8_t", arg)
+
+    def cast_uint16_t(self, arg):
+        return self.cast("uint16_t", arg)
+
+    def cast(self, type, arg):
+        return self.ffi.cast(type, arg)
 
     def apply_security_tc(self, input_byte_array):
         '''
@@ -509,7 +556,12 @@ class KmcSdlsClient:
         aos_char = self.ffi.from_buffer(in_copy, require_writable=True)
         aos_len = self.ffi.new("int *")
         aos_len[0] = len(aos_char)
-        aos_result = self.ffi.new("AOS_t *")  # Frame that will contain the processed SDLS fields
+        try:
+            aos_result = self.ffi.new("AOS_t *")  # Frame that will contain the processed SDLS fields
+        except Exception as e:
+            print(repr(e))
+            raise e
+
         aos_result_len = self.ffi.new("uint16_t *")
         process_security_result = kmc_python_c_sdls_interface.lib.process_security_aos(aos_char, aos_len[0], aos_result,
                                                                                        aos_result_len)
