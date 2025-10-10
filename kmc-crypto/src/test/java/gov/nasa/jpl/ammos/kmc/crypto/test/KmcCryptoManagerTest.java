@@ -79,7 +79,7 @@ public class KmcCryptoManagerTest {
     public final void zzzzClasspathConfigDir() throws Exception {
         setEnv(KmcCryptoManager.ENV_KMC_HOME, "/non-exist");
         KmcCryptoManager manager = new KmcCryptoManager(null);
-        assertTrue(manager.getKmcCryptoServiceURI().contains("crypto-service.example.com"));
+        assertTrue(manager.getKeyManagementServiceURI().contains("test-kmc-home.kms.example.com"));
     }
 
     /**
