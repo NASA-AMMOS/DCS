@@ -180,10 +180,6 @@ public class KmcCryptoManager {
      */
     public static final String CFG_TLS_KEYSTORE_PASSWORD = "keystore_password";
     /**
-     * Config parameter for the URI of KMC Crypto Service.
-     */
-    public static final String CFG_CRYPTO_SERVICE_URI = "crypto_service_uri";
-    /**
      * Config parameter for the location of the keystore containing keys for cryptography.
      */
     public static final String CFG_CRYPTO_KEYSTORE_LOCATION = "crypto_keystore_location";
@@ -200,18 +196,6 @@ public class KmcCryptoManager {
      * PKCS12 keystore does not use key password.
      */
     public static final String CFG_CRYPTO_KEY_PASSWORD = "crypto_key_password";
-    /**
-     * The SSO cookie for authenticating the crypto user.
-     */
-    private static final String CFG_SSO_COOKIE = "sso_cookie";
-    /**
-     * The keytab file for authenticating the crypto service.
-     */
-    private static final String CFG_CRYPTO_SERVICE_PRINCIPAL = "crypto_service_principal";
-    /**
-     * The keytab file for authenticating the crypto service.
-     */
-    private static final String CFG_CRYPTO_SERVICE_KEYTAB = "crypto_service_keytab";
     /**
      * Config parameter for the class name of the {@link Encrypter} implementation.
      */
@@ -435,12 +419,6 @@ public class KmcCryptoManager {
                 config.setProperty(CFG_TLS_KEYSTORE_FILE, value);
             } else if (key.equals(CFG_TLS_KEYSTORE_PASSWORD)) {
                 config.setProperty(CFG_TLS_KEYSTORE_PASSWORD, value);
-            } else if (key.equals(CFG_CRYPTO_SERVICE_URI)) {
-                config.setProperty(CFG_CRYPTO_SERVICE_URI, value);
-            } else if (key.equals(CFG_CRYPTO_SERVICE_PRINCIPAL)) {
-                config.setProperty(CFG_CRYPTO_SERVICE_PRINCIPAL, value);
-            } else if (key.equals(CFG_CRYPTO_SERVICE_KEYTAB)) {
-                config.setProperty(CFG_CRYPTO_SERVICE_KEYTAB, value);
             } else if (key.equals(CFG_DEFAULT_MESSAGE_DIGEST_ALGORITHM)) {
                 config.setProperty(CFG_DEFAULT_MESSAGE_DIGEST_ALGORITHM, value);
             } else if (key.equals(CFG_DEFAULT_HMAC_ALGORITHM)) {
@@ -469,8 +447,6 @@ public class KmcCryptoManager {
                 logger.debug("Unknown CLI argument ignored: " + arg);
             }
         }
-
-        checkConfigParameters();
     }
 
     /**
@@ -520,44 +496,6 @@ public class KmcCryptoManager {
                     "Config file not found in " + configStream, e.getCause());
         }
         return true;
-    }
-
-    /**
-     * Check missing config parameters and invalid parameter values.
-     * These parameters can be in the config file or passed in at runtime.
-     * @throws KmcCryptoManagerException if error.
-     */
-    private void checkConfigParameters() throws KmcCryptoManagerException {
-        String[] parameters = new String[] {
-                CFG_KEY_MANAGEMENT_SERVICE_URI,
-                CFG_CRYPTO_SERVICE_URI
-                };
-        for (String param : parameters) {
-            String value = config.getProperty(param);
-            if (value != null) {
-                value = value.trim();
-            }
-            if (value == null || value.isEmpty()) {
-                continue;
-            }
-            if (CFG_KEY_MANAGEMENT_SERVICE_URI.equals(param)) {
-                if (!value.startsWith("http") && !value.startsWith("tls")) {
-                    String errorMsg = "Invalid KMS URI: " + value;
-                    logger.error(errorMsg);
-                    throw new KmcCryptoManagerException(
-                            KmcCryptoManagerErrorCode.CONFIG_PARAMETER_VALUE_INVALID,
-                            errorMsg, null);
-                }
-            } else if (CFG_CRYPTO_SERVICE_URI.equals(param)) {
-                if (!value.startsWith("http")) {
-                    String errorMsg = "Invalid Crypto Service URI: " + value;
-                    logger.error(errorMsg);
-                    throw new KmcCryptoManagerException(
-                            KmcCryptoManagerErrorCode.CONFIG_PARAMETER_VALUE_INVALID,
-                            errorMsg, null);
-                }
-            }
-        }
     }
 
     /**
@@ -700,48 +638,6 @@ public class KmcCryptoManager {
      */
     public final String getKeystorePassword()  {
         return config.getProperty(CFG_TLS_KEYSTORE_PASSWORD);
-    }
-
-    /**
-     * Returns the URI of the KMC crypto service.
-     * @return The URI of the KMC crypto service.
-     */
-    public final String getKmcCryptoServiceURI()  {
-        return config.getProperty(CFG_CRYPTO_SERVICE_URI);
-    }
-
-    /**
-     * Returns the Crypto Service principal used to obtain an SSO token
-     * for accessing the KMS that is protected by CAM.
-     * @return The principal of the KMC Crypto Service.
-     */
-    public final String getCryptoServicePrincipal()  {
-        return config.getProperty(CFG_CRYPTO_SERVICE_PRINCIPAL);
-    }
-
-    /**
-     * Sets the Crypto Service principal used to obtain an SSO token
-     * for accessing the KMS that is protected by CAM.
-     * @param principal The principal of the KMC Crypto Service.
-     */
-    public final void setCryptoServicePrincipal(final String principal)  {
-        config.setProperty(CFG_CRYPTO_SERVICE_PRINCIPAL, principal);
-    }
-
-    /**
-     * Returns the keytab file for authenticating the crypto service.
-     * @return The keytab file of the KMC crypto service.
-     */
-    public final String getCryptoServiceKeytab()  {
-        return config.getProperty(CFG_CRYPTO_SERVICE_KEYTAB);
-    }
-
-    /**
-     * Sets the keytab file for authenticating the crypto service.
-     * @param keytabFile The keytab file of the KMC crypto service.
-     */
-    public final void setCryptoServiceKeytab(final String keytabFile)  {
-        config.setProperty(CFG_CRYPTO_SERVICE_KEYTAB, keytabFile);
     }
 
     /**
@@ -1544,25 +1440,6 @@ public class KmcCryptoManager {
             throw new KmcCryptoManagerException(
                     KmcCryptoManagerErrorCode.CONFIG_PARAMETER_VALUE_INVALID, error, null);
         }
-    }
-
-    /**
-     * Sets the SSO cookie for accessing CAM protected resources, such as the
-     * KMC Crypto Service.
-     * @param ssoCookie The string ssoCookieName=ssoToken obtained from
-     *                  the access control manager.
-     */
-    public final void setSsoCookie(final String ssoCookie) {
-        this.config.setProperty(CFG_SSO_COOKIE, ssoCookie);
-    }
-
-    /**
-     * Returns the SSO cookie for accessing CAM protected resources, such as the
-     * KMC Crypto Service.
-     * @return A string in the form of ssoCookieName=ssoToken.
-     */
-    public final String getSsoCookie() {
-        return this.config.getProperty(CFG_SSO_COOKIE);
     }
 
     private String getInputConfigDir(final String[] args) throws KmcCryptoManagerException {

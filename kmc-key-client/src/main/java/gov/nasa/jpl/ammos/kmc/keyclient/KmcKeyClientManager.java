@@ -718,23 +718,6 @@ public class KmcKeyClientManager {
         return config.getProperty(CFG_ALLOWED_AES_TRANSFORMATIONS);
     }
 
-    /**
-     * Sets the SSO cookie for authorization to access the server and keys.
-     * @param ssoCookie The SSO cookie (name=value) of the authenticated user.
-     */
-    public final void setSsoCookie(final String ssoCookie) {
-        config.setProperty(CFG_SSO_COOKIE, ssoCookie);
-        this.ssoCookie = ssoCookie;
-    }
-
-    /**
-     * Returns the SSO cookie associated with the principal running the application.
-     * @return The SSO cookie associated with the principal running the application.
-     */
-    public final String getSsoCookie() {
-        return this.ssoCookie;
-    }
-
     private String getInputConfigDir(final String[] args) throws KmcKeyClientManagerException {
         for (String arg : args) {
             if (arg.startsWith("-" + CFG_KMC_KEY_CONFIG_DIR)) {
