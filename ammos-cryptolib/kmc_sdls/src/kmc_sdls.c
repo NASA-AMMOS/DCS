@@ -122,16 +122,16 @@ int32_t sdls_config_add_gvcid_managed_parameter_tc(uint8_t tfvn, uint16_t scid, 
 }
 
 int32_t sdls_config_add_gvcid_managed_parameter_tm(uint8_t tfvn, uint16_t scid, uint8_t vcid, uint8_t has_fecf,
-                                                   uint16_t max_tc_frame_size, uint8_t has_ocf) {
-    TMGvcidManagedParameters_t TM_UT_Managed_Parameters = {tfvn, scid, vcid, has_fecf, max_tc_frame_size, has_ocf, 1};
+                                                   uint16_t max_tm_frame_size, uint8_t has_ocf) {
+    TMGvcidManagedParameters_t TM_UT_Managed_Parameters = {tfvn, scid, vcid, has_fecf, max_tm_frame_size, has_ocf, 1};
     return Crypto_Config_Add_TM_Gvcid_Managed_Parameters(TM_UT_Managed_Parameters);
 }
 
 int32_t sdls_config_add_gvcid_managed_parameter_aos(uint8_t tfvn, uint8_t scid, uint8_t vcid, uint8_t has_fecf,
                                                     uint8_t has_fhec, uint8_t has_iz, uint16_t iz_len,
-                                                    uint16_t max_tc_frame_size, uint8_t has_ocf) {
+                                                    uint16_t max_aos_frame_size, uint8_t has_ocf) {
     AOSGvcidManagedParameters_t AOS_UT_Managed_Parameters = {
-        tfvn, scid, vcid, has_fecf, has_fhec, has_iz, iz_len, max_tc_frame_size, has_ocf, 1
+        tfvn, scid, vcid, has_fecf, has_fhec, has_iz, iz_len, max_aos_frame_size, has_ocf, 1
     };
     return Crypto_Config_Add_AOS_Gvcid_Managed_Parameters(AOS_UT_Managed_Parameters);
 }

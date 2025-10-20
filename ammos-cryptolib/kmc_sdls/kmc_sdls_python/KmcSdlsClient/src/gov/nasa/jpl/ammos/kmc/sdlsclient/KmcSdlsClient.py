@@ -27,6 +27,8 @@ This module defines a pythonic library for interfacing with the kmc_python_c_sdl
 
 """
 
+frame_global_config = {}
+
 
 class KmcSdlsClient:
     ffi = None
@@ -57,31 +59,100 @@ class KmcSdlsClient:
         cryptolib_sadb_type = sadb_type_map.get(config_dict.get("cryptolib.sadb.type", "mariadb"), 3)
         cryptolib_crypto_type = crypto_type_map.get(config_dict.get("cryptolib.crypto.type", "kmccryptoservice"), 2)
 
+        # cryptolib.process_x and .apply_x are deprecated in favor of cryptolib.x
+        # for now, use the old keys but override with cryptolib.x parameter if exists
+
+        # ignore antireplay
+        cryptolib_process_tc_ignore_antireplay_enum = kmc_python_c_sdls_interface.lib.TC_IGNORE_ANTI_REPLAY_TRUE
         cryptolib_process_tc_ignore_antireplay = distutils.util.strtobool(
             config_dict.get("cryptolib.process_tc.ignore_antireplay", "true"))
+        cryptolib_process_tc_ignore_antireplay = distutils.util.strtobool(
+            config_dict.get("cryptolib.tc.ignore_antireplay", cryptolib_process_tc_ignore_antireplay))
+        if not cryptolib_process_tc_ignore_antireplay:
+            cryptolib_process_tc_ignore_antireplay_enum = kmc_python_c_sdls_interface.lib.TC_IGNORE_ANTI_REPLAY_FALSE
+
+        cryptolib_process_tm_ignore_antireplay_enum = kmc_python_c_sdls_interface.lib.TM_IGNORE_ANTI_REPLAY_TRUE
         cryptolib_process_tm_ignore_antireplay = distutils.util.strtobool(
             config_dict.get("cryptolib.process_tm.ignore_antireplay", "true"))
+        cryptolib_process_tm_ignore_antireplay = distutils.util.strtobool(
+            config_dict.get("cryptolib.tm.ignore_antireplay", cryptolib_process_tm_ignore_antireplay))
+        if not cryptolib_process_tm_ignore_antireplay:
+            cryptolib_process_tm_ignore_antireplay_enum = kmc_python_c_sdls_interface.lib.TM_IGNORE_ANTI_REPLAY_FALSE
+
+        cryptolib_process_aos_ignore_antireplay_enum = kmc_python_c_sdls_interface.lib.AOS_IGNORE_ANTI_REPLAY_TRUE
         cryptolib_process_aos_ignore_antireplay = distutils.util.strtobool(
             config_dict.get("cryptolib.process_aos.ignore_antireplay", "true"))
+        cryptolib_process_aos_ignore_antireplay = distutils.util.strtobool(
+            config_dict.get("cryptolib.aos.ignore_antireplay", cryptolib_process_aos_ignore_antireplay))
+        if not cryptolib_process_aos_ignore_antireplay:
+            cryptolib_process_aos_ignore_antireplay_enum = kmc_python_c_sdls_interface.lib.AOS_IGNORE_ANTI_REPLAY_FALSE
+
+        # ignore SA state
         cryptolib_process_tc_ignore_sa_state = distutils.util.strtobool(
-            config_dict.get("cryptolib.process_tc.ignore_sa_state", "true"))
+            config_dict.get("cryptolib.tc.ignore_sa_state", "true"))
+        cryptolib_process_tc_ignore_sa_state = distutils.util.strtobool(
+            config_dict.get("cryptolib.process_tc.ignore_sa_state", cryptolib_process_tc_ignore_sa_state))
+
+        # process PDUs
         cryptolib_process_tc_process_pdus = distutils.util.strtobool(
-            config_dict.get("cryptolib.process_tc.process_pdus", "false"))
+            config_dict.get("cryptolib.tc.process_pdus", "false"))
+        cryptolib_process_tc_process_pdus = distutils.util.strtobool(
+            config_dict.get("cryptolib.process_tc.process_pdus", cryptolib_process_tc_process_pdus))
+
+        # tm create ecf
+        cryptolib_apply_create_ecf_tm_enum = kmc_python_c_sdls_interface.lib.CRYPTO_TM_CREATE_FECF_FALSE
         cryptolib_apply_create_ecf_tm = distutils.util.strtobool(
-            config_dict.get("cryptolib.apply_tm.create_ecf", "false")) + 2
+            config_dict.get("cryptolib.apply_tm.create_ecf", "false"))
+        cryptolib_apply_create_ecf_tm = distutils.util.strtobool(
+            config_dict.get("cryptolib.tm.create_ecf", cryptolib_apply_create_ecf_tm))
+        if cryptolib_apply_create_ecf_tm:
+            cryptolib_apply_create_ecf_tm_enum = kmc_python_c_sdls_interface.lib.CRYPTO_TM_CREATE_FECF_TRUE
+
+        # aos create ecf
+        cryptolib_apply_create_ecf_aos_enum = kmc_python_c_sdls_interface.lib.CRYPTO_AOS_CREATE_FECF_FALSE
         cryptolib_apply_create_ecf_aos = distutils.util.strtobool(
-            config_dict.get("cryptolib.apply_aos.create_ecf", "false")) + 4
+            config_dict.get("cryptolib.apply_aos.create_ecf", "false"))
+        cryptolib_apply_create_ecf_aos = distutils.util.strtobool(
+            config_dict.get("cryptolib.aos.create_ecf", cryptolib_apply_create_ecf_aos))
+        if cryptolib_apply_create_ecf_aos:
+            cryptolib_apply_create_ecf_aos_enum = kmc_python_c_sdls_interface.lib.CRYPTO_AOS_CREATE_FECF_TRUE
+
+        # tc create ecf
+        cryptolib_apply_create_ecf_tc_enum = kmc_python_c_sdls_interface.lib.CRYPTO_TC_CREATE_FECF_FALSE
         cryptolib_apply_create_ecf_tc = distutils.util.strtobool(
             config_dict.get("cryptolib.apply_tc.create_ecf", "false"))
+        cryptolib_apply_create_ecf_tc = distutils.util.strtobool(
+            config_dict.get("cryptolib.tc.create_ecf", cryptolib_apply_create_ecf_tc))
+        if cryptolib_apply_create_ecf_tc:
+            cryptolib_apply_create_ecf_tc_enum = kmc_python_c_sdls_interface.lib.CRYPTO_TC_CREATE_FECF_TRUE
 
         cryptolib_tc_has_pus_header = distutils.util.strtobool(config_dict.get("cryptolib.tc.has_pus_header", "false"))
         cryptolib_tc_unique_sa_per_mapid = distutils.util.strtobool(
             config_dict.get("cryptolib.tc.unique_sa_per_mapid", "false"))
+
+        # tm check fecf
+        cryptolib_check_fecf_tm_enum = kmc_python_c_sdls_interface.lib.TM_CHECK_FECF_FALSE
         cryptolib_check_fecf_tm = distutils.util.strtobool(
-            config_dict.get("cryptolib.process_tm.check_fecf", "false")) + 2
+            config_dict.get("cryptolib.process_tm.check_fecf", "false"))
+        cryptolib_check_fecf_tm = distutils.util.strtobool(
+            config_dict.get("cryptolib.tm.check_fecf", cryptolib_check_fecf_tm))
+        if cryptolib_check_fecf_tm:
+            cryptolib_check_fecf_tm_enum = kmc_python_c_sdls_interface.lib.TM_CHECK_FECF_TRUE
+
+        cryptolib_check_fecf_aos_enum = kmc_python_c_sdls_interface.lib.AOS_CHECK_FECF_FALSE
         cryptolib_check_fecf_aos = distutils.util.strtobool(
-            config_dict.get("cryptolib.process_aos.check_fecf", "false")) + 4
+            config_dict.get("cryptolib.process_aos.check_fecf", "false"))
+        cryptolib_check_fecf_aos = distutils.util.strtobool(
+            config_dict.get("cryptolib.aos.check_fecf", cryptolib_check_fecf_aos))
+        if cryptolib_check_fecf_aos:
+            cryptolib_check_fecf_aos_enum = kmc_python_c_sdls_interface.lib.AOS_CHECK_FECF_TRUE
+
+        cryptolib_check_fecf_tc_enum = kmc_python_c_sdls_interface.lib.AOS_CHECK_FECF_FALSE
         cryptolib_check_fecf_tc = distutils.util.strtobool(config_dict.get("cryptolib.process_tc.check_fecf", "false"))
+        cryptolib_check_fecf_tc = distutils.util.strtobool(
+            config_dict.get("cryptolib.tc.check_fecf", cryptolib_check_fecf_tc))
+        if cryptolib_check_fecf_tc:
+            cryptolib_check_fecf_tc_enum = kmc_python_c_sdls_interface.lib.AOS_CHECK_FECF_TRUE
 
         cryptolib_vcid_bitmask_tm = int(config_dict.get("cryptolib.tm.vcid_bitmask", "0x3F"), 16)
         cryptolib_vcid_bitmask_aos = int(config_dict.get("cryptolib.aos.vcid_bitmask", "0x3F"), 16)
@@ -93,31 +164,30 @@ class KmcSdlsClient:
             config_dict.get("cryptolib.tm.on_rollover_increment_nontransmitted_counter", "true"))
         cryptolib_aos_on_rollover_increment_nontransmitted_counter = distutils.util.strtobool(
             config_dict.get("cryptolib.aos.on_rollover_increment_nontransmitted_counter", "true"))
-        kmc_python_c_sdls_interface.lib.sdls_config_cryptolib(self.ffi.cast("uint8_t", cryptolib_sadb_type)
-                                                              , self.ffi.cast("uint8_t", cryptolib_crypto_type)
-                                                              )
+        kmc_python_c_sdls_interface.lib.sdls_config_cryptolib(self.cast_uint8_t(cryptolib_sadb_type),
+                                                              self.cast_uint8_t(cryptolib_crypto_type))
         kmc_python_c_sdls_interface.lib.sdls_config_cryptolib_tc(
-            self.ffi.cast("uint8_t", cryptolib_apply_create_ecf_tc),
-            self.ffi.cast("uint8_t", cryptolib_process_tc_process_pdus),
-            self.ffi.cast("uint8_t", cryptolib_tc_has_pus_header),
-            self.ffi.cast("uint8_t", cryptolib_process_tc_ignore_antireplay),
-            self.ffi.cast("uint8_t", cryptolib_process_tc_ignore_sa_state),
-            self.ffi.cast("uint8_t", cryptolib_tc_unique_sa_per_mapid),
-            self.ffi.cast("uint8_t", cryptolib_check_fecf_tc),
-            self.ffi.cast("uint8_t", cryptolib_vcid_bitmask_tc),
-            self.ffi.cast("uint8_t", cryptolib_tc_on_rollover_increment_nontransmitted_counter))
+            self.cast_uint8_t(cryptolib_apply_create_ecf_tc_enum),
+            self.cast_uint8_t(cryptolib_process_tc_process_pdus),
+            self.cast_uint8_t(cryptolib_tc_has_pus_header),
+            self.cast_uint8_t(cryptolib_process_tc_ignore_antireplay_enum),
+            self.cast_uint8_t(cryptolib_process_tc_ignore_sa_state),
+            self.cast_uint8_t(cryptolib_tc_unique_sa_per_mapid),
+            self.cast_uint8_t(cryptolib_check_fecf_tc_enum),
+            self.cast_uint8_t(cryptolib_vcid_bitmask_tc),
+            self.cast_uint8_t(cryptolib_tc_on_rollover_increment_nontransmitted_counter))
         kmc_python_c_sdls_interface.lib.sdls_config_cryptolib_tm(
-            self.ffi.cast("uint8_t", cryptolib_apply_create_ecf_tm),
-            self.ffi.cast("uint8_t", cryptolib_process_tm_ignore_antireplay),
-            self.ffi.cast("uint8_t", cryptolib_check_fecf_tm),
-            self.ffi.cast("uint8_t", cryptolib_vcid_bitmask_tm),
-            self.ffi.cast("uint8_t", cryptolib_tm_on_rollover_increment_nontransmitted_counter))
+            self.cast_uint8_t(cryptolib_apply_create_ecf_tm_enum),
+            self.cast_uint8_t(cryptolib_process_tm_ignore_antireplay_enum),
+            self.cast_uint8_t(cryptolib_check_fecf_tm_enum),
+            self.cast_uint8_t(cryptolib_vcid_bitmask_tm),
+            self.cast_uint8_t(cryptolib_tm_on_rollover_increment_nontransmitted_counter))
         kmc_python_c_sdls_interface.lib.sdls_config_cryptolib_aos(
-            self.ffi.cast("uint8_t", cryptolib_apply_create_ecf_aos),
-            self.ffi.cast("uint8_t", cryptolib_process_aos_ignore_antireplay),
-            self.ffi.cast("uint8_t", cryptolib_check_fecf_aos),
-            self.ffi.cast("uint8_t", cryptolib_vcid_bitmask_aos),
-            self.ffi.cast("uint8_t", cryptolib_aos_on_rollover_increment_nontransmitted_counter)
+            self.cast_uint8_t(cryptolib_apply_create_ecf_aos_enum),
+            self.cast_uint8_t(cryptolib_process_aos_ignore_antireplay_enum),
+            self.cast_uint8_t(cryptolib_check_fecf_aos_enum),
+            self.cast_uint8_t(cryptolib_vcid_bitmask_aos),
+            self.cast_uint8_t(cryptolib_aos_on_rollover_increment_nontransmitted_counter)
         )
 
         # MariaDB Property Keys
@@ -176,19 +246,14 @@ class KmcSdlsClient:
             sadb_mariadb_require_secure_transport = distutils.util.strtobool(
                 config_dict.get("cryptolib.sadb.mariadb.require_secure_transport", "true"))  # default to true if TLS
 
-        kmc_python_c_sdls_interface.lib.sdls_config_mariadb(sadb_mariadb_fqdn_ffi
-                                                            , sadb_mariadb_database_name_ffi
-                                                            , self.ffi.cast("uint16_t", sadb_mariadb_port)
-                                                            , sadb_mariadb_require_secure_transport
-                                                            , sadb_mariadb_tls_verifyserver
-                                                            , sadb_mariadb_cacert_ffi
-                                                            , sadb_mariadb_capath_ffi
-                                                            , sadb_mariadb_clientcert_ffi
-                                                            , sadb_mariadb_clientkey_ffi
-                                                            , sadb_mariadb_clientkeypassword_ffi
-                                                            , sadb_mariadb_username_ffi
-                                                            , sadb_mariadb_password_ffi
-                                                            )
+        kmc_python_c_sdls_interface.lib.sdls_config_mariadb(sadb_mariadb_fqdn_ffi, sadb_mariadb_database_name_ffi,
+                                                            self.cast_uint16_t(sadb_mariadb_port),
+                                                            sadb_mariadb_require_secure_transport,
+                                                            sadb_mariadb_tls_verifyserver, sadb_mariadb_cacert_ffi,
+                                                            sadb_mariadb_capath_ffi, sadb_mariadb_clientcert_ffi,
+                                                            sadb_mariadb_clientkey_ffi,
+                                                            sadb_mariadb_clientkeypassword_ffi,
+                                                            sadb_mariadb_username_ffi, sadb_mariadb_password_ffi)
 
         # KMC Crypto Service Property Keys
         kmc_crypto_mtls_client_cert_property_key = "cryptolib.crypto.kmccryptoservice.mtls.clientcert"
@@ -263,20 +328,18 @@ class KmcSdlsClient:
         self.global_dict["kmc_crypto_mtls_ca_path_ffi"] = kmc_crypto_mtls_ca_path_ffi
         self.global_dict["kmc_crypto_mtls_issuer_cert_ffi"] = kmc_crypto_mtls_issuer_cert_ffi
 
-        kmc_python_c_sdls_interface.lib.sdls_config_kmc_crypto_service(kmc_crypto_protocol_ffi
-                                                                       , kmc_crypto_hostname_ffi
-                                                                       , self.ffi.cast("uint16_t", kmc_crypto_port)
-                                                                       , kmc_crypto_app_uri_ffi
-                                                                       , kmc_crypto_mtls_ca_bundle_ffi
-                                                                       , kmc_crypto_mtls_ca_path_ffi
-                                                                       , self.ffi.cast("uint8_t",
-                                                                                       kmc_crypto_mtls_ignore_ssl_hostname_validation)
-                                                                       , kmc_crypto_mtls_client_cert_ffi
-                                                                       , kmc_crypto_mtls_client_cert_format_ffi
-                                                                       , kmc_crypto_mtls_client_key_ffi
-                                                                       , kmc_crypto_mtls_client_key_pass_ffi
-                                                                       , kmc_crypto_mtls_issuer_cert_ffi
-                                                                       )
+        kmc_python_c_sdls_interface.lib.sdls_config_kmc_crypto_service(kmc_crypto_protocol_ffi, kmc_crypto_hostname_ffi,
+                                                                       self.cast_uint16_t(kmc_crypto_port),
+                                                                       kmc_crypto_app_uri_ffi,
+                                                                       kmc_crypto_mtls_ca_bundle_ffi,
+                                                                       kmc_crypto_mtls_ca_path_ffi,
+                                                                       self.cast_uint8_t(
+                                                                           kmc_crypto_mtls_ignore_ssl_hostname_validation),
+                                                                       kmc_crypto_mtls_client_cert_ffi,
+                                                                       kmc_crypto_mtls_client_cert_format_ffi,
+                                                                       kmc_crypto_mtls_client_key_ffi,
+                                                                       kmc_crypto_mtls_client_key_pass_ffi,
+                                                                       kmc_crypto_mtls_issuer_cert_ffi)
 
         # Configure CAM
         home = os.path.expanduser("~")
@@ -301,10 +364,10 @@ class KmcSdlsClient:
         self.global_dict["cam_username"] = cam_username_ffi
 
         if (cam_enabled):
-            kmc_python_c_sdls_interface.lib.sdls_config_cam(self.ffi.cast("uint8_t", cam_enabled)
+            kmc_python_c_sdls_interface.lib.sdls_config_cam(self.cast_uint8_t(cam_enabled)
                                                             , cam_cookie_file_path_ffi
                                                             , cam_keytab_file_path_ffi
-                                                            , self.ffi.cast("uint8_t", cam_login_method)
+                                                            , self.cast_uint8_t(cam_login_method)
                                                             , cam_access_manager_uri_ffi
                                                             , cam_username_ffi
                                                             , cam_home_ffi)
@@ -323,21 +386,26 @@ class KmcSdlsClient:
                 managed_parameter_tfvn = key_parts[4]
                 managed_parameter_has_ecf = distutils.util.strtobool(
                     config_dict.get(key))  # ECF is required per managed parameter and has no default.
-                config_key = "cryptolib." + frame_type + "." + managed_parameter_scid + "." + managed_parameter_vcid + "." + managed_parameter_tfvn
+                frame_key = frame_type + "." + managed_parameter_scid + "." + managed_parameter_vcid + "." + managed_parameter_tfvn
+                config_key = "cryptolib." + frame_key
                 managed_parameter_max_frame_length = int(config_dict.get(config_key + ".max_frame_length", 1024))
                 managed_parameter_has_ecf_enum = managed_parameter_has_ecf
-                if frame_type != 'tc':
-                    if frame_type == 'tm':
-                        # see FecfPresent enum in CryptoLib's crypto_config_structs.h
-                        if managed_parameter_has_ecf:
-                            managed_parameter_has_ecf_enum = 3
-                        else:
-                            managed_parameter_has_ecf_enum = 2
-                    elif frame_type == 'aos':
-                        if managed_parameter_has_ecf:
-                            managed_parameter_has_ecf_enum = 5
-                        else:
-                            managed_parameter_has_ecf_enum = 4
+                if frame_type == 'tc':
+                    if managed_parameter_has_ecf:
+                        managed_parameter_has_ecf_enum = kmc_python_c_sdls_interface.lib.TC_HAS_FECF
+                    else:
+                        managed_parameter_has_ecf_enum = kmc_python_c_sdls_interface.lib.TC_NO_FECF
+                elif frame_type == 'tm':
+                    # see FecfPresent enum in CryptoLib's crypto_config_structs.h
+                    if managed_parameter_has_ecf:
+                        managed_parameter_has_ecf_enum = kmc_python_c_sdls_interface.lib.TM_HAS_FECF
+                    else:
+                        managed_parameter_has_ecf_enum = kmc_python_c_sdls_interface.lib.TM_NO_FECF
+                elif frame_type == 'aos':
+                    if managed_parameter_has_ecf:
+                        managed_parameter_has_ecf_enum = kmc_python_c_sdls_interface.lib.AOS_HAS_FECF
+                    else:
+                        managed_parameter_has_ecf_enum = kmc_python_c_sdls_interface.lib.TM_NO_FECF
                 managed_parameter_has_segmentation_header = distutils.util.strtobool(
                     config_dict.get(config_key + ".has_segmentation_header", "false"))
                 if (frame_type == 'tc'):
@@ -366,10 +434,12 @@ class KmcSdlsClient:
                     managed_parameter_has_ocf = int(
                         distutils.util.strtobool(config_dict.get(config_key + ".has_ocf", "false"))) + 3
 
-                    if config_dict.get(config_key + ".has_fehc", "false"):
-                        managed_parameter_has_fehc = kmc_python_c_sdls_interface.lib.AOS_HAS_FHEC
+                    if config_dict.get(config_key + ".has_fhec", "false"):
+                        managed_parameter_has_fhec = kmc_python_c_sdls_interface.lib.AOS_HAS_FHEC
+                        frame_global_config[frame_key]["has_fhec"] = True
                     else:
-                        managed_parameter_has_fehc = kmc_python_c_sdls_interface.lib.AOS_FHEC_NA
+                        managed_parameter_has_fhec = kmc_python_c_sdls_interface.lib.AOS_NO_FHEC
+                        frame_global_config[frame_key]["has_fhec"] = False
 
                     if distutils.util.strtobool(config_dict.get(config_key + ".has_iz", "false")):
                         managed_parameter_has_iz = kmc_python_c_sdls_interface.lib.AOS_HAS_IZ
@@ -377,12 +447,15 @@ class KmcSdlsClient:
                         managed_parameter_has_iz = kmc_python_c_sdls_interface.lib.AOS_NO_IZ
 
                     managed_parameter_iz_len = int(config_dict.get(config_key + ".iz_len", 0))
+                    frame_global_config[frame_key]["has_iz"] = managed_parameter_has_iz
+                    frame_global_config[frame_key]["iz_len"] = managed_parameter_iz_len
+
                     kmc_python_c_sdls_interface.lib.sdls_config_add_gvcid_managed_parameter_aos(
                         self.cast_uint8_t(managed_parameter_tfvn),
                         self.cast_uint16_t(int(managed_parameter_scid)),
                         self.cast_uint8_t(int(managed_parameter_vcid)),
                         self.cast_uint8_t(managed_parameter_has_ecf_enum),
-                        self.cast_uint8_t(managed_parameter_has_fehc),  # has fehc
+                        self.cast_uint8_t(managed_parameter_has_fhec),  # has fhec
                         self.cast_uint8_t(managed_parameter_has_iz),  # has iz
                         self.cast_uint16_t(managed_parameter_iz_len),  # iz len
                         self.cast_uint16_t(managed_parameter_max_frame_length),
@@ -430,11 +503,10 @@ class KmcSdlsClient:
         tc_char_in_frame = self.ffi.from_buffer(input_byte_array, require_writable=True)
         output_bytearray = bytearray()
         tc_char_out_frame = self.ffi.from_buffer(output_bytearray, require_writable=True)
-        # tc_char_star_in = self.ffi.new("uint8_t *")
         tc_char_star_in = tc_char_in_frame
         tc_char_star_star_out = self.ffi.new("uint8_t **")
         tc_char_star_star_out[0] = tc_char_out_frame
-        tc_len_in = self.ffi.cast("uint16_t", len(tc_char_in_frame))
+        tc_len_in = self.cast_uint16_t(len(tc_char_in_frame))
         tc_len_out = self.ffi.new("uint16_t *")
         apply_security_result = kmc_python_c_sdls_interface.lib.apply_security_tc(tc_char_star_in, tc_len_in,
                                                                                   tc_char_star_star_out, tc_len_out)
@@ -528,7 +600,7 @@ class KmcSdlsClient:
         in_copy = bytearray(input_byte_array)
         aos_char_in_frame = self.ffi.from_buffer(in_copy, require_writable=True)
         aos_char_star_in = aos_char_in_frame
-        aos_len_in = self.ffi.cast("uint16_t", len(aos_char_in_frame))
+        aos_len_in = self.cast_uint16_t(len(aos_char_in_frame))
         apply_security_result = kmc_python_c_sdls_interface.lib.apply_security_aos(aos_char_star_in, aos_len_in)
         if apply_security_result != SUCCESS:
             raise SdlsClientException(SdlsClientException.APPLY_SECURITY_EXCEPTION,
@@ -629,7 +701,7 @@ class KmcSdlsClient:
         in_copy = bytearray(input_byte_array)
         tm_char_in_frame = self.ffi.from_buffer(in_copy, require_writable=True)
         tm_char_star_in = tm_char_in_frame
-        tm_len_in = self.ffi.cast("uint16_t", len(tm_char_in_frame))
+        tm_len_in = self.cast_uint16_t(len(tm_char_in_frame))
         apply_security_result = kmc_python_c_sdls_interface.lib.apply_security_tm(tm_char_star_in, tm_len_in)
         if apply_security_result != SUCCESS:
             raise SdlsClientException(SdlsClientException.APPLY_SECURITY_EXCEPTION,
@@ -763,27 +835,66 @@ class AOS_FramePrimaryHeader(NamedTuple):
     spare: int  # Reserved Spare
     vcfcc: int  # VC Frame Count Cycle
     fhec: int  # Frame Header Error Control
+    iz: bytearray
+    _has_iz: bool
+    _has_fhec: bool
+
+    def __init__(self, tuple):
+        super().__init__(tuple)
+        self._has_fhec = frame_global_config[f"aos.{self.scid}.{self.vcid}.{self.tfvn}"]["has_fhec"]
+        self._has_iz = frame_global_config[f"aos.{self.scid}.{self.vcid}.{self.tfvn}"]["has_iz"]
 
     def hex(self):
         from bitstring import Bits, BitArray
         tfvn_b = Bits(uint=self.tfvn, length=2)
+        l = 2
         scid_b = Bits(uint=self.scid, length=8)
+        l += 8
         vcid_b = Bits(uint=self.vcid, length=6)
+        l += 6
         vcfc_b = Bits(uint=self.vcfc, length=24)
+        l += 24
         replay_b = Bits(uint=self.replay, length=1)
+        l += 1
         vcflag_b = Bits(uint=self.vcflag, length=1)
+        l += 1
         spare_b = Bits(uint=self.spare, length=2)
+        l += 1
         vcfcc_b = Bits(uint=self.vcfcc, length=4)
-        # fhec_b = Bits(uint=self.fhec, length=16)
-        header = BitArray(length=48)
-        header.overwrite(tfvn_b, 0)
-        header.overwrite(scid_b, 2)
-        header.overwrite(vcid_b, 10)
-        header.overwrite(vcfc_b, 16)
-        header.overwrite(replay_b, 40)
-        header.overwrite(vcflag_b, 41)
-        header.overwrite(spare_b, 42)
-        header.overwrite(vcfcc_b, 44)
+        l += 4
+        if self._has_fhec:
+            l += 16
+
+        if self._has_iz:
+            l += len(self.iz)
+
+        header = BitArray(length=l)
+        pos = 0
+        header.overwrite(tfvn_b, pos)
+        pos += 2
+        header.overwrite(scid_b, pos)
+        pos += 8
+        header.overwrite(vcid_b, pos)
+        pos += 8
+        header.overwrite(vcfc_b, pos)
+        pos += 24
+        header.overwrite(replay_b, pos)
+        pos += 1
+        header.overwrite(vcflag_b, pos)
+        pos += 1
+        header.overwrite(spare_b, pos)
+        pos += 2
+        header.overwrite(vcfcc_b, pos)
+        pos += 4
+        if self._has_fhec:
+            fhec_b = Bits(uint=self.fhec, length=16)
+            header.overwrite(fhec_b, pos)
+            pos += 16
+
+        if self._has_iz:
+            iz_b = Bits(self.iz)
+            header.overwrite(iz_b, pos)
+
         return header.h
 
 

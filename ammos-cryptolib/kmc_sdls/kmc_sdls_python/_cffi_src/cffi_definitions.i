@@ -691,11 +691,11 @@ extern int32_t sdls_config_add_gvcid_managed_parameter_tc(uint8_t tfvn, uint16_t
                                                           uint8_t has_segmentation_hdr, uint16_t max_tc_frame_size);
 
 extern int32_t sdls_config_add_gvcid_managed_parameter_tm(uint8_t tfvn, uint16_t scid, uint8_t vcid, uint8_t has_fecf,
-                                                          uint16_t max_tc_frame_size, uint8_t has_ocf);
+                                                          uint16_t max_tm_frame_size, uint8_t has_ocf);
 
 extern int32_t sdls_config_add_gvcid_managed_parameter_aos(uint8_t tfvn, uint8_t scid, uint8_t vcid, uint8_t has_fecf,
                                                            uint8_t has_fhec, uint8_t has_iz, uint16_t iz_len,
-                                                           uint16_t max_tc_frame_size, uint8_t has_ocf);
+                                                           uint16_t max_aos_frame_size, uint8_t has_ocf);
 
 extern int32_t sdls_config_mariadb(char *mysql_hostname, char *mysql_database, uint16_t mysql_port,
                                    uint8_t mysql_require_secure_transport, uint8_t mysql_tls_verify_server,
