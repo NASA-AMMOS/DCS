@@ -425,4 +425,6 @@ public interface ISecAssn {
      * @param ecs    ECS
      */
     void setEcs(Short length, byte[] ecs);
+
+    String toJson();
 }

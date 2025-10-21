@@ -207,9 +207,9 @@ public class SaController {
 
     @PutMapping("/sa")
     public ISecAssn putSa(@RequestBody ISecAssn sa, HttpServletRequest request) throws KmcException {
-        LOG.info("{} creating SA ({}/{})", request.getRemoteAddr(), sa.getSpi(), sa.getScid());
+        LOG.info("{} creating SA {} [{}, {}]", request.getRemoteAddr(), sa.getType().name(), sa.getSpi(), sa.getScid());
         ISecAssn newSa = dao.createSa(sa);
-        LOG.info("{} created SA ({}/{})", request.getRemoteAddr(), sa.getSpi(), sa.getScid());
+        LOG.info("{} created SA {} [{}, {}]", request.getRemoteAddr(), sa.getType().name(), sa.getSpi(), sa.getScid());
         return newSa;
     }
 
@@ -220,7 +220,7 @@ public class SaController {
         if (frameType == FrameType.UNKNOWN) {
             throw new KmcException(String.format("%s is an unknown frame type", type));
         }
-        LOG.info("{} updating {} SA ({}/{})", request.getRemoteAddr(), frameType.name(), sa.getSpi(), sa.getScid());
+        LOG.info("{} updating SA {} [{}, {}]", request.getRemoteAddr(), frameType.name(), sa.getSpi(), sa.getScid());
         checkEncryption(sa);
         checkAuthentication(sa);
         ISecAssn original = dao.getSa(sa.getId(), sa.getType());
@@ -246,21 +246,23 @@ public class SaController {
         } catch (Exception e) {
             throw new KmcException(e);
         }
-        LOG.info("{} updated SA ({}/{})", request.getRemoteAddr(), sa.getSpi(), sa.getScid());
+        LOG.info("{} updated SA {} [{}, {}]", request.getRemoteAddr(), sa.getType().name(), sa.getSpi(), sa.getScid());
         return dao.getSa(sa.getId(), sa.getType());
     }
 
     private void checkAuthentication(ISecAssn sa) throws KmcException {
         if (sa.getServiceType() == ServiceType.AUTHENTICATION) {
             if (sa.getAcs() == null) {
-                throw new KmcException("When service type is  AUTHENTICATION, AKID and ACS are" + " required");
+                throw new KmcException(String.format("%s when service type is  AUTHENTICATION, AKID and ACS are " +
+                        "required", sa));
             }
             int acs = 0;
             for (byte b : sa.getAcs()) {
                 acs = (acs << 8) + (b & 0xff);
             }
             if ((sa.getSaState() != SA_EXPIRE || sa.getSaState() != SA_UNKEYED) && (acs == 0 || (sa.getAkid() == null || sa.getAkid().isEmpty()))) {
-                throw new KmcException("When service type is  AUTHENTICATION, AKID and ACS are" + " required");
+                throw new KmcException(String.format("%s when service type is  AUTHENTICATION, AKID and ACS are " +
+                        "required", sa));
             }
         }
     }
@@ -268,16 +270,16 @@ public class SaController {
     private void checkEncryption(ISecAssn sa) throws KmcException {
         if (sa.getServiceType() == ServiceType.ENCRYPTION || sa.getServiceType() == ServiceType.AUTHENTICATED_ENCRYPTION) {
             if (sa.getEcs() == null) {
-                throw new KmcException("When service type is ENCRYPTION or AUTHENTICATED_ENCRYPTION, EKID and ECS " +
-                        "are required");
+                throw new KmcException(String.format("%s when service type is ENCRYPTION or AUTHENTICATED_ENCRYPTION," +
+                        " EKID and ECS are required", sa));
             }
             int ecs = 0;
             for (byte b : sa.getEcs()) {
                 ecs = (ecs << 8) + (b & 0xff);
             }
             if ((sa.getSaState() != SA_EXPIRE || sa.getSaState() != SA_UNKEYED) && (ecs == 0 || (sa.getEkid() == null || sa.getEkid().isEmpty()))) {
-                throw new KmcException("When service type is ENCRYPTION or AUTHENTICATED_ENCRYPTION, EKID and ECS " +
-                        "are required");
+                throw new KmcException(String.format("%s when service type is ENCRYPTION or AUTHENTICATED_ENCRYPTION," +
+                        " EKID and ECS are required", sa));
             }
         }
     }
@@ -286,9 +288,9 @@ public class SaController {
     public ISecAssn startSa(@PathVariable(name = "type", required = false) String type, @RequestBody SpiScid id,
                             HttpServletRequest request) throws KmcException {
         FrameType frameType = StringUtils.hasText(type) ? FrameType.fromString(type) : FrameType.TC;
-        LOG.info("{} starting SA ({}/{}) {}", request.getRemoteAddr(), id.getSpi(), id.getScid(), frameType.name());
+        LOG.info("{} starting SA {} [{}, {}]", request.getRemoteAddr(), frameType.name(), id.getSpi(), id.getScid());
         ISecAssn sa = dao.startSa(id, true, frameType);
-        LOG.info("{} started SA ({}/{}) {}", request.getRemoteAddr(), id.getSpi(), id.getScid(), frameType.name());
+        LOG.info("{} started SA {} [{}, {}]", request.getRemoteAddr(), frameType.name(), id.getSpi(), id.getScid());
         return sa;
     }
 
@@ -296,9 +298,9 @@ public class SaController {
     public ISecAssn stopSa(@PathVariable(name = "type", required = false) String type, @RequestBody SpiScid id,
                            HttpServletRequest request) throws KmcException {
         FrameType frameType = StringUtils.hasText(type) ? FrameType.fromString(type) : FrameType.TC;
-        LOG.info("{} stopping SA ({}/{}) {}", request.getRemoteAddr(), id.getSpi(), id.getScid(), frameType.name());
+        LOG.info("{} stopping SA {} [{}, {}]", request.getRemoteAddr(), frameType.name(), id.getSpi(), id.getScid());
         ISecAssn sa = dao.stopSa(id, frameType);
-        LOG.info("{} stopped SA ({}/{}) {}", request.getRemoteAddr(), id.getSpi(), id.getScid(), frameType.name());
+        LOG.info("{} stopped SA {} [{}, {}]", request.getRemoteAddr(), frameType.name(), id.getSpi(), id.getScid());
         return sa;
     }
 
@@ -306,9 +308,9 @@ public class SaController {
     public ISecAssn expireSa(@PathVariable(name = "type", required = false) String type, @RequestBody SpiScid id,
                              HttpServletRequest request) throws KmcException {
         FrameType frameType = StringUtils.hasText(type) ? FrameType.fromString(type) : FrameType.TC;
-        LOG.info("{} expiring SA ({}/{}) {}", request.getRemoteAddr(), id.getSpi(), id.getScid(), frameType.name());
+        LOG.info("{} expiring SA {} [{}, {}]", request.getRemoteAddr(), frameType.name(), id.getSpi(), id.getScid());
         ISecAssn sa = dao.expireSa(id, frameType);
-        LOG.info("{} expired SA ({}/{}) {}", request.getRemoteAddr(), id.getSpi(), id.getScid(), frameType.name());
+        LOG.info("{} expired SA {} [{}, {}]", request.getRemoteAddr(), frameType.name(), id.getSpi(), id.getScid());
         return sa;
     }
 
@@ -317,8 +319,8 @@ public class SaController {
                                               @RequestBody IdArsn idArsn
             , HttpServletRequest request) throws KmcException {
         FrameType frameType = type == null ? FrameType.TC : FrameType.fromString(type);
-        LOG.info("{} resetting ARSN on SA ({}/{}) {}", request.getRemoteAddr(), idArsn.id.getSpi(),
-                idArsn.id.getScid(), frameType.name());
+        LOG.info("{} resetting ARSN on SA {} [{}, {}]", request.getRemoteAddr(), frameType.name(), idArsn.id.getSpi(),
+                idArsn.id.getScid());
         ObjectNode respBody = mapper.createObjectNode();
         ISecAssn   sa       = dao.getSa(idArsn.id, frameType);
         if (sa != null) {
@@ -328,10 +330,12 @@ public class SaController {
                     byte[] newArsn = new byte[idArsn.arsnLen];
                     System.arraycopy(idArsn.arsn, 0, newArsn, diff, idArsn.arsn.length);
                     idArsn.arsn = newArsn;
-                    respBody.withArray(MESSAGES_KEY).add("Array left padded with " + diff + " bytes");
+                    respBody.withArray(MESSAGES_KEY).add(String.format("%s ARSN array left padded with %d bytes", sa,
+                            diff));
                 } else if (idArsn.arsn.length > idArsn.arsnLen) {
                     respBody.put(STATUS_KEY, ERROR_STATUS);
-                    respBody.withArray(MESSAGES_KEY).add("ARSN is larger than ARSN length in bytes");
+                    respBody.withArray(MESSAGES_KEY).add(String.format("%s ARSN is larger than ARSN length in bytes",
+                            sa));
                     return ResponseEntity.badRequest().body(respBody);
                 }
                 sa.setArsn(idArsn.arsn);
@@ -339,8 +343,9 @@ public class SaController {
                 sa.setArsnw(idArsn.arsnw);
                 dao.updateSa(sa);
                 respBody.put(STATUS_KEY, SUCCESS_STATUS);
-                LOG.info("{} reset ARSN on SA ({}/{}) {}", request.getRemoteAddr(), idArsn.id.getSpi(),
-                        idArsn.id.getScid(), frameType.name());
+                LOG.info("{} reset ARSN on SA {} [{}, {}]", request.getRemoteAddr(), frameType.name(),
+                        idArsn.id.getSpi(),
+                        idArsn.id.getScid());
                 return ResponseEntity.ok().body(respBody);
             } catch (IllegalArgumentException e) {
                 respBody.put(STATUS_KEY, ERROR_STATUS);
@@ -349,8 +354,9 @@ public class SaController {
         }
         respBody.put(STATUS_KEY, ERROR_STATUS);
         respBody.withArray(MESSAGES_KEY).add("An unknown error occurred");
-        LOG.info("{} failed to reset ARSN on SA ({}/{}) {}", request.getRemoteAddr(), idArsn.id.getSpi(),
-                idArsn.id.getScid(), frameType.name());
+        LOG.info("{} failed to reset ARSN on SA {} [{}, {}]", request.getRemoteAddr(), frameType.name(),
+                idArsn.id.getSpi(),
+                idArsn.id.getScid());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(respBody);
     }
 
@@ -359,9 +365,10 @@ public class SaController {
                          HttpServletRequest request) throws KmcException {
         FrameType frameType = type == null ? FrameType.TC : FrameType.fromString(type);
         for (SpiScid id : ids) {
-            LOG.info("{} deleting SA ({}/{}) {}", request.getRemoteAddr(), id.getSpi(), id.getScid(), frameType.name());
+            LOG.info("{} deleting SA {} [{}, {}]", request.getRemoteAddr(), frameType.name(), id.getSpi(),
+                    id.getScid());
             dao.deleteSa(id, frameType);
-            LOG.info("{} deleted SA ({}/{}) {}", request.getRemoteAddr(), id.getSpi(), id.getScid(), frameType.name());
+            LOG.info("{} deleted SA {} [{}, {}]", request.getRemoteAddr(), frameType.name(), id.getSpi(), id.getScid());
         }
     }
 
@@ -453,8 +460,8 @@ public class SaController {
                                             HttpServletRequest request) {
         FrameType  frameType = StringUtils.hasText(type) ? FrameType.fromString(type) : FrameType.TC;
         ObjectNode respBody  = mapper.createObjectNode();
-        LOG.info("{} resetting IV on ({}/{}) {}", request.getRemoteAddr(), idIv.id.getSpi(), idIv.id.getScid(),
-                frameType.name());
+        LOG.info("{} resetting IV on SA {} [{}, {}]", request.getRemoteAddr(), frameType.name(), idIv.id.getSpi(),
+                idIv.id.getScid());
         try (IDbSession dbSession = dao.newSession()) {
             try {
                 dbSession.beginTransaction();
@@ -466,23 +473,26 @@ public class SaController {
                             byte[] newIv = new byte[idIv.ivLen];
                             System.arraycopy(idIv.iv, 0, newIv, diff, idIv.iv.length);
                             idIv.iv = newIv;
-                            respBody.withArray(MESSAGES_KEY).add("Array left padded with " + diff + " bytes");
+                            respBody.withArray(MESSAGES_KEY).add(String.format("%s IV array left padded with %d " +
+                                    "bytes", sa, diff));
                         } else if (idIv.iv.length > idIv.ivLen) {
                             respBody.put(STATUS_KEY, ERROR_STATUS);
-                            respBody.withArray(MESSAGES_KEY).add("IV is larger than IV length in bytes");
+                            respBody.withArray(MESSAGES_KEY).add(String.format("%s IV is larger than IV length in " +
+                                    "bytes", sa));
                             return ResponseEntity.badRequest().body(respBody);
                         }
                         sa.setIv(idIv.iv);
                         sa.setIvLen(idIv.ivLen);
                         dao.updateSa(dbSession, sa);
                         respBody.put(STATUS_KEY, SUCCESS_STATUS);
-                        LOG.info("{} reset IV on ({}/{}) {}", request.getRemoteAddr(), idIv.id.getSpi(),
-                                idIv.id.getScid(),
-                                frameType.name());
+                        LOG.info("{} reset IV on SA {} [{}, {}]", request.getRemoteAddr(), frameType.name(),
+                                idIv.id.getSpi(),
+                                idIv.id.getScid());
                         return ResponseEntity.ok().body(respBody);
                     } catch (IllegalArgumentException e) {
                         respBody.put(STATUS_KEY, ERROR_STATUS);
-                        respBody.withArray(MESSAGES_KEY).add("IV input not a valid Base64 string");
+                        respBody.withArray(MESSAGES_KEY).add(String.format("%s IV input not a valid Base64 string",
+                                sa));
                     }
                 }
             } finally {
@@ -502,8 +512,8 @@ public class SaController {
                                             @RequestBody Rekey rekey,
                                             HttpServletRequest request) {
         FrameType frameType = StringUtils.hasText(type) ? FrameType.fromString(type) : FrameType.TC;
-        LOG.info("{} Rekeying SA ({}/{}) {}", request.getRemoteAddr(), rekey.id.getSpi(), rekey.id.getScid(),
-                frameType.name());
+        LOG.info("{} Rekeying SA {} [{}, {}]", request.getRemoteAddr(), frameType.name(), rekey.id.getSpi(),
+                rekey.id.getScid());
         try (IDbSession dbSession = dao.newSession()) {
             try {
                 dbSession.beginTransaction();
@@ -519,8 +529,8 @@ public class SaController {
             } finally {
                 dbSession.commit();
             }
-            LOG.info("{} Rekeyed SA ({}/{}) {}", request.getRemoteAddr(), rekey.id.getSpi(), rekey.id.getScid(),
-                    frameType.name());
+            LOG.info("{} Rekeyed SA {} [{}, {}]", request.getRemoteAddr(), frameType.name(), rekey.id.getSpi(),
+                    rekey.id.getScid());
         } catch (Exception e) {
             handleException(e);
         }

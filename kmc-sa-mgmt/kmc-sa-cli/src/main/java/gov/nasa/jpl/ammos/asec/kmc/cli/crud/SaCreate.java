@@ -62,11 +62,11 @@ public class SaCreate extends BaseCreateUpdate {
                     try {
                         session.beginTransaction();
                         SecAssnValidator.validate(sa);
-                        console(String.format("%s creating SA %d/%d", user, sa.getSpi(), sa.getScid()));
+                        console(String.format("%s creating %s", user, sa));
                         dao.createSa(session, sa);
-                        console(String.format("%s created SA %d/%d", user, sa.getSpi(), sa.getScid()));
+                        console(String.format("%s created %s", user, sa));
                     } catch (KmcException e) {
-                        console(String.format("SA %d/%d creation FAILED", sa.getSpi(), sa.getScid()));
+                        console(String.format("SA %s creation FAILED", sa));
                         error(e.getMessage());
                     } finally {
                         session.commit();
@@ -86,7 +86,7 @@ public class SaCreate extends BaseCreateUpdate {
             SpiScid  id = new SpiScid(spi, scid);
             ISecAssn sa = dao.getSa(id, frameType);
             if (sa != null) {
-                throwEx(String.format("Create error, SA %d/%d already exists", id.getSpi(), id.getScid()));
+                throwEx(String.format("Create error, %s already exists", sa));
             }
             sa = SecAssnFactory.createSecAssn(id, frameType);
 
