@@ -304,9 +304,9 @@ public class KmcSdlsEngine {
             ignore_sa_state = (short) TcIgnoreSaState.TC_IGNORE_SA_STATE_FALSE.swigValue();
 
         if (ignoreAntiReplay)
-            ignore_anti_replay = (short) TcIgnoreAntiReplay.TC_IGNORE_ANTI_REPLAY_TRUE.swigValue();
+            ignore_anti_replay = (short) IgnoreAntiReplay.TC_IGNORE_ANTI_REPLAY_TRUE.swigValue();
         else
-            ignore_anti_replay = (short) TcIgnoreAntiReplay.TC_IGNORE_ANTI_REPLAY_FALSE.swigValue();
+            ignore_anti_replay = (short) IgnoreAntiReplay.TC_IGNORE_ANTI_REPLAY_FALSE.swigValue();
 
         if (uniqueSaPerMapid)
             unique_sa_per_mapid = (short) TcUniqueSaPerMapId.TC_UNIQUE_SA_PER_MAP_ID_TRUE.swigValue();
