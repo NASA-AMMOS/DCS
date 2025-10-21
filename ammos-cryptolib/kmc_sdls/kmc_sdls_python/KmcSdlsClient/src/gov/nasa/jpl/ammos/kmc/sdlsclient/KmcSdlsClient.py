@@ -67,7 +67,7 @@ class KmcSdlsClient:
         cryptolib_process_tc_ignore_antireplay = distutils.util.strtobool(
             config_dict.get("cryptolib.process_tc.ignore_antireplay", "true"))
         cryptolib_process_tc_ignore_antireplay = distutils.util.strtobool(
-            config_dict.get("cryptolib.tc.ignore_antireplay", cryptolib_process_tc_ignore_antireplay))
+            config_dict.get("cryptolib.tc.ignore_antireplay", str(cryptolib_process_tc_ignore_antireplay)))
         if not cryptolib_process_tc_ignore_antireplay:
             cryptolib_process_tc_ignore_antireplay_enum = kmc_python_c_sdls_interface.lib.TC_IGNORE_ANTI_REPLAY_FALSE
 
@@ -75,7 +75,7 @@ class KmcSdlsClient:
         cryptolib_process_tm_ignore_antireplay = distutils.util.strtobool(
             config_dict.get("cryptolib.process_tm.ignore_antireplay", "true"))
         cryptolib_process_tm_ignore_antireplay = distutils.util.strtobool(
-            config_dict.get("cryptolib.tm.ignore_antireplay", cryptolib_process_tm_ignore_antireplay))
+            config_dict.get("cryptolib.tm.ignore_antireplay", str(cryptolib_process_tm_ignore_antireplay)))
         if not cryptolib_process_tm_ignore_antireplay:
             cryptolib_process_tm_ignore_antireplay_enum = kmc_python_c_sdls_interface.lib.TM_IGNORE_ANTI_REPLAY_FALSE
 
@@ -83,7 +83,7 @@ class KmcSdlsClient:
         cryptolib_process_aos_ignore_antireplay = distutils.util.strtobool(
             config_dict.get("cryptolib.process_aos.ignore_antireplay", "true"))
         cryptolib_process_aos_ignore_antireplay = distutils.util.strtobool(
-            config_dict.get("cryptolib.aos.ignore_antireplay", cryptolib_process_aos_ignore_antireplay))
+            config_dict.get("cryptolib.aos.ignore_antireplay", str(cryptolib_process_aos_ignore_antireplay)))
         if not cryptolib_process_aos_ignore_antireplay:
             cryptolib_process_aos_ignore_antireplay_enum = kmc_python_c_sdls_interface.lib.AOS_IGNORE_ANTI_REPLAY_FALSE
 
@@ -91,20 +91,20 @@ class KmcSdlsClient:
         cryptolib_process_tc_ignore_sa_state = distutils.util.strtobool(
             config_dict.get("cryptolib.tc.ignore_sa_state", "true"))
         cryptolib_process_tc_ignore_sa_state = distutils.util.strtobool(
-            config_dict.get("cryptolib.process_tc.ignore_sa_state", cryptolib_process_tc_ignore_sa_state))
+            config_dict.get("cryptolib.process_tc.ignore_sa_state", str(cryptolib_process_tc_ignore_sa_state)))
 
         # process PDUs
         cryptolib_process_tc_process_pdus = distutils.util.strtobool(
             config_dict.get("cryptolib.tc.process_pdus", "false"))
         cryptolib_process_tc_process_pdus = distutils.util.strtobool(
-            config_dict.get("cryptolib.process_tc.process_pdus", cryptolib_process_tc_process_pdus))
+            config_dict.get("cryptolib.process_tc.process_pdus", str(cryptolib_process_tc_process_pdus)))
 
         # tm create ecf
         cryptolib_apply_create_ecf_tm_enum = kmc_python_c_sdls_interface.lib.CRYPTO_TM_CREATE_FECF_FALSE
         cryptolib_apply_create_ecf_tm = distutils.util.strtobool(
             config_dict.get("cryptolib.apply_tm.create_ecf", "false"))
         cryptolib_apply_create_ecf_tm = distutils.util.strtobool(
-            config_dict.get("cryptolib.tm.create_ecf", cryptolib_apply_create_ecf_tm))
+            config_dict.get("cryptolib.tm.create_ecf", str(cryptolib_apply_create_ecf_tm)))
         if cryptolib_apply_create_ecf_tm:
             cryptolib_apply_create_ecf_tm_enum = kmc_python_c_sdls_interface.lib.CRYPTO_TM_CREATE_FECF_TRUE
 
@@ -113,7 +113,7 @@ class KmcSdlsClient:
         cryptolib_apply_create_ecf_aos = distutils.util.strtobool(
             config_dict.get("cryptolib.apply_aos.create_ecf", "false"))
         cryptolib_apply_create_ecf_aos = distutils.util.strtobool(
-            config_dict.get("cryptolib.aos.create_ecf", cryptolib_apply_create_ecf_aos))
+            config_dict.get("cryptolib.aos.create_ecf", str(cryptolib_apply_create_ecf_aos)))
         if cryptolib_apply_create_ecf_aos:
             cryptolib_apply_create_ecf_aos_enum = kmc_python_c_sdls_interface.lib.CRYPTO_AOS_CREATE_FECF_TRUE
 
@@ -122,7 +122,7 @@ class KmcSdlsClient:
         cryptolib_apply_create_ecf_tc = distutils.util.strtobool(
             config_dict.get("cryptolib.apply_tc.create_ecf", "false"))
         cryptolib_apply_create_ecf_tc = distutils.util.strtobool(
-            config_dict.get("cryptolib.tc.create_ecf", cryptolib_apply_create_ecf_tc))
+            config_dict.get("cryptolib.tc.create_ecf", str(cryptolib_apply_create_ecf_tc)))
         if cryptolib_apply_create_ecf_tc:
             cryptolib_apply_create_ecf_tc_enum = kmc_python_c_sdls_interface.lib.CRYPTO_TC_CREATE_FECF_TRUE
 
@@ -135,7 +135,7 @@ class KmcSdlsClient:
         cryptolib_check_fecf_tm = distutils.util.strtobool(
             config_dict.get("cryptolib.process_tm.check_fecf", "false"))
         cryptolib_check_fecf_tm = distutils.util.strtobool(
-            config_dict.get("cryptolib.tm.check_fecf", cryptolib_check_fecf_tm))
+            config_dict.get("cryptolib.tm.check_fecf", str(cryptolib_check_fecf_tm)))
         if cryptolib_check_fecf_tm:
             cryptolib_check_fecf_tm_enum = kmc_python_c_sdls_interface.lib.TM_CHECK_FECF_TRUE
 
@@ -143,14 +143,14 @@ class KmcSdlsClient:
         cryptolib_check_fecf_aos = distutils.util.strtobool(
             config_dict.get("cryptolib.process_aos.check_fecf", "false"))
         cryptolib_check_fecf_aos = distutils.util.strtobool(
-            config_dict.get("cryptolib.aos.check_fecf", cryptolib_check_fecf_aos))
+            config_dict.get("cryptolib.aos.check_fecf", str(cryptolib_check_fecf_aos)))
         if cryptolib_check_fecf_aos:
             cryptolib_check_fecf_aos_enum = kmc_python_c_sdls_interface.lib.AOS_CHECK_FECF_TRUE
 
         cryptolib_check_fecf_tc_enum = kmc_python_c_sdls_interface.lib.AOS_CHECK_FECF_FALSE
         cryptolib_check_fecf_tc = distutils.util.strtobool(config_dict.get("cryptolib.process_tc.check_fecf", "false"))
         cryptolib_check_fecf_tc = distutils.util.strtobool(
-            config_dict.get("cryptolib.tc.check_fecf", cryptolib_check_fecf_tc))
+            config_dict.get("cryptolib.tc.check_fecf", str(cryptolib_check_fecf_tc)))
         if cryptolib_check_fecf_tc:
             cryptolib_check_fecf_tc_enum = kmc_python_c_sdls_interface.lib.AOS_CHECK_FECF_TRUE
 
@@ -363,14 +363,11 @@ class KmcSdlsClient:
         self.global_dict["cam_access_manager_uri"] = cam_access_manager_uri_ffi
         self.global_dict["cam_username"] = cam_username_ffi
 
-        if (cam_enabled):
-            kmc_python_c_sdls_interface.lib.sdls_config_cam(self.cast_uint8_t(cam_enabled)
-                                                            , cam_cookie_file_path_ffi
-                                                            , cam_keytab_file_path_ffi
-                                                            , self.cast_uint8_t(cam_login_method)
-                                                            , cam_access_manager_uri_ffi
-                                                            , cam_username_ffi
-                                                            , cam_home_ffi)
+        if cam_enabled:
+            kmc_python_c_sdls_interface.lib.sdls_config_cam(self.cast_uint8_t(cam_enabled), cam_cookie_file_path_ffi,
+                                                            cam_keytab_file_path_ffi,
+                                                            self.cast_uint8_t(cam_login_method),
+                                                            cam_access_manager_uri_ffi, cam_username_ffi, cam_home_ffi)
 
         # Configure Managed Parameters
         managed_parameter_regex = r'cryptolib\.(?P<f_type>tc|tm|aos)\.(?P<scid>\d+)\.(?P<vcid>\d+)\.(?P<tfvn>\d+)\.has_ecf'
@@ -387,6 +384,7 @@ class KmcSdlsClient:
                 managed_parameter_has_ecf = distutils.util.strtobool(
                     config_dict.get(key))  # ECF is required per managed parameter and has no default.
                 frame_key = frame_type + "." + managed_parameter_scid + "." + managed_parameter_vcid + "." + managed_parameter_tfvn
+                frame_global_config[frame_key] = {}
                 config_key = "cryptolib." + frame_key
                 managed_parameter_max_frame_length = int(config_dict.get(config_key + ".max_frame_length", 1024))
                 managed_parameter_has_ecf_enum = managed_parameter_has_ecf
@@ -836,15 +834,11 @@ class AOS_FramePrimaryHeader(NamedTuple):
     vcfcc: int  # VC Frame Count Cycle
     fhec: int  # Frame Header Error Control
     iz: bytearray
-    _has_iz: bool
-    _has_fhec: bool
-
-    def __init__(self, tuple):
-        super().__init__(tuple)
-        self._has_fhec = frame_global_config[f"aos.{self.scid}.{self.vcid}.{self.tfvn}"]["has_fhec"]
-        self._has_iz = frame_global_config[f"aos.{self.scid}.{self.vcid}.{self.tfvn}"]["has_iz"]
 
     def hex(self):
+        has_fhec = frame_global_config[f"aos.{self.scid}.{self.vcid}.{self.tfvn}"]["has_fhec"]
+        has_iz = frame_global_config[f"aos.{self.scid}.{self.vcid}.{self.tfvn}"]["has_iz"]
+
         from bitstring import Bits, BitArray
         tfvn_b = Bits(uint=self.tfvn, length=2)
         l = 2
@@ -862,10 +856,10 @@ class AOS_FramePrimaryHeader(NamedTuple):
         l += 1
         vcfcc_b = Bits(uint=self.vcfcc, length=4)
         l += 4
-        if self._has_fhec:
+        if has_fhec:
             l += 16
 
-        if self._has_iz:
+        if has_iz:
             l += len(self.iz)
 
         header = BitArray(length=l)
@@ -886,12 +880,12 @@ class AOS_FramePrimaryHeader(NamedTuple):
         pos += 2
         header.overwrite(vcfcc_b, pos)
         pos += 4
-        if self._has_fhec:
+        if has_fhec:
             fhec_b = Bits(uint=self.fhec, length=16)
             header.overwrite(fhec_b, pos)
             pos += 16
 
-        if self._has_iz:
+        if has_iz:
             iz_b = Bits(self.iz)
             header.overwrite(iz_b, pos)
 
