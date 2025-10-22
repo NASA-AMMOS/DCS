@@ -66,12 +66,12 @@ public class SaKey extends BaseCliApp {
         try (IKmcDao dao = getDao()) {
             ISecAssn sa = dao.getSa(new SpiScid(spi, scid), frameType);
             if (sa == null) {
-                throwEx(String.format("Error keying SA, %d/%d does not exist", spi, scid));
+                throwEx(String.format("Error keying SA, %s %d/%d does not exist", frameType.name(), spi, scid));
             }
             boolean skip = false;
             if (optionalArgs != null && optionalArgs.silent == null) {
-                console(String.format("%s updating keys on SA %s/%s, do you wish to continue? y/n", System.getProperty(
-                        "user.name"), spi, scid));
+                console(String.format("%s updating keys on %s, do you wish to continue? y/n", System.getProperty(
+                        "user.name"), sa));
                 Scanner scanner = new Scanner(System.in);
                 while (true) {
                     try {
@@ -79,7 +79,7 @@ public class SaKey extends BaseCliApp {
                         if (confirm.equals("y")) {
                             break;
                         } else if (confirm.equals("n")) {
-                            console(String.format("Skipping %d/%d", spi, scid));
+                            console(String.format("Skipping %s", sa));
                             skip = true;
                             break;
                         }
@@ -100,9 +100,8 @@ public class SaKey extends BaseCliApp {
                     sa.setEcsLen((short) 1);
                 }
                 dao.updateSa(sa);
-                console(String.format("%s updated keys on SA %s/%s", System.getProperty("user.name"),
-                        sa.getId().getSpi()
-                        , sa.getId().getScid()));
+                console(String.format("%s updated keys on %s", System.getProperty("user.name"),
+                        sa));
             }
         }
 

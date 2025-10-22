@@ -263,7 +263,7 @@ def main():
     k = KmcSdlsClient.KmcSdlsClient(kmc_sdls_props)
 
     # Print hex frame to be used:
-    print("Using telecommand transfer frame: \n%s\n" % frame.to_hex())
+    print("Using %s transfer frame: \n%s\n" % (f_type, frame.to_hex()))
 
     # Convert a hex-string representation of a JPL frame into a python bytearray
     tc = bytearray(binascii.unhexlify(frame.to_hex()))
@@ -276,7 +276,7 @@ def main():
         elif f_type == "AOS":
             fn = k.apply_security_aos
         result = fn(tc)
-        print("SDLS TC Apply Security Result:\n%s\n"%result.hex())
+        print("SDLS %s Apply Security Result:\n%s\n" % (f_type, result.hex()))
     else:
         result = tc
 
@@ -289,7 +289,7 @@ def main():
             fn = k.process_security_aos
         reversed_frame = fn(result)
 
-        print("SDLS "+f_type+" Process Security Result:")
+        print("SDLS %s Process Security Result:" % f_type)
         if f_type == 'TC':
             print_tc(reversed_frame)
         elif f_type == 'AOS':

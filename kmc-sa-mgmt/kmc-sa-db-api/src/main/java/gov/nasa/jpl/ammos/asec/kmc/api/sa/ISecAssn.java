@@ -425,4 +425,11 @@ public interface ISecAssn {
      * @param ecs    ECS
      */
     void setEcs(Short length, byte[] ecs);
+
+    /**
+     * Format object as JSON
+     *
+     * @return JSON string representing this SA
+     */
+    String toJson();
 }

@@ -42,11 +42,11 @@ public class SecAssnValidator {
     public static void validate(ISecAssn sa) throws KmcException {
         // validate required
         if (sa.getScid() == null || sa.getTfvn() == null || sa.getMapid() == null || sa.getVcid() == null) {
-            throw new KmcException("invalid GVCID: SCID, VCID, TFVN, and MAPID are all required");
+            throw new KmcException(String.format("%s invalid GVCID: SCID, VCID, TFVN, and MAPID are all required", sa));
         }
         // bounds check on sa state
         if (!STATE_RANGE.contains(sa.getSaState())) {
-            throw new KmcException(String.format("invalid SA State %d", sa.getSaState()));
+            throw new KmcException(String.format("%s invalid SA State %d", sa, sa.getSaState()));
         }
         verifyEst(sa);
         verifyAst(sa);
@@ -56,19 +56,19 @@ public class SecAssnValidator {
 
         checkArgsNotNull("Invalid ABM: ABM and ABM length are both required", sa.getAbm(), sa.getAbmLen());
         if (sa.getAbmLen() != sa.getAbm().length) {
-            throwEx("Invalid ABM: byte size of ABM and ABM length must agree");
+            throwEx(String.format("%s invalid ABM: byte size of ABM and ABM length must agree, %d != %d, ", sa, sa.getAbm().length, sa.getAbmLen()));
         }
     }
 
     private static void verifyEst(ISecAssn sa) throws KmcException {
         if (!ST_RANGE.contains(sa.getEst())) {
-            throw new KmcException(String.format("invalid EST: %d", sa.getEst()));
+            throw new KmcException(String.format("%s invalid EST: %d", sa, sa.getEst()));
         }
     }
 
     private static void verifyAst(ISecAssn sa) throws KmcException {
         if (!ST_RANGE.contains(sa.getAst())) {
-            throw new KmcException(String.format("invalid AST: %d", sa.getAst()));
+            throw new KmcException(String.format("%s invalid AST: %d", sa, sa.getAst()));
         }
     }
 

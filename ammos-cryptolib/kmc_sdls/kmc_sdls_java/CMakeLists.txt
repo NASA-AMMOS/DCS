@@ -52,7 +52,7 @@ set(SWIG_GENERATED_SRCS
         ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/TcPusHdrPresent.java
         ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/TcProcessSdlsPdus.java
         ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/TcIgnoreSaState.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/TcIgnoreAntiReplay.java
+        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/IgnoreAntiReplay.java
         ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/FecfPresent.java
         ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/CreateFecfBool.java
         ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/CheckFecfBool.java
@@ -64,8 +64,13 @@ set(SWIG_GENERATED_SRCS
         ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/CryptographyType.java
         ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/EncCipherSuite.java
         ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/AuthCipherSuite.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/CryptoConfig_t.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/_GvcidManagedParameters_t.java
+        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/CryptoConfigGlobal_t.java
+        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/CryptoConfigAOS_t.java
+        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/CryptoConfigTC_t.java
+        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/CryptoConfigTM_t.java
+        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/_TCGvcidManagedParameters_t.java
+        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/_TMGvcidManagedParameters_t.java
+        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/_AOSGvcidManagedParameters_t.java
         ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/SadbMariaDBConfig_t.java
         ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/CryptographyKmcCryptoServiceConfig_t.java
         ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/crypto_gvcid_t.java
@@ -144,3 +149,5 @@ install_jar(KmcSdlsJNI
             DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 
 add_subdirectory(kmc_sdls_java_test)
+
+set_target_properties(kmc_sdls_java PROPERTIES ADDITIONAL_CLEAN_FILES "${SWIG_GENERATED_SRCS}")

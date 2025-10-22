@@ -139,18 +139,23 @@ public class SaUpdate extends BaseCreateUpdate {
                 this.mode = Mode.SINGLE;
                 if (args.single.singleArgs != null) {
                     if (args.single.optionalArgs != null) {
-                        checkEncParams(args.single.optionalArgs.ekid, args.single.optionalArgs.ecs);
-                        checkAuthParams(args.single.optionalArgs.akid, args.single.optionalArgs.acs);
-                        checkSt(args.single.optionalArgs.st);
-                        checkIvParams(args.single.optionalArgs.iv, args.single.optionalArgs.ivLen,
-                                args.single.optionalArgs.st, args.single.optionalArgs.ecs);
-                        checkArsnParams(args.single.optionalArgs.arsn, args.single.optionalArgs.arsnlen);
-                        checkArsnWParams(args.single.optionalArgs.arsnw);
-                        checkAbmParams(args.single.optionalArgs.abm, args.single.optionalArgs.abmLen);
-                        checkShivfLen(args.single.optionalArgs.shivfLen);
-                        checkShplfLen(args.single.optionalArgs.shplfLen);
-                        checkShsnfLen(args.single.optionalArgs.shsnfLen);
-                        checkStmacfLen(args.single.optionalArgs.stmacfLen);
+                        try {
+                            checkEncParams(args.single.optionalArgs.ekid, args.single.optionalArgs.ecs);
+                            checkAuthParams(args.single.optionalArgs.akid, args.single.optionalArgs.acs);
+                            checkSt(args.single.optionalArgs.st);
+                            checkIvParams(args.single.optionalArgs.iv, args.single.optionalArgs.ivLen,
+                                    args.single.optionalArgs.st, args.single.optionalArgs.ecs);
+                            checkArsnParams(args.single.optionalArgs.arsn, args.single.optionalArgs.arsnlen);
+                            checkArsnWParams(args.single.optionalArgs.arsnw);
+                            checkAbmParams(args.single.optionalArgs.abm, args.single.optionalArgs.abmLen);
+                            checkShivfLen(args.single.optionalArgs.shivfLen);
+                            checkShplfLen(args.single.optionalArgs.shplfLen);
+                            checkShsnfLen(args.single.optionalArgs.shsnfLen);
+                            checkStmacfLen(args.single.optionalArgs.stmacfLen);
+                        } catch (KmcException e) {
+                            throw new KmcException(String.format("SA [%s, %d, %d, %d, %d] %s", frameType.name(), spi,
+                                    scid, vcid, tfvn, e.getMessage()));
+                        }
                     }
                 }
             } else if (args.bulk != null) {

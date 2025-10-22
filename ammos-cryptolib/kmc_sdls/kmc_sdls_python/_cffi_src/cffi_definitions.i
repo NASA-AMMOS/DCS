@@ -323,7 +323,7 @@ typedef struct
 typedef struct
 {
     uint8_t tfvn : 2;
-    uint16_t scid : 8;
+    uint8_t scid : 8;
     uint8_t vcid : 6;
     long vcfc : 24;
     uint8_t rf : 1;
@@ -365,13 +365,13 @@ typedef struct
 
 typedef enum
 {
-    UNITIALIZED = 0,
+    UNINITIALIZED = 0,
     INITIALIZED
 } InitStatus;
 
 typedef enum
 {
-    KEY_TYPE_UNITIALIZED = 0,
+    KEY_TYPE_UNINITIALIZED = 0,
     KEY_TYPE_CUSTOM,
     KEY_TYPE_INTERNAL,
     KEY_TYPE_KMC
@@ -379,7 +379,7 @@ typedef enum
 
 typedef enum
 {
-    MC_TYPE_UNITIALIZED = 0,
+    MC_TYPE_UNINITIALIZED = 0,
     MC_TYPE_CUSTOM,
     MC_TYPE_DISABLED,
     MC_TYPE_INTERNAL
@@ -387,7 +387,7 @@ typedef enum
 
 typedef enum
 {
-    SA_TYPE_UNITIALIZED = 0,
+    SA_TYPE_UNINITIALIZED = 0,
     SA_TYPE_CUSTOM,
     SA_TYPE_INMEMORY,
     SA_TYPE_MARIADB
@@ -395,7 +395,7 @@ typedef enum
 
 typedef enum
 {
-    CRYPTOGRAPHY_TYPE_UNITIALIZED = 0,
+    CRYPTOGRAPHY_TYPE_UNINITIALIZED = 0,
     CRYPTOGRAPHY_TYPE_LIBGCRYPT,
     CRYPTOGRAPHY_TYPE_KMCCRYPTO,
     CRYPTOGRAPHY_TYPE_WOLFSSL,
@@ -430,21 +430,19 @@ typedef enum
 
 typedef enum
 {
-    AOS_FHEC_NA = 0,
-    AOS_NO_FHEC,
+    AOS_NO_FHEC = 0,
     AOS_HAS_FHEC
 } AosFhecPresent;
 
 typedef enum
 {
-    AOS_IZ_NA,
-    AOS_NO_IZ,
+    AOS_NO_IZ = 0,
     AOS_HAS_IZ
 } AosInsertZonePresent;
 
 typedef enum
 {
-    TC_CHECK_FECF_FALSE,
+    TC_CHECK_FECF_FALSE = 0,
     TC_CHECK_FECF_TRUE,
     TM_CHECK_FECF_FALSE,
     TM_CHECK_FECF_TRUE,
@@ -454,7 +452,7 @@ typedef enum
 
 typedef enum
 {
-    AOS_NO_OCF,
+    AOS_NO_OCF = 0,
     AOS_HAS_OCF,
     TC_OCF_NA,
     TM_NO_OCF,
@@ -489,9 +487,13 @@ typedef enum
 
 typedef enum
 {
-    TC_IGNORE_ANTI_REPLAY_FALSE,
-    TC_IGNORE_ANTI_REPLAY_TRUE
-} TcIgnoreAntiReplay;
+    TC_IGNORE_ANTI_REPLAY_FALSE = 0,
+    TC_IGNORE_ANTI_REPLAY_TRUE,
+    TM_IGNORE_ANTI_REPLAY_FALSE,
+    TM_IGNORE_ANTI_REPLAY_TRUE,
+    AOS_IGNORE_ANTI_REPLAY_FALSE,
+    AOS_IGNORE_ANTI_REPLAY_TRUE,
+} IgnoreAntiReplay;
 
 typedef enum
 {
@@ -551,28 +553,76 @@ typedef struct
     SadbType sa_type;
     CryptographyType cryptography_type;
     IvType iv_type;
+} CryptoConfigGlobal_t;
+
+typedef struct
+{
+    InitStatus init_status;
     CreateFecfBool crypto_create_fecf;
     TcProcessSdlsPdus process_sdls_pdus;
     TcPusHdrPresent has_pus_hdr;
+    IgnoreAntiReplay ignore_anti_replay;
     TcIgnoreSaState ignore_sa_state;
-    TcIgnoreAntiReplay ignore_anti_replay;
     TcUniqueSaPerMapId unique_sa_per_mapid;
     CheckFecfBool crypto_check_fecf;
     uint8_t vcid_bitmask;
     uint8_t crypto_increment_nontransmitted_iv;
-} CryptoConfig_t;
+} CryptoConfigTC_t;
 
-typedef struct _GvcidManagedParameters_t GvcidManagedParameters_t;
-struct _GvcidManagedParameters_t
+typedef struct
+{
+    InitStatus init_status;
+    CreateFecfBool crypto_create_fecf;
+    IgnoreAntiReplay ignore_anti_replay;
+    CheckFecfBool crypto_check_fecf;
+    uint8_t vcid_bitmask;
+    uint8_t crypto_increment_nontransmitted_iv;
+} CryptoConfigTM_t;
+
+typedef struct
+{
+    InitStatus init_status;
+    CreateFecfBool crypto_create_fecf;
+    IgnoreAntiReplay ignore_anti_replay;
+    CheckFecfBool crypto_check_fecf;
+    uint8_t vcid_bitmask;
+    uint8_t crypto_increment_nontransmitted_iv;
+} CryptoConfigAOS_t;
+
+typedef struct _TCGvcidManagedParameters_t TCGvcidManagedParameters_t;
+struct _TCGvcidManagedParameters_t
 {
     uint8_t tfvn : 4;
     uint16_t scid : 10;
     uint8_t vcid : 6;
     FecfPresent has_fecf;
+    TcSegmentHdrsPresent has_segmentation_hdr;
+    uint16_t max_frame_size;
+    int set_flag;
+};
+
+typedef struct _TMGvcidManagedParameters_t TMGvcidManagedParameters_t;
+struct _TMGvcidManagedParameters_t
+{
+    uint8_t tfvn : 2;
+    uint16_t scid : 10;
+    uint8_t vcid : 3;
+    FecfPresent has_fecf;
+    uint16_t max_frame_size;
+    OcfPresent has_ocf;
+    int set_flag;
+};
+
+typedef struct _AOSGvcidManagedParameters_t AOSGvcidManagedParameters_t;
+struct _AOSGvcidManagedParameters_t
+{
+    uint8_t tfvn : 2;
+    uint8_t scid : 8;
+    uint8_t vcid : 6;
+    FecfPresent has_fecf;
     AosFhecPresent aos_has_fhec;
     AosInsertZonePresent aos_has_iz;
     uint16_t aos_iz_len;
-    TcSegmentHdrsPresent has_segmentation_hdr;
     uint16_t max_frame_size;
     OcfPresent has_ocf;
     int set_flag;
@@ -621,47 +671,79 @@ typedef struct
     uint8_t login_method;
 } CamConfig_t;
 
-extern int32_t sdls_config_cryptolib(uint8_t sadb_type, uint8_t cryptography_type, uint8_t crypto_create_fecf, uint8_t process_sdls_pdus, uint8_t has_pus_hdr, uint8_t ignore_sa_state, uint8_t ignore_anti_replay, uint8_t unique_sa_per_mapid, uint8_t crypto_check_fecf, uint8_t vcid_bitmask, uint8_t crypto_increment_nontransmitted_iv);
+extern int32_t sdls_config_cryptolib(uint8_t sadb_type, uint8_t cryptography_type);
 
-extern int32_t sdls_config_mariadb(char* mysql_hostname, char* mysql_database, uint16_t mysql_port,
+extern int32_t sdls_config_cryptolib_tc(uint8_t crypto_create_fecf, uint8_t process_sdls_pdus, uint8_t has_pus_hdr,
+                                        uint8_t ignore_anti_replay, uint8_t ignore_sa_state,
+                                        uint8_t unique_sa_per_mapid,
+                                        uint8_t crypto_check_fecf, uint8_t vcid_bitmask,
+                                        uint8_t crypto_increment_nontransmitted_iv);
+
+extern int32_t sdls_config_cryptolib_tm(uint8_t crypto_create_fecf, uint8_t ignore_anti_replay,
+                                        uint8_t crypto_check_fecf,
+                                        uint8_t vcid_bitmask, uint8_t crypto_increment_nontransmitted_iv);
+
+extern int32_t sdls_config_cryptolib_aos(uint8_t crypto_create_fecf, uint8_t ignore_anti_replay,
+                                         uint8_t crypto_check_fecf,
+                                         uint8_t vcid_bitmask, uint8_t crypto_increment_nontransmitted_iv);
+
+extern int32_t sdls_config_add_gvcid_managed_parameter_tc(uint8_t tfvn, uint16_t scid, uint8_t vcid, uint8_t has_fecf,
+                                                          uint8_t has_segmentation_hdr, uint16_t max_tc_frame_size);
+
+extern int32_t sdls_config_add_gvcid_managed_parameter_tm(uint8_t tfvn, uint16_t scid, uint8_t vcid, uint8_t has_fecf,
+                                                          uint16_t max_tm_frame_size, uint8_t has_ocf);
+
+extern int32_t sdls_config_add_gvcid_managed_parameter_aos(uint8_t tfvn, uint8_t scid, uint8_t vcid, uint8_t has_fecf,
+                                                           uint8_t has_fhec, uint8_t has_iz, uint16_t iz_len,
+                                                           uint16_t max_aos_frame_size, uint8_t has_ocf);
+
+extern int32_t sdls_config_mariadb(char *mysql_hostname, char *mysql_database, uint16_t mysql_port,
                                    uint8_t mysql_require_secure_transport, uint8_t mysql_tls_verify_server,
-                                   char* mysql_tls_ca, char* mysql_tls_capath, char* mysql_mtls_cert,
-                                   char* mysql_mtls_key,
-                                   char* mysql_mtls_client_key_password, char* mysql_username, char* mysql_password);
+                                   char *mysql_tls_ca, char *mysql_tls_capath, char *mysql_mtls_cert,
+                                   char *mysql_mtls_key,
+                                   char *mysql_mtls_client_key_password, char *mysql_username, char *mysql_password);
 
-extern int32_t sdls_config_add_gvcid_managed_parameter(uint8_t tfvn, uint16_t scid, uint8_t vcid, uint8_t has_fecf, uint8_t has_segmentation_hdr, uint16_t max_tc_frame_size);
+extern int32_t sdls_config_add_gvcid_managed_parameter(uint8_t tfvn, uint16_t scid, uint8_t vcid, uint8_t has_fecf,
+                                                       uint8_t has_segmentation_hdr, uint16_t max_tc_frame_size);
 
-extern int32_t sdls_config_kmc_crypto_service(char* protocol, char* kmc_crypto_hostname, uint16_t kmc_crypto_port,
-                                              char* kmc_crypto_app, char* kmc_tls_ca_bundle, char* kmc_tls_ca_path,
-                                              uint8_t kmc_ignore_ssl_hostname_validation, char* mtls_client_cert_path,
-                                              char* mtls_client_cert_type, char* mtls_client_key_path,
-                                              char* mtls_client_key_pass, char* mtls_issuer_cert);
+extern int32_t sdls_config_kmc_crypto_service(char *protocol, char *kmc_crypto_hostname, uint16_t kmc_crypto_port,
+                                              char *kmc_crypto_app, char *kmc_tls_ca_bundle, char *kmc_tls_ca_path,
+                                              uint8_t kmc_ignore_ssl_hostname_validation, char *mtls_client_cert_path,
+                                              char *mtls_client_cert_type, char *mtls_client_key_path,
+                                              char *mtls_client_key_pass, char *mtls_issuer_cert);
 
-extern int32_t sdls_config_cam(uint8_t cam_enabled, char* cookie_file_path, char* keytab_file_path, uint8_t login_method, char* access_manager_uri, char* username, char* cam_home);
+extern int32_t sdls_config_cam(uint8_t cam_enabled, char *cookie_file_path, char *keytab_file_path,
+                               uint8_t login_method, char *access_manager_uri, char *username, char *cam_home);
 
 extern int32_t sdls_init(void);
 
-extern int32_t sdls_init_with_configs(CryptoConfig_t* crypto_config_p,GvcidManagedParameters_t* gvcid_managed_parameters_p,SadbMariaDBConfig_t* sadb_mariadb_config_p, CryptographyKmcCryptoServiceConfig_t *cryptography_kmc_crypto_config_p);
+extern int32_t sdls_init_with_configs(CryptoConfigGlobal_t *crypto_config_p,
+                                      TCGvcidManagedParameters_t *gvcid_managed_parameters_p,
+                                      SadbMariaDBConfig_t *sadb_mariadb_config_p,
+                                      CryptographyKmcCryptoServiceConfig_t *cryptography_kmc_crypto_config_p);
 
 extern int32_t sdls_init_unit_test(void);
 
 extern int32_t sdls_shutdown(void);
 
-extern int32_t apply_security_tc (const uint8_t* p_in_frame, const uint16_t in_frame_length, uint8_t **pp_enc_frame, uint16_t *p_enc_frame_len);
+extern int32_t apply_security_tc(const uint8_t *p_in_frame, const uint16_t in_frame_length, uint8_t **pp_enc_frame,
+                                 uint16_t *p_enc_frame_len);
 
-extern int32_t process_security_tc (char* sdls_transfer_frame, int* length, TC_t* tc_sdls_processed_frame);
+extern int32_t process_security_tc(char *sdls_transfer_frame, int *length, TC_t *tc_sdls_processed_frame);
 
-extern int32_t apply_security_tc_cam (const uint8_t* p_in_frame, const uint16_t in_frame_length, uint8_t **pp_enc_frame, uint16_t *p_enc_frame_len,char* cam_cookies);
+extern int32_t apply_security_tc_cam(const uint8_t *p_in_frame, const uint16_t in_frame_length, uint8_t **pp_enc_frame,
+                                     uint16_t *p_enc_frame_len, char *cam_cookies);
 
-extern int32_t process_security_tc_cam (char* sdls_transfer_frame, int* length, TC_t* tc_sdls_processed_frame, char* cam_cookies);
+extern int32_t process_security_tc_cam(char *sdls_transfer_frame, int *length, TC_t *tc_sdls_processed_frame,
+                                       char *cam_cookies);
 
-extern int32_t apply_security_tm (uint8_t* p_in_frame, uint16_t in_frame_length);
+extern int32_t apply_security_tm(uint8_t *p_in_frame, uint16_t in_frame_length);
 
-extern int32_t process_security_tm (uint8_t *ptBuffer, uint16_t length, TM_t* p_enc_frame, uint16_t *p_enc_frame_len);
+extern int32_t process_security_tm(uint8_t *ptBuffer, uint16_t length, TM_t *p_enc_frame, uint16_t *p_enc_frame_len);
 
-extern int32_t apply_security_aos (uint8_t* p_in_frame, uint16_t in_frame_length);
+extern int32_t apply_security_aos(uint8_t *p_in_frame, uint16_t in_frame_length);
 
-extern int32_t process_security_aos (uint8_t *ptBuffer, uint16_t length, AOS_t* p_enc_frame, uint16_t *p_enc_frame_len);
+extern int32_t process_security_aos(uint8_t *ptBuffer, uint16_t length, AOS_t *p_enc_frame, uint16_t *p_enc_frame_len);
 
-extern char* sdls_get_error_code_enum_string(int32_t crypto_error_code);
+extern char *sdls_get_error_code_enum_string(int32_t crypto_error_code);
 

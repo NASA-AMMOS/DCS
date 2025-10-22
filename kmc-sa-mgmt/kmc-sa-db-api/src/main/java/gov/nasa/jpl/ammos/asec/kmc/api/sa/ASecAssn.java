@@ -145,6 +145,11 @@ abstract class ASecAssn implements ISecAssn {
 
     @Override
     public String toString() {
+        return String.format("SA [%s, %d, %d, %d, %d]", getType().name(), getSpi(), getScid(), getVcid(), getTfvn());
+    }
+
+    @Override
+    public String toJson() {
         try {
             return mapper.writeValueAsString(this);
         } catch (JsonProcessingException e) {

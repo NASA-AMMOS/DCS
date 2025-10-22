@@ -16,7 +16,24 @@
     #include "kmc_sdls.h"
     #include "crypto_structs.h"
     #include "crypto_config_structs.h"
-    extern int32_t sdls_config_cryptolib(uint8_t sadb_type, uint8_t cryptography_type, uint8_t crypto_create_fecf, uint8_t process_sdls_pdus, uint8_t has_pus_hdr, uint8_t ignore_sa_state, uint8_t ignore_anti_replay, uint8_t unique_sa_per_mapid, uint8_t crypto_check_fecf, uint8_t vcid_bitmask, uint8_t crypto_increment_nontransmitted_iv);
+    extern int32_t sdls_config_cryptolib(uint8_t sadb_type, uint8_t cryptography_type);
+    extern int32_t sdls_config_cryptolib_tc(uint8_t crypto_create_fecf, uint8_t process_sdls_pdus, uint8_t has_pus_hdr,
+                                    uint8_t ignore_anti_replay, uint8_t ignore_sa_state, uint8_t unique_sa_per_mapid,
+                                    uint8_t crypto_check_fecf, uint8_t vcid_bitmask,
+                                    uint8_t crypto_increment_nontransmitted_iv);
+    extern int32_t sdls_config_cryptolib_tm(uint8_t crypto_create_fecf, uint8_t ignore_anti_replay, uint8_t crypto_check_fecf,
+                                    uint8_t vcid_bitmask, uint8_t crypto_increment_nontransmitted_iv);
+    extern int32_t sdls_config_cryptolib_aos(uint8_t crypto_create_fecf, uint8_t ignore_anti_replay, uint8_t crypto_check_fecf,
+                                     uint8_t vcid_bitmask, uint8_t crypto_increment_nontransmitted_iv);
+    extern int32_t sdls_config_add_gvcid_managed_parameter_tc(uint8_t tfvn, uint16_t scid, uint8_t vcid, uint8_t has_fecf,
+                                                       uint8_t has_segmentation_hdr, uint16_t max_tc_frame_size);
+
+    extern int32_t sdls_config_add_gvcid_managed_parameter_tm(uint8_t tfvn, uint16_t scid, uint8_t vcid, uint8_t has_fecf,
+                                                       uint16_t max_tm_frame_size, uint8_t has_ocf);
+
+    extern int32_t sdls_config_add_gvcid_managed_parameter_aos(uint8_t tfvn, uint8_t scid, uint8_t vcid, uint8_t has_fecf,
+                                                        uint8_t has_fhec, uint8_t has_iz, uint16_t iz_len,
+                                                        uint16_t max_aos_frame_size, uint8_t has_ocf);
     extern int32_t sdls_config_mariadb(char* mysql_hostname, char* mysql_database, uint16_t mysql_port,
                                        uint8_t mysql_require_secure_transport, uint8_t mysql_tls_verify_server,
                                        char* mysql_tls_ca, char* mysql_tls_capath, char* mysql_mtls_cert,
@@ -32,7 +49,7 @@
 
 
     extern int32_t sdls_init(void);
-    extern int32_t sdls_init_with_configs(CryptoConfig_t* crypto_config_p,GvcidManagedParameters_t* gvcid_managed_parameters_p,SadbMariaDBConfig_t* sadb_mariadb_config_p, CryptographyKmcCryptoServiceConfig_t *cryptography_kmc_crypto_config_p);
+    extern int32_t sdls_init_with_configs(CryptoConfigGlobal_t* crypto_config_p,TCGvcidManagedParameters_t* gvcid_managed_parameters_p,SadbMariaDBConfig_t* sadb_mariadb_config_p, CryptographyKmcCryptoServiceConfig_t *cryptography_kmc_crypto_config_p);
     extern int32_t sdls_init_unit_test(void);
 
     extern int32_t sdls_shutdown(void);

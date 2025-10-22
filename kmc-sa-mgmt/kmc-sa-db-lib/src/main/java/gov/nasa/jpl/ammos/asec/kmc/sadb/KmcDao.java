@@ -30,6 +30,18 @@ import java.util.Properties;
  * KMC DAO
  */
 public class KmcDao implements IKmcDao {
+
+    /**
+     * Sanitizes a string for logging to prevent log injection.
+     * Removes control chars, newlines, tabs, and wraps in quotes for clarity.
+     */
+    private static String sanitizeForLog(String input) {
+        if (input == null) {
+            return "null";
+        }
+        // Remove all control characters incl. CR, LF, TAB, DEL, and make visible
+        return input.replaceAll("[\\p{Cntrl}]", "");
+    }
     /**
      * Logger
      */
@@ -290,9 +302,9 @@ public class KmcDao implements IKmcDao {
             sa.setSaState(SA_UNKEYED);
         }
 
-        LOG.info("Creating SA {}/{}", sa.getSpi(), sa.getScid());
+        LOG.info("Creating {}", sa);
         dbSession.persist(sa);
-        LOG.info("Creating SA {}/{} done", sa.getSpi(), sa.getScid());
+        LOG.info("Created {}", sa);
     }
 
     @Override
@@ -302,15 +314,17 @@ public class KmcDao implements IKmcDao {
         checkFrameType(type);
         ISecAssn sa = getSa(session, id, type);
         if (sa == null) {
-            throw new KmcException(String.format("SA %s does not exist, cannot rekey for encryption", id));
+            throw new KmcException(String.format("SA %s [%d, %d] does not exist, cannot rekey for encryption",
+                    type.name(), id.getSpi(), id.getScid()));
         }
-        LOG.info("Rekeying SA {}/{} for encryption to EKID {} with ECS {}", id.getSpi(), id.getScid(), ekid, ecs);
+        LOG.info("Rekeying SA {} [{}, {}] for encryption to EKID '{}' with ECS {}", type.name(), id.getSpi(),
+                id.getScid(), sanitizeForLog(ekid), ecs);
         sa.setEkid(ekid);
         sa.setEcs(ecs);
         sa.setEcsLen(ecsLen);
         sa.setSaState(SA_KEYED);
         session.merge(sa);
-        LOG.info("Rekeying SA {}/{} for encryption complete", id.getSpi(), id.getScid());
+        LOG.info("Rekeying SA {} [{}, {}] for encryption complete", type.name(), id.getSpi(), id.getScid());
     }
 
     @Override
@@ -334,16 +348,18 @@ public class KmcDao implements IKmcDao {
         checkFrameType(type);
         ISecAssn sa = getSa(session, id, type);
         if (sa == null) {
-            throw new KmcException(String.format("SA %s does not exist, cannot rekey for authentication", id));
+            throw new KmcException(String.format("SA %s [%d, %d] does not exist, cannot rekey for authentication",
+                    type.name(), id.getSpi(), id.getScid()));
         }
-        LOG.info("Rekeying SA {}/{} for authentication to AKID {} with ACS {}", sa.getId(), sa.getScid(), akid,
+        LOG.info("Rekeying SA {} [{}, {}] for authentication to AKID {} with ACS {}", type.name(), sa.getId(),
+                sa.getScid(), akid,
                 acs);
         sa.setAkid(akid);
         sa.setAcs(acs);
         sa.setAcsLen(acsLen);
         sa.setSaState(SA_KEYED);
         session.merge(sa);
-        LOG.info("Rekeying SA {}/{} for authentication complete", id.getSpi(), id.getScid());
+        LOG.info("Rekeying SA {} [{}, {}] for authentication complete", type.name(), id.getSpi(), id.getScid());
     }
 
     @Override
@@ -367,14 +383,15 @@ public class KmcDao implements IKmcDao {
         checkFrameType(type);
         ISecAssn sa = getSa(id, type);
         if (sa == null) {
-            throw new KmcException(String.format("SA %s does not exist, cannot expire", id));
+            throw new KmcException(String.format("SA %s [%d, %d] does not exist, cannot expire", type.name(),
+                    id.getSpi(), id.getScid()));
         } else {
-            LOG.info("Expiring SA {}/{}", id.getSpi(), id.getScid());
+            LOG.info("Expiring SA {} [{}, {}]", type.name(), id.getSpi(), id.getScid());
             sa.setSaState(SA_EXPIRE);
             sa.setAkid(null);
             sa.setEkid(null);
             session.merge(sa);
-            LOG.info("Expiring SA {}/{} done", id.getSpi(), id.getScid());
+            LOG.info("Expired SA {} [{}, {}]", type.name(), id.getSpi(), id.getScid());
         }
     }
 
@@ -397,10 +414,11 @@ public class KmcDao implements IKmcDao {
         checkFrameType(type);
         ISecAssn sa = getSa(id, type);
         if (sa == null) {
-            throw new KmcStartException(String.format("SA %d/%d does not exist, cannot start", id.getSpi(),
+            throw new KmcStartException(String.format("SA %s [%d, %d] does not exist, cannot start", type.name(),
+                    id.getSpi(),
                     id.getScid()));
         } else if (sa.getSaState() == SA_OPERATIONAL) {
-            throw new KmcStartException(String.format("SA %d/%d is already operational", id.getSpi(),
+            throw new KmcStartException(String.format("SA %s [%d/%d] is already operational", type.name(), id.getSpi(),
                     id.getScid()));
         } else {
             Query<? extends ISecAssn> q =
@@ -425,18 +443,20 @@ public class KmcDao implements IKmcDao {
                 if (s.getSaState() == SA_OPERATIONAL) {
                     if (force) {
                         stopSa(s.getId(), type);
-                        LOG.info("SA {}/{} is already operational, stop has been forced", s.getSpi(), s.getScid());
+                        LOG.info("SA {} [{}, {}] is already operational, stop has been forced", type.name(),
+                                s.getSpi(), s.getScid());
                     } else {
-                        throw new KmcStartException(String.format("SA %d/%d is already operational for GVCID " +
-                                        "(scid " + "%d, tfvn " + "%d, vcid %d, mapid %d)", s.getSpi(), s.getScid(),
+                        throw new KmcStartException(String.format("SA %s, [%d, %d] is already operational for GVCID " +
+                                        "(scid " + "%d, tfvn " + "%d, vcid %d, mapid %d)", type.name(), s.getSpi(),
+                                s.getScid(),
                                 s.getScid(), s.getTfvn(), s.getVcid(), s.getMapid()));
                     }
                 }
             }
-            LOG.info("Starting SA {}/{}", id.getSpi(), id.getScid());
+            LOG.info("Starting SA {} [{}, {}]", type.name(), id.getSpi(), id.getScid());
             sa.setSaState(SA_OPERATIONAL);
             session.merge(sa);
-            LOG.info("Starting SA {}/{} done", id.getSpi(), id.getScid());
+            LOG.info("Started SA {} [{}, {}]", type.name(), id.getSpi(), id.getScid());
         }
     }
 
@@ -461,16 +481,18 @@ public class KmcDao implements IKmcDao {
         checkFrameType(type);
         ISecAssn sa = getSa(id, type);
         if (sa == null) {
-            throw new KmcStopException(String.format("SA %d/%d does not exist, cannot stop", id.getSpi(),
+            throw new KmcStopException(String.format("SA %s [%d, %d] does not exist, cannot stop", type.name(),
+                    id.getSpi(),
                     id.getScid()));
         } else if (sa.getSaState() != SA_OPERATIONAL) {
-            throw new KmcStopException(String.format("SA %d/%d is not operational, cannot stop", id.getSpi(),
+            throw new KmcStopException(String.format("SA %s [%d, %d] is not operational, cannot stop", type.name(),
+                    id.getSpi(),
                     id.getScid()));
         } else {
-            LOG.info("Stopping SA {}/{}", id.getSpi(), id.getScid());
+            LOG.info("Stopping SA {} [{}, {}]", type.name(), id.getSpi(), id.getScid());
             sa.setSaState(SA_KEYED);
             session.merge(sa);
-            LOG.info("Stopping SA {}/{} done", id.getSpi(), id.getScid());
+            LOG.info("Stopped SA {} [{}, {}]", type.name(), id.getSpi(), id.getScid());
         }
     }
 
@@ -495,11 +517,12 @@ public class KmcDao implements IKmcDao {
         checkFrameType(type);
         ISecAssn sa = getSa(id, type);
         if (sa == null) {
-            throw new KmcException(String.format("SA %s does not exist, cannot delete", id));
+            throw new KmcException(String.format("SA %s [%d, %d] does not exist, cannot delete", type.name(),
+                    id.getSpi(), id.getScid()));
         } else {
-            LOG.info("Deleting SA {}/{}", id.getSpi(), id.getScid());
+            LOG.info("Deleting SA {} [{}, {}]", type.name(), id.getSpi(), id.getScid());
             session.remove(sa);
-            LOG.info("Deleting SA {}/{} done", id.getSpi(), id.getScid());
+            LOG.info("Deleted SA {} [{}, {}]", type.name(), id.getSpi(), id.getScid());
         }
     }
 
@@ -602,9 +625,9 @@ public class KmcDao implements IKmcDao {
     public void updateSa(IDbSession session, ISecAssn sa) throws KmcException {
         isReady();
         checkFrameType(sa.getType());
-        LOG.info("Updating SA {}/{}", sa.getId().getSpi(), sa.getId().getScid());
+        LOG.info("Updating SA {} [{}, {}]", sa.getType().name(), sa.getId().getSpi(), sa.getId().getScid());
         session.merge(sa);
-        LOG.info("Updated SA {}/{}", sa.getId().getSpi(), sa.getId().getScid());
+        LOG.info("Updated SA {} [{}, {}]", sa.getType().name(), sa.getId().getSpi(), sa.getId().getScid());
     }
 
     @Override
