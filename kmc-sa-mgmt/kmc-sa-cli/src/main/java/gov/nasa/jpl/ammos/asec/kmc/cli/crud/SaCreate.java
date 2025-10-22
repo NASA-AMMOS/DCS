@@ -66,7 +66,7 @@ public class SaCreate extends BaseCreateUpdate {
                         dao.createSa(session, sa);
                         console(String.format("%s created %s", user, sa));
                     } catch (KmcException e) {
-                        console(String.format("SA %s creation FAILED", sa));
+                        console(String.format("%s creation FAILED", sa));
                         error(e.getMessage());
                     } finally {
                         session.commit();
