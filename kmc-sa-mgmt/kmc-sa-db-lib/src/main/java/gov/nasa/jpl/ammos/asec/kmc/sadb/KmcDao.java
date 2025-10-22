@@ -30,6 +30,19 @@ import java.util.Properties;
  * KMC DAO
  */
 public class KmcDao implements IKmcDao {
+
+    /**
+     * Sanitizes a string for logging to prevent log injection.
+     * Removes control chars, newlines, tabs, and wraps in quotes for clarity.
+     */
+    private static String sanitizeForLog(String input) {
+        if (input == null) {
+            return "null";
+        }
+        // Remove all control characters incl. CR, LF, TAB, DEL, and make visible
+        String sanitized = input.replaceAll("[\\p{Cntrl}]", "");
+        return sanitized;
+    }
     /**
      * Logger
      */
@@ -305,8 +318,8 @@ public class KmcDao implements IKmcDao {
             throw new KmcException(String.format("SA %s [%d, %d] does not exist, cannot rekey for encryption",
                     type.name(), id.getSpi(), id.getScid()));
         }
-        LOG.info("Rekeying SA {} [{}, {}] for encryption to EKID {} with ECS {}", type.name(), id.getSpi(),
-                id.getScid(), ekid.replaceAll("\\p{Cntrl}", " "), ecs);
+        LOG.info("Rekeying SA {} [{}, {}] for encryption to EKID '{}' with ECS {}", type.name(), id.getSpi(),
+                id.getScid(), sanitizeForLog(ekid), ecs);
         sa.setEkid(ekid);
         sa.setEcs(ecs);
         sa.setEcsLen(ecsLen);
