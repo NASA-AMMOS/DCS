@@ -306,7 +306,7 @@ public class KmcDao implements IKmcDao {
                     type.name(), id.getSpi(), id.getScid()));
         }
         LOG.info("Rekeying SA {} [{}, {}] for encryption to EKID {} with ECS {}", type.name(), id.getSpi(),
-                id.getScid(), ekid, ecs);
+                id.getScid(), ekid.replaceAll("[\r\n]+", " "), ecs);
         sa.setEkid(ekid);
         sa.setEcs(ecs);
         sa.setEcsLen(ecsLen);
