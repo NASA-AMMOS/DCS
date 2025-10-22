@@ -40,8 +40,7 @@ public class KmcDao implements IKmcDao {
             return "null";
         }
         // Remove all control characters incl. CR, LF, TAB, DEL, and make visible
-        String sanitized = input.replaceAll("[\\p{Cntrl}]", "");
-        return sanitized;
+        return input.replaceAll("[\\p{Cntrl}]", "");
     }
     /**
      * Logger
