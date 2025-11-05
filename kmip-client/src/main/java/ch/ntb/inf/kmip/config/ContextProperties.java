@@ -44,7 +44,7 @@ public class ContextProperties extends Properties {
 		
 		try {
 			File fXmlFile = new File(xmlPath + name);
-			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newDefaultInstance();
 			DocumentBuilder dBuilder;
 			dBuilder = dbFactory.newDocumentBuilder();
 			Document doc = dBuilder.parse(fXmlFile);
