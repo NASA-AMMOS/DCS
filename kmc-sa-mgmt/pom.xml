@@ -37,7 +37,7 @@
         <jackson.version>2.18.1</jackson.version>
         <log4j.version>2.24.3</log4j.version>
         <picocli.version>4.7.6</picocli.version>
-        <spring.boot.version>3.5.4</spring.boot.version>
+        <spring.boot.version>3.5.7</spring.boot.version>
     </properties>
 
     <modules>
