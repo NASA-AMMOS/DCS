@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.7.17</version>
+        <version>3.5.7</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>gov.nasa.jpl.ammos.asec.kmc</groupId>
@@ -205,26 +205,5 @@
             </testResource>
         </testResources>
     </build>
-
-    <dependencyManagement>
-        <dependencies>
-            <!-- dependabot minimum versions -->
-<!--            <dependency>-->
-<!--                <groupId>org.apache.tomcat.embed</groupId>-->
-<!--                <artifactId>tomcat-embed-core</artifactId>-->
-<!--                <version>[9.0.110,)</version>-->
-<!--            </dependency>-->
-            <dependency>
-                <groupId>org.yaml</groupId>
-                <artifactId>snakeyaml</artifactId>
-                <version>[2.0,)</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-core</artifactId>
-                <version>[2.15.0,)</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 
 </project>

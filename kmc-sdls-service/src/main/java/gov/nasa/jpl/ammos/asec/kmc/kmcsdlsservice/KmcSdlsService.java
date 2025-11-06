@@ -4,7 +4,7 @@ import gov.nasa.jpl.ammos.asec.kmc.KmcSdlsEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.util.Properties;
 
 public final class KmcSdlsService
