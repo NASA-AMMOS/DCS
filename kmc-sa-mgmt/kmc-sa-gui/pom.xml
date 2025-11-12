@@ -34,7 +34,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <frontend-src-dir>${project.basedir}/src/main/frontend</frontend-src-dir>
-        <node.version>v23.1.0</node.version>
+        <node.version>v24.11.1</node.version>
         <yarn.version>v1.22.22</yarn.version>
         <!-- yarn-registry-url is the default Yarn regestry URL used for retreving packages.  -->
         <!-- Allows for use of a local repo to force cacheing, preservation of dependenices, or use of alterntate dependencies.  -->
