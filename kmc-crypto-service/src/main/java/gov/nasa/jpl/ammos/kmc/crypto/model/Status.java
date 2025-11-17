@@ -44,4 +44,9 @@ public class Status {
     public final String getReason() {
         return reason;
     }
+
+    @Override
+    public final String toString() {
+        return "Status(httpCode=" + httpCode + ", reason=" + reason + ")";
+    }
 }
