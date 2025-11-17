@@ -3,8 +3,9 @@ package gov.nasa.jpl.ammos.asec.kmc.kmcsdlsservice;
 import java.io.IOException;
 import java.security.Security;
 
-import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.annotation.PostConstruct;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
@@ -72,12 +73,12 @@ public class KmcSdlsSecurityConfig {
         }
 
         @Override
-        public void invoke(Request request, Response response) throws IOException, javax.servlet.ServletException {
+        public void invoke(Request request, Response response) throws IOException, ServletException {
 
             if (!clientAuth.equalsIgnoreCase("NONE") && !request.getRequestURI().startsWith(contextPath + "/health")) {
                 // Enforce client cert for all resources except for /health
                 if (request.getConnector().getSecure()) {
-                    Object cert = request.getAttribute("javax.servlet.request.X509Certificate");
+                    Object cert = request.getAttribute("jakarta.servlet.request.X509Certificate");
                     if (cert == null) {
                         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                         response.setContentType("text/plain");

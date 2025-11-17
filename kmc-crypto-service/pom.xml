@@ -16,7 +16,7 @@
   </parent>
 
   <properties>
-    <spring.boot.version>2.7.17</spring.boot.version>
+    <spring.boot.version>3.5.7</spring.boot.version>
     <final.name>crypto-service</final.name>
     <app.profiles>mTLS</app.profiles>
     <spring.profiles.active>${app.profiles}</spring.profiles.active>
@@ -181,7 +181,6 @@
       </plugin>
     </plugins>
   </reporting>
-
 
   <dependencies>
     <dependency>
