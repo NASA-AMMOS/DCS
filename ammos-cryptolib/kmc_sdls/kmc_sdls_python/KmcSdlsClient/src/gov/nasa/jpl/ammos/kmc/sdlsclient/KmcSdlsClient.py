@@ -649,7 +649,8 @@ class KmcSdlsClient:
                                    , aos_result.aos_header.sf
                                    , aos_result.aos_header.spare
                                    , aos_result.aos_header.vfcc
-                                   , aos_result.aos_header.fhecf)
+                                   , aos_result.aos_header.fhecf
+                                   , aos_result.aos_sec_header.iz)
             , FrameSecurityHeader(
                 0,  # segment header
                 aos_result.aos_sec_header.spi,
@@ -853,7 +854,7 @@ class AOS_FramePrimaryHeader(NamedTuple):
         vcflag_b = Bits(uint=self.vcflag, length=1)
         l += 1
         spare_b = Bits(uint=self.spare, length=2)
-        l += 1
+        l += 2
         vcfcc_b = Bits(uint=self.vcfcc, length=4)
         l += 4
         if has_fhec:
@@ -869,7 +870,7 @@ class AOS_FramePrimaryHeader(NamedTuple):
         header.overwrite(scid_b, pos)
         pos += 8
         header.overwrite(vcid_b, pos)
-        pos += 8
+        pos += 6
         header.overwrite(vcfc_b, pos)
         pos += 24
         header.overwrite(replay_b, pos)

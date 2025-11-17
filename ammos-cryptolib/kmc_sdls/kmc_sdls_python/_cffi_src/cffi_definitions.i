@@ -322,15 +322,15 @@ typedef struct
 
 typedef struct
 {
-    uint8_t tfvn : 2;
-    uint8_t scid : 8;
-    uint8_t vcid : 6;
-    long vcfc : 24;
-    uint8_t rf : 1;
-    uint8_t sf : 1;
-    uint8_t spare : 2;
-    uint8_t vfcc : 4;
-    uint16_t fhecf : 16;
+    uint8_t tfvn;
+    uint8_t scid;
+    uint8_t vcid;
+    uint32_t vcfc;
+    uint8_t rf;
+    uint8_t sf;
+    uint8_t spare;
+    uint8_t vfcc;
+    uint16_t fhecf;
 } AOS_FramePrimaryHeader_t;
 
 typedef struct
