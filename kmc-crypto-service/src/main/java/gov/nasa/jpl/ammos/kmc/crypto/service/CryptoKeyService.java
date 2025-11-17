@@ -40,7 +40,7 @@ public class CryptoKeyService extends HttpServlet {
     private static final Logger logger = LoggerFactory.getLogger(CryptoKeyService.class);
     private static final Logger audit = LoggerFactory.getLogger("AUDIT");
 
-    private final Gson gson = new GsonBuilder().disableHtmlEscaping().create();
+    private static final Gson gson = new GsonBuilder().disableHtmlEscaping().create();
 
     private String kmcHome;
 
