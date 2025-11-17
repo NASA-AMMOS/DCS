@@ -34,7 +34,6 @@ public class DecryptServiceResponse {
      * @return Decrypted data in a byte array.
      */
     public final byte[] getCleartext() {
-        //System.out.println("base64cleartext = " + base64cleartext);
         return Base64.getDecoder().decode(base64cleartext);
     }
 }
