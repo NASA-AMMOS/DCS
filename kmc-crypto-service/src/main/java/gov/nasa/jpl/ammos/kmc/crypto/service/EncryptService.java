@@ -45,9 +45,9 @@ public class EncryptService extends HttpServlet {
     private static final Logger logger = LoggerFactory.getLogger(EncryptService.class);
     private static final Logger audit = LoggerFactory.getLogger("AUDIT");
 
-    private final Gson gson = new GsonBuilder().disableHtmlEscaping().create();
+    private static final Gson gson = new GsonBuilder().disableHtmlEscaping().create();
 
-    private final int maxBytes = KmcCryptoServiceConfiguration.MAX_CRYPTO_SERVICE_BYTES;
+    private static final int maxBytes = KmcCryptoServiceConfiguration.MAX_CRYPTO_SERVICE_BYTES;
     private static final int AES_BLOCK_SIZE = 16;  // AES block size in bytes
     private String kmcHome;
 
