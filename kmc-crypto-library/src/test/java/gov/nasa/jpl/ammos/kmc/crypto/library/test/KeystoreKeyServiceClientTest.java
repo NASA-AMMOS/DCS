@@ -9,12 +9,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.Security;
 import java.security.UnrecoverableKeyException;
 
 import javax.crypto.SecretKey;
 
-import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -55,7 +53,7 @@ public class KeystoreKeyServiceClientTest {
         SYMMETRIC_KEYSTORE = loader.getResource("symmetric-keys.jck").getFile();
         ASYMMETRIC_KEYSTORE = loader.getResource("asymmetric-keys.jks").getFile();
     }
-    
+
     @Test
     public final void testRetrieveSecretKey() throws KmcCryptoException {
         KeystoreKeyServiceClient localKeystore = new KeystoreKeyServiceClient(
@@ -65,7 +63,7 @@ public class KeystoreKeyServiceClientTest {
                 SYMMETRIC_KEYREF, KEYSTORE_KEYPASS, KeyServiceClient.USAGE_MASK_SYMMETRIC_CRYPTO);
         assertNotNull(key);
         assertEquals(SYMMETRIC_ALGORITHM, key.getAlgorithm());
-        assertEquals(SYMMETRIC_LENGTH, key.getEncoded().length * 8);
+        assertEquals(SYMMETRIC_LENGTH, (long) key.getEncoded().length * 8);
     }
 
     @Test
