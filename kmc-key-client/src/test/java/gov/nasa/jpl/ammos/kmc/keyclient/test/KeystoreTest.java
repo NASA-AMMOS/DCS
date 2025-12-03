@@ -14,14 +14,14 @@ import javax.crypto.SecretKey;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import gov.nasa.jpl.ammos.kmc.keyclient.KmcKeyClient;
-import gov.nasa.jpl.ammos.kmc.keyclient.KmcKeystoreKeyClient;
 import gov.nasa.jpl.ammos.kmc.keyclient.KmcKey;
+import gov.nasa.jpl.ammos.kmc.keyclient.KmcKeyClient;
 import gov.nasa.jpl.ammos.kmc.keyclient.KmcKeyClientException;
 import gov.nasa.jpl.ammos.kmc.keyclient.KmcKeyClientException.KmcKeyOpsErrorCode;
 import gov.nasa.jpl.ammos.kmc.keyclient.KmcKeyClientManager;
 import gov.nasa.jpl.ammos.kmc.keyclient.KmcKeyClientManagerException;
 import gov.nasa.jpl.ammos.kmc.keyclient.KmcKeyClientManagerException.KmcKeyOpsManagerErrorCode;
+import gov.nasa.jpl.ammos.kmc.keyclient.KmcKeystoreKeyClient;
 
 /**
  * Unit tests for Keystores.
@@ -61,8 +61,6 @@ public class KeystoreTest {
     @BeforeClass
     public static void setUp() throws KmcKeyClientManagerException {
         manager = new KmcKeyClientManager(null);
-        String configPath = manager.getKmcConfigPath();
-        //keystorePath = configPath.replace("etc", "test/input/");
         keystorePath = KEYSTORE_DIR;
     }
 
@@ -75,14 +73,14 @@ public class KeystoreTest {
         assertNotNull(key);
         assertEquals("AES", key.getAlgorithm());
         assertEquals("RAW", key.getFormat());
-        assertEquals(256, key.getEncoded().length * 8);
+        assertEquals(256, (long) key.getEncoded().length * 8);
 
         kmcKey = keystoreService.getSymmetricKey(AES128_KEYREF, AES128_KEYPASS);
         key = (SecretKey) kmcKey.getJavaKey();
         assertNotNull(key);
         assertEquals("AES", key.getAlgorithm());
         assertEquals("RAW", key.getFormat());
-        assertEquals(128, key.getEncoded().length * 8);
+        assertEquals(128, (long) key.getEncoded().length * 8);
     }
 
     @Test
@@ -160,13 +158,13 @@ public class KeystoreTest {
         assertNotNull(key);
         assertEquals("AES", key.getAlgorithm());
         assertEquals("RAW", key.getFormat());
-        assertEquals(128, key.getEncoded().length * 8);
+        assertEquals(128, (long) key.getEncoded().length * 8);
         kmcKey = keystoreService.getSymmetricKey("AES256key1", "AES256keypass");
         key = (SecretKey) kmcKey.getJavaKey();
         assertNotNull(key);
         assertEquals("AES", key.getAlgorithm());
         assertEquals("RAW", key.getFormat());
-        assertEquals(256, key.getEncoded().length * 8);
+        assertEquals(256, (long) key.getEncoded().length * 8);
     }
 
     @Test
@@ -178,7 +176,7 @@ public class KeystoreTest {
         assertNotNull(key);
         assertEquals("AES", key.getAlgorithm());
         assertEquals("RAW", key.getFormat());
-        assertEquals(128, key.getEncoded().length * 8);
+        assertEquals(128, (long) key.getEncoded().length * 8);
     }
 
     @Test
@@ -190,7 +188,7 @@ public class KeystoreTest {
         assertNotNull(key);
         assertEquals("AES", key.getAlgorithm());
         assertEquals("RAW", key.getFormat());
-        assertEquals(256, key.getEncoded().length * 8);
+        assertEquals(256, (long) key.getEncoded().length * 8);
     }
 
 
