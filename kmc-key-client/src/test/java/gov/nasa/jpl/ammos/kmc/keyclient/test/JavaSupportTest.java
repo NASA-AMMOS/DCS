@@ -39,7 +39,7 @@ public class JavaSupportTest {
             SecretKey key = gen.generateKey();
             assertNotNull(key);
             assertEquals("AES", key.getAlgorithm());
-            assertEquals(keyLength, key.getEncoded().length * 8);
+            assertEquals(keyLength, (long) key.getEncoded().length * 8);
         }
     }
 
@@ -69,7 +69,7 @@ public class JavaSupportTest {
                 SecretKey key = gen.generateKey();
                 assertNotNull(key);
                 assertEquals(algName, key.getAlgorithm());
-                assertEquals(keyLength, key.getEncoded().length * 8);
+                assertEquals(keyLength, (long) key.getEncoded().length * 8);
             }
         }
     }
@@ -88,7 +88,7 @@ public class JavaSupportTest {
         key = gen.generateKey();
         assertNotNull(key);
         assertEquals("HmacSHA256", key.getAlgorithm());
-        assertEquals(512, key.getEncoded().length * 8);
+        assertEquals(512, (long) key.getEncoded().length * 8);
 
         // HmacSHA224 fails Java 7 but ok with Java 8
         String[] invalidHmacs = new String[] {"HMAC_SHA256", "HMAC-SHA256"};

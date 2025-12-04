@@ -32,7 +32,6 @@ public class IcvCreateServiceResponse {
      * @return Metadata resulting from ICV creation.
      */
     public final String getMetadata() {
-        //System.out.println("metadata = " + metadata);
         return metadata;
     }
 }
