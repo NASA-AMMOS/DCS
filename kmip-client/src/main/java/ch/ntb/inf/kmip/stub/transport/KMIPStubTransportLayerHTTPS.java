@@ -176,7 +176,7 @@ public class KMIPStubTransportLayerHTTPS implements KMIPStubTransportLayerInterf
 
 	private SSLSocketFactory initItAll(final KeyManager[] keyManagers, final TrustManager[] trustManagers)
         throws NoSuchAlgorithmException, KeyManagementException {
-        SSLContext context = SSLContext.getInstance("TLSv1");
+        SSLContext context = SSLContext.getInstance("TLSv1.2");
         context.init(keyManagers, trustManagers, null);
         return context.getSocketFactory();
     }
