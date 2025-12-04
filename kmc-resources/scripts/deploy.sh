@@ -48,7 +48,7 @@ exit 1
 }
 
 # Parse Command line arguments
-args=$(getopt -a -o achimrsp:t:z: --long help,img,crypto-service,sdls-service,sa-mgmt-service,all-services,rpm,rev:pkg:,tar:,zip: -- "$@")
+args=$(getopt -a -o achimrsp:t:z: --long help,img,crypto-service,sdls-service,sa-mgmt-service,all-services,rpm,rev:,pkg:,tar:,zip: -- "$@")
 if [[ $? -ne 0 ]]; then
     usage
 fi
