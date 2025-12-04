@@ -32,7 +32,6 @@
   </properties>
 
   <modules>
-    <module>kmc-key-client</module>
     <module>kmc-crypto</module>
     <module>kmc-crypto-library</module>
     <module>kmc-crypto-service</module>
