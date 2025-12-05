@@ -1,6 +1,6 @@
 Name:           kmc
 Version:        %{kmc_version}
-Release:        1%{?dist}
+Release:        %{kmc_release}%{?dist}
 Summary:        AMMOS Data Cryptography Services (DCS)
 
 AutoReqProv:    no

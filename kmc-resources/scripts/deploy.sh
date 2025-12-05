@@ -15,6 +15,7 @@
 #   -p DIR | --pkg DIR - Deploy local copy for packaging in DIR
 #   -r | --rpm - Deploy and build RPM packages via spec in 
 #           kmc-resources/packaging/rpm
+#    --rel - RPM release tag version
 #   -t DIR | --tar DIR - deploy/build tar.bz2 archive in DIR
 #   -z DIR | --zip DIR - deploy/build zip archive in DIR
 #
@@ -26,6 +27,7 @@ LOCAL_DEPLOY=1
 DEPLOY_FINISH=0
 BUILD_RPM=0
 BUILD_IMG=0
+RPM_REV='1'
 
 usage() {
 >&2 cat << EOF
@@ -38,6 +40,7 @@ Usage: $0
   [ -s | --sdls-service ] - deploy KMC SDLS REST API
   [ -p DIR | --pkg DIR ] - deploy for package building in DIR
   [ -r | --rpm ] - deploy and build RPM packages in kmc-resources/packaging/rpm
+  [ --rev ] - RPM release tag (only for RPM packages)
   [ -t DIR | --tar DIR ] - deploy/build tar.bz2 archive in DIR
   [ -z DIR | --zip DIR ] - deploy/build zip archive in DIR
 EOF
@@ -45,7 +48,7 @@ exit 1
 }
 
 # Parse Command line arguments
-args=$(getopt -a -o achimrsp:t:z: --long help,img,crypto-service,sdls-service,sa-mgmt-service,all-services,rpm,pkg:,tar:,zip: -- "$@")
+args=$(getopt -a -o achimrsp:t:z: --long help,img,crypto-service,sdls-service,sa-mgmt-service,all-services,rpm,rev:,pkg:,tar:,zip: -- "$@")
 if [[ $? -ne 0 ]]; then
     usage
 fi
@@ -91,6 +94,10 @@ while [ : ]; do
         [ -d "${PKGROOT}" ] && /bin/rm -rf "${PKGROOT}"
         /bin/mkdir -p "${PKGROOT}"
         shift
+        ;;
+    --rev)
+        RPM_REV=$2
+        shift; shift;
         ;;
     -t | --tar)
         PKGROOT=$2
@@ -855,6 +862,7 @@ if [ ${BUILD_RPM} -eq 1 ]; then
   --define "_topdir ${SRC_RSC}/packaging/rpm" \
   --define "buildroot %{_buildrootdir}/%{NAME}-%{VERSION}" \
   --define "kmc_version ${VERSION}" \
+  --define "kmc_release ${RPM_REV}" \
   --define "cryptogrp ${CRYPTOGRP_NAME}" \
   --define "cryptogrp_gid ${CRYPTOGRP_GID}" \
   --define "cryptogrp_members '${CRYPTOGRP_MEMBERS}'" \
