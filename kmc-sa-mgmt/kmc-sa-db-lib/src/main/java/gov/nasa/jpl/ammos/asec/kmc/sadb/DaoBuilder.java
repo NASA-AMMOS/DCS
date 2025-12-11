@@ -16,8 +16,8 @@ import java.util.Map;
  */
 public class DaoBuilder {
 
-    private static final String connFormat = "jdbc:mariadb://%s:%s/%s";
-    private static final Logger LOG        = LoggerFactory.getLogger(DaoBuilder.class);
+    private static final String CONN_FORMAT = "jdbc:mariadb://%s:%s/%s";
+    private static final Logger LOG         = LoggerFactory.getLogger(DaoBuilder.class);
 
     private final Map<String, String> params = new HashMap<>();
 
@@ -181,7 +181,7 @@ public class DaoBuilder {
                     throw new KmcException("Must provide either full connection string, or the host, port, and " +
                             "schema, to connect to database");
                 }
-                url = String.format(connFormat, host, port, schema);
+                url = String.format(CONN_FORMAT, host, port, schema);
             }
 
             String pass;

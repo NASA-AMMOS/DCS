@@ -20,7 +20,7 @@ public class TestingWebApp {
     @Bean
     public IKmcDao getDao() throws KmcException {
         Config config = new Config("/", "kmc-sa-mgmt-service.properties");
-        KmcDao dao    = new KmcDao("sadb_user", "sadb_test");
+        KmcDao dao    = new KmcDao("sadb_user", "");
         dao.init();
         return dao;
     }

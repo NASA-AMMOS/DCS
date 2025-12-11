@@ -14,11 +14,14 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class BaseH2Test {
+    public static final String JDBC_H_2_MEM_TEST = "jdbc:h2:mem:test";
+    public static final String SADB_USER = "sadb_user";
+    public static final String PASSWORD = "";
     public static KmcDao dao;
 
     @BeforeClass
     public static void beforeClass() throws KmcException {
-        dao = new KmcDao("sadb_user", "sadb_test");
+        dao = new KmcDao(SADB_USER, PASSWORD);
         dao.init();
         System.setProperty("KMC_UNIT_TEST", "true");
     }
@@ -46,7 +49,7 @@ public class BaseH2Test {
     }
 
     private void setupTable(String sqlFile) {
-        try (Connection conn = DriverManager.getConnection("jdbc:h2:mem:test", "sadb_user", "sadb_test");
+        try (Connection conn = DriverManager.getConnection(JDBC_H_2_MEM_TEST, SADB_USER, PASSWORD);
              Reader reader = new InputStreamReader(getClass().getResourceAsStream(sqlFile))) {
             RunScript.execute(conn, reader);
         } catch (SQLException sqlException) {
@@ -71,7 +74,7 @@ public class BaseH2Test {
     }
 
     private static void truncateTable(String tableName) throws SQLException {
-        try (Connection conn = DriverManager.getConnection("jdbc:h2:mem:test", "sadb_user", "sadb_test")) {
+        try (Connection conn = DriverManager.getConnection(JDBC_H_2_MEM_TEST, SADB_USER, PASSWORD)) {
             conn.createStatement().execute("TRUNCATE TABLE sadb.%s".formatted(tableName));
         }
     }
@@ -89,7 +92,7 @@ public class BaseH2Test {
     }
 
     private static void dropTable(String tableName) throws SQLException {
-        try (Connection conn = DriverManager.getConnection("jdbc:h2:mem:test", "sadb_user", "sadb_test")) {
+        try (Connection conn = DriverManager.getConnection(JDBC_H_2_MEM_TEST, SADB_USER, PASSWORD)) {
             conn.createStatement().execute("DROP TABLE sadb.%s".formatted(tableName));
         }
     }

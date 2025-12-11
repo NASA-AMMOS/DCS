@@ -17,6 +17,9 @@ import static org.junit.Assert.assertNotEquals;
 
 public class SaExpireTest extends BaseCommandLineTest {
 
+    public static final String TYPE_FMT = "--type=%s";
+    public static final String SCID_46 = "--scid=46";
+    public static final String SPI_1 = "--spi=1";
     private CommandLine cli;
 
     @Before
@@ -32,7 +35,7 @@ public class SaExpireTest extends BaseCommandLineTest {
     }
 
     public void testExpireNoConfirm(FrameType type) throws KmcException {
-        int exit = cli.execute("--spi=1", "--scid=46", "-y", String.format("--type=%s", type.name()));
+        int exit = cli.execute(SPI_1, SCID_46, "-y", String.format(TYPE_FMT, type.name()));
         assertEquals(0, exit);
         ISecAssn sa = dao.getSa(new SpiScid(1, (short) 46), type);
         assertEquals(1, (short) sa.getSaState());
@@ -49,7 +52,7 @@ public class SaExpireTest extends BaseCommandLineTest {
         InputStream old = System.in;
         InputStream in  = new ByteArrayInputStream("y".getBytes(StandardCharsets.UTF_8));
         System.setIn(in);
-        int exit = cli.execute("--spi=1", "--scid=46", String.format("--type=%s", type.name()));
+        int exit = cli.execute(SPI_1, SCID_46, String.format(TYPE_FMT, type.name()));
         assertEquals(0, exit);
         ISecAssn sa = dao.getSa(new SpiScid(1, (short) 46), type);
         assertEquals(1, (short) sa.getSaState());
@@ -68,7 +71,7 @@ public class SaExpireTest extends BaseCommandLineTest {
         InputStream old = System.in;
         InputStream in  = new ByteArrayInputStream("n".getBytes(StandardCharsets.UTF_8));
         System.setIn(in);
-        int exit = cli.execute("--spi=1", "--scid=46", String.format("--type=%s", type.name()));
+        int exit = cli.execute(SPI_1, SCID_46, String.format(TYPE_FMT, type.name()));
         assertEquals(0, exit);
         ISecAssn sa = dao.getSa(new SpiScid(1, (short) 46), type);
         assertEquals(3, (short) sa.getSaState());
@@ -83,11 +86,11 @@ public class SaExpireTest extends BaseCommandLineTest {
     }
 
     public void testExpireFail(FrameType type) {
-        int exit = cli.execute("--spi=8", String.format("--type=%s", type.name()));
+        int exit = cli.execute("--spi=8", String.format(TYPE_FMT, type.name()));
         assertNotEquals(0, exit);
-        exit = cli.execute("--scid=46", String.format("--type=%s", type.name()));
+        exit = cli.execute(SCID_46, String.format(TYPE_FMT, type.name()));
         assertNotEquals(0, exit);
-        exit = cli.execute("--spi=8", "--scid=46", String.format("--type=%s", type.name()));
+        exit = cli.execute("--spi=8", SCID_46, String.format(TYPE_FMT, type.name()));
         assertNotEquals(0, exit);
     }
 }

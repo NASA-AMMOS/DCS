@@ -270,10 +270,8 @@ public class KmcDao implements IKmcDao {
             createSa(session, sa);
             session.commit();
         } catch (HibernateException e) {
-            LOG.error("Encountered Hibernate error while creating SA {}: {}", sa, e.getMessage());
             throw new KmcException("Unable to create SA due to Hibernate error: ", e);
         } catch (Exception e) {
-            LOG.error("Encountered unexpected error while creating SA {}: {}", sa, e.getMessage());
             throw new KmcException("Unable to create SA due to unexpected error: ", e);
         }
         return getSa(sa.getId(), sa.getType());
