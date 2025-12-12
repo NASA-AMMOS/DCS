@@ -20,7 +20,8 @@ public class TestingWebApp {
     @Bean
     public IKmcDao getDao() throws KmcException {
         Config config = new Config("/", "kmc-sa-mgmt-service.properties");
-        KmcDao dao    = new KmcDao("sadb_user", "");
+        // password is random and provided by BaseH2Test
+        KmcDao dao    = new KmcDao("sadb_user", System.getProperty("DB_PASS"));
         dao.init();
         return dao;
     }

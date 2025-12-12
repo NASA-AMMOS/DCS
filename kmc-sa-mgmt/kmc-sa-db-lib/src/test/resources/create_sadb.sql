@@ -11,7 +11,7 @@
  * exporting such information to foreign countries or providing access to
  * foreign persons.
  */
-CREATE USER IF NOT EXISTS sadb_user PASSWORD 'sadb_test' ADMIN;
+-- CREATE USER IF NOT EXISTS sadb_user PASSWORD 'sadb_test' ADMIN;
 
 CREATE SCHEMA IF NOT EXISTS sadb;
 
