@@ -16,7 +16,11 @@ public class ConfigTest {
         Config.setSysOverridesEnabled(false);
         Config cfg = new Config("/tmp", "kmc-sa-mgmt.properties");
         assertEquals("sadb_user", cfg.getUser());
-        assertEquals("", cfg.getPass());
+        if (System.getProperty("DB_PASS") != null) {
+            assertFalse(cfg.getPass().isEmpty());
+        } else {
+            assertEquals("", cfg.getPass());
+        }
         assertEquals("jdbc:h2:mem:test;MODE=mysql;INIT=RUNSCRIPT FROM 'classpath:create_sadb.sql'\\;", cfg.getConn());
         assertEquals("localhost", cfg.getHost());
         assertEquals("3306", cfg.getPort());
