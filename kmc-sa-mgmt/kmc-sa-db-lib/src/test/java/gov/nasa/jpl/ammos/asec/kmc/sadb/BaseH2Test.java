@@ -10,10 +10,7 @@ import org.junit.BeforeClass;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 
 public abstract class BaseH2Test {
     public static final String JDBC_H_2_MEM_TEST = "jdbc:h2:mem:test";
@@ -35,7 +32,7 @@ public abstract class BaseH2Test {
         dao = new KmcDao(SADB_USER, PASSWORD);
         dao.init();
         System.setProperty("KMC_UNIT_TEST", "true");
-        System.setProperty("DB_PASS",  PASSWORD);
+        System.setProperty("DB_PASS", PASSWORD);
     }
 
     /**
@@ -62,7 +59,7 @@ public abstract class BaseH2Test {
 
     private void setupTable(String sqlFile) {
         try (Connection conn = DriverManager.getConnection(JDBC_H_2_MEM_TEST, SADB_USER, PASSWORD);
-             Reader reader = new InputStreamReader(getClass().getResourceAsStream(sqlFile))) {
+             Reader reader = new InputStreamReader(BaseH2Test.class.getResourceAsStream(sqlFile))) {
             RunScript.execute(conn, reader);
         } catch (SQLException sqlException) {
             throw new RuntimeException("Encountered unexpected SQLException while setting up unit test DB: ",
@@ -86,8 +83,9 @@ public abstract class BaseH2Test {
     }
 
     private static void truncateTable(String tableName) throws SQLException {
-        try (Connection conn = DriverManager.getConnection(JDBC_H_2_MEM_TEST, SADB_USER, PASSWORD)) {
-            conn.createStatement().execute("TRUNCATE TABLE sadb.%s".formatted(tableName));
+        try (Connection conn = DriverManager.getConnection(JDBC_H_2_MEM_TEST, SADB_USER, PASSWORD);
+             Statement stmt = conn.createStatement()) {
+            stmt.execute("TRUNCATE TABLE sadb.%s".formatted(tableName));
         }
     }
 
@@ -104,8 +102,9 @@ public abstract class BaseH2Test {
     }
 
     private static void dropTable(String tableName) throws SQLException {
-        try (Connection conn = DriverManager.getConnection(JDBC_H_2_MEM_TEST, SADB_USER, PASSWORD)) {
-            conn.createStatement().execute("DROP TABLE sadb.%s".formatted(tableName));
+        try (Connection conn = DriverManager.getConnection(JDBC_H_2_MEM_TEST, SADB_USER, PASSWORD);
+             Statement stmt = conn.createStatement()) {
+            stmt.execute("DROP TABLE sadb.%s".formatted(tableName));
         }
     }
 

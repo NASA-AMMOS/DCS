@@ -366,7 +366,7 @@ export default function SaModalForm({
                                 name={"ecs"}
                                 label={"ECS"}
                                 formik={formik}
-                                lookup={parseInt}
+                                lookup={Number.parseInt}
                                 onChange={handleEcsChange}
                                 helperText={`Encryption Cipher Suite: ${ENC_CYPHERS.NONE.name} = ${ENC_CYPHERS.NONE.value}, 
                             ${ENC_CYPHERS.AES256_GCM.name} = ${ENC_CYPHERS.AES256_GCM.value},
@@ -381,7 +381,7 @@ export default function SaModalForm({
                                 name={"acs"}
                                 label={"ACS"}
                                 formik={formik}
-                                lookup={parseInt}
+                                lookup={Number.parseInt}
                                 onChange={handleAcsChange}
                                 helperText={`Authentication Cipher Suite: ${AUTH_CIPHERS.NONE.name} = ${AUTH_CIPHERS.NONE.value}, 
                             ${AUTH_CIPHERS.AES256_CMAC.name} = ${AUTH_CIPHERS.AES256_CMAC.value}, 
