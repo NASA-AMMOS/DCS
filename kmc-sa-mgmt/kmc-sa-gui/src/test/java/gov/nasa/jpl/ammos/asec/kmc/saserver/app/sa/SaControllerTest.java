@@ -66,15 +66,11 @@ public class SaControllerTest extends BaseH2Test {
     public static final String BOGUS_AKID_2 = "bogus/akid/2";
     public static final String BOGUS_EKID_2 = "bogus/ekid/2";
     public static final String KEY_PATH = "/key";
-    public static final String KEY_PATH_SLASH = KEY_PATH + "/";
     public static final String CSV_PATH = "/csv";
-    public static final String CSV_PATH_SLASH = CSV_PATH + "/";
     public static final String CREATE_PATH = "/create";
     public static final String ID_PATH = "/id";
     public static final String IV_PATH = "/iv";
-    public static final String IV_PATH_SLASH = IV_PATH + "/";
     public static final String ARSN_PATH = "/arsn";
-    public static final String ARSN_PATH_SLASH = ARSN_PATH + "/";
     @Autowired
     private SaController sa;
 
@@ -557,7 +553,7 @@ public class SaControllerTest extends BaseH2Test {
         idArsn.withObject(ID_PATH).put(SPI, 100).put(SCID, 46);
         idArsn.put(ARSN_LEN, 8).put(ARSN, "0000000000000001").put(ARSNW, 10);
         idArsn.put(TYPE, type.name());
-        ObjectNode body = restTemplate.postForObject(getUrl() + ARSN_PATH_SLASH + type.name(), idArsn, ObjectNode.class);
+        ObjectNode body = restTemplate.postForObject(getUrl() + ARSN_PATH + "/" + type.name(), idArsn, ObjectNode.class);
         assertEquals(SUCCESS, body.get(STATUS).asText());
         ISecAssn arsn = dao.getSa(new SpiScid(100, (short) 46), type);
         assertEquals(8, (short) arsn.getArsnLen());
@@ -566,13 +562,13 @@ public class SaControllerTest extends BaseH2Test {
         assertEquals(type, arsn.getType());
 
         idArsn.put(ARSN, "02");
-        body = restTemplate.postForObject(getUrl() + ARSN_PATH_SLASH + type.name(), idArsn, ObjectNode.class);
+        body = restTemplate.postForObject(getUrl() + ARSN_PATH + "/" + type.name(), idArsn, ObjectNode.class);
         assertEquals(SUCCESS, body.get(STATUS).asText());
         arsn = dao.getSa(new SpiScid(100, (short) 46), type);
         assertArrayEquals(new byte[]{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02}, arsn.getArsn());
 
         idArsn.put(ARSN, "000000000000000001");
-        body = restTemplate.postForObject(getUrl() + ARSN_PATH_SLASH + type.name(), idArsn, ObjectNode.class);
+        body = restTemplate.postForObject(getUrl() + ARSN_PATH + "/" + type.name(), idArsn, ObjectNode.class);
         assertEquals(ERROR, body.get(STATUS).asText());
         arsn = dao.getSa(new SpiScid(100, (short) 46), type);
         assertArrayEquals(new byte[]{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02}, arsn.getArsn());
@@ -614,7 +610,7 @@ public class SaControllerTest extends BaseH2Test {
         idIv.withObject(ID_PATH).put(SPI, 100).put(SCID, 46);
         idIv.put(IV, "00000000000000000000000000000001");
         idIv.put(IV_LEN, 16);
-        ObjectNode body = restTemplate.postForObject(getUrl() + IV_PATH_SLASH + type.name(), idIv, ObjectNode.class);
+        ObjectNode body = restTemplate.postForObject(getUrl() + IV_PATH + "/" + type.name(), idIv, ObjectNode.class);
         assertEquals(SUCCESS, body.get(STATUS).asText());
         ISecAssn iv = dao.getSa(new SpiScid(100, (short) 46), type);
         assertEquals(type, iv.getType());
@@ -637,7 +633,7 @@ public class SaControllerTest extends BaseH2Test {
                 0x01}, iv.getIv());
 
         idIv.put(IV, "02");
-        body = restTemplate.postForObject(getUrl() + IV_PATH_SLASH + type.name(), idIv, ObjectNode.class);
+        body = restTemplate.postForObject(getUrl() + IV_PATH + "/" + type.name(), idIv, ObjectNode.class);
         assertEquals(SUCCESS, body.get(STATUS).asText());
         iv = dao.getSa(new SpiScid(100, (short) 46), type);
         assertEquals(type, iv.getType());
@@ -660,7 +656,7 @@ public class SaControllerTest extends BaseH2Test {
 
         idIv.put(IV_LEN, 2);
         idIv.put(IV, "00000001");
-        body = restTemplate.postForObject(getUrl() + IV_PATH_SLASH + type.name(), idIv, ObjectNode.class);
+        body = restTemplate.postForObject(getUrl() + IV_PATH + "/" + type.name(), idIv, ObjectNode.class);
         assertEquals(ERROR, body.get(STATUS).asText());
     }
 
@@ -731,14 +727,14 @@ public class SaControllerTest extends BaseH2Test {
         ObjectNode rekey = mapper.createObjectNode();
         rekey.withObject(ID_PATH).put(SPI, 100).put(SCID, 46);
         rekey.put(EKID, BOGUS_EKID);
-        ObjectNode body = restTemplate.postForObject(getUrl() + KEY_PATH_SLASH + type.name(), rekey, ObjectNode.class);
+        ObjectNode body = restTemplate.postForObject(getUrl() + KEY_PATH + "/" + type.name(), rekey, ObjectNode.class);
         assertEquals(SUCCESS, body.get(STATUS).asText());
         ISecAssn keyed = dao.getSa(new SpiScid(100, (short) 46), type);
         assertEquals(type, keyed.getType());
         assertEquals(BOGUS_EKID, keyed.getEkid());
         rekey.put(AKID, BOGUS_AKID);
         rekey.put(EKID, "");
-        body = restTemplate.postForObject(getUrl() + KEY_PATH_SLASH + type.name(), rekey, ObjectNode.class);
+        body = restTemplate.postForObject(getUrl() + KEY_PATH + "/" + type.name(), rekey, ObjectNode.class);
         assertEquals(SUCCESS, body.get(STATUS).asText());
         keyed = dao.getSa(new SpiScid(100, (short) 46), type);
         assertEquals(type, keyed.getType());
@@ -746,7 +742,7 @@ public class SaControllerTest extends BaseH2Test {
         assertEquals("", keyed.getEkid());
         rekey.put(AKID, BOGUS_AKID_2);
         rekey.put(EKID, BOGUS_EKID_2);
-        body = restTemplate.postForObject(getUrl() + KEY_PATH_SLASH + type.name(), rekey, ObjectNode.class);
+        body = restTemplate.postForObject(getUrl() + KEY_PATH + "/" + type.name(), rekey, ObjectNode.class);
         assertEquals(SUCCESS, body.get(STATUS).asText());
         keyed = dao.getSa(new SpiScid(100, (short) 46), type);
         assertEquals(type, keyed.getType());
@@ -789,7 +785,7 @@ public class SaControllerTest extends BaseH2Test {
 
     public void getCsvByType(FrameType type) throws IOException, KmcException {
         createSaByType(type);
-        String csvResp = restTemplate.getForObject(getUrl() + CSV_PATH_SLASH + type.name(), String.class);
+        String csvResp = restTemplate.getForObject(getUrl() + CSV_PATH + "/" + type.name(), String.class);
         assertNotNull(csvResp);
         List<String> entries = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(new StringReader(csvResp))) {

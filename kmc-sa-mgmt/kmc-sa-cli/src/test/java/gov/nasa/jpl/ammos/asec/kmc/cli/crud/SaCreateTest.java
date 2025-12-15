@@ -41,6 +41,12 @@ public class SaCreateTest extends BaseCommandLineTest {
     public static final String ECS_0_X_01 = "--ecs=0x01";
     public static final String IVLEN_12 = "--ivlen=12";
     public static final String ABMLEN_20 = "--abmlen=20";
+    public static final String AKID_130 = "--akid=130";
+    public static final String ACS_1 = "--acs=1";
+    public static final String ST_3 = "--st=3";
+    public static final String ST_NEGATIE_1 = "--st=-1";
+    public static final String ST_4 = "--st=4";
+    public static final String ACS_0_X_01 = "--acs=0x01";
 
     @Test
     public void testCreateSasBulkFail() {
@@ -347,15 +353,15 @@ public class SaCreateTest extends BaseCommandLineTest {
 
     public void createSaAkidFail(FrameType type) {
         CommandLine cmd = getCmd(new SaCreate(), true, null, null);
-        int exitCode = cmd.execute(TFVN_EQ_0, SCID_46, VCID_0, MAPID_0, SPI_EQ_6, "--akid=130",
+        int exitCode = cmd.execute(TFVN_EQ_0, SCID_46, VCID_0, MAPID_0, SPI_EQ_6, AKID_130,
                 String.format(TYPE_FMT, type.name()));
         assertNotEquals(0, exitCode);
 
-        exitCode = cmd.execute(TFVN_EQ_0, SCID_46, VCID_0, MAPID_0, SPI_EQ_6, "--acs=1", String.format(
+        exitCode = cmd.execute(TFVN_EQ_0, SCID_46, VCID_0, MAPID_0, SPI_EQ_6, ACS_1, String.format(
                 TYPE_FMT, type.name()));
         assertNotEquals(0, exitCode);
 
-        exitCode = cmd.execute(TFVN_EQ_0, SCID_46, VCID_0, MAPID_0, SPI_EQ_6, "--akid=130", "--acs=1",
+        exitCode = cmd.execute(TFVN_EQ_0, SCID_46, VCID_0, MAPID_0, SPI_EQ_6, AKID_130, ACS_1,
                 String.format(TYPE_FMT, type.name()));
         assertNotEquals(0, exitCode);
     }
@@ -369,7 +375,7 @@ public class SaCreateTest extends BaseCommandLineTest {
 
     public void createSaAkid(FrameType type) throws KmcException {
         CommandLine cmd = getCmd(new SaCreate(), true, null, null);
-        int exitCode = cmd.execute(TFVN_EQ_0, SCID_46, VCID_0, MAPID_0, SPI_EQ_6, "--akid=130", "--acs=0x01", "--st=2", String.format(TYPE_FMT, type.name()));
+        int exitCode = cmd.execute(TFVN_EQ_0, SCID_46, VCID_0, MAPID_0, SPI_EQ_6, AKID_130, ACS_0_X_01, "--st=2", String.format(TYPE_FMT, type.name()));
         assertEquals(0, exitCode);
 
         ISecAssn sa = dao.getSa(new SpiScid(6, (short) 46), type);
@@ -419,7 +425,7 @@ public class SaCreateTest extends BaseCommandLineTest {
         assertEquals(0, exitCode);
 
         exitCode = cmd.execute(TFVN_EQ_0, "--scid=47", VCID_0, MAPID_0, SPI_8, EKID_140, ECS_0_X_01
-                , IVLEN_12, "--st=3", String.format(TYPE_FMT, type.name()));
+                , IVLEN_12, ST_3, String.format(TYPE_FMT, type.name()));
         assertEquals(0, exitCode);
         exitCode = cmd.execute(TFVN_EQ_0, "--scid=48", VCID_0, MAPID_0, SPI_8, EKID_140, ECS_0_X_02
                 , IVLEN_16, ST_AUTHENTICATED_ENCRYPTION, String.format(TYPE_FMT, type.name()));
@@ -629,7 +635,7 @@ public class SaCreateTest extends BaseCommandLineTest {
         PrintWriter  out = new PrintWriter(o);
         CommandLine  cmd = getCmd(new SaCreate(), true, out, err);
         int exitCode = cmd.execute(TFVN_EQ_0, SCID_46, VCID_0, MAPID_0, SPI_7, EKID_130, ECS_0_X_01,
-                "--akid=130", "--acs=0x01", "--st=3", String.format(TYPE_FMT, type.name()));
+                AKID_130, ACS_0_X_01, ST_3, String.format(TYPE_FMT, type.name()));
         assertEquals("got " + w.toString(), 0, exitCode);
         ISecAssn sa = dao.getSa(new SpiScid(7, (short) 46), type);
         assertNotNull(sa);
@@ -654,31 +660,31 @@ public class SaCreateTest extends BaseCommandLineTest {
 
     public void createSaStFail(FrameType type) throws KmcException {
         CommandLine cmd = getCmd(new SaCreate(), true, null, null);
-        int exitCode = cmd.execute(TFVN_EQ_0, SCID_46, VCID_0, MAPID_0, SPI_EQ_6, "--st=-1",
+        int exitCode = cmd.execute(TFVN_EQ_0, SCID_46, VCID_0, MAPID_0, SPI_EQ_6, ST_NEGATIE_1,
                 String.format(TYPE_FMT, type.name()));
         assertNotEquals(0, exitCode);
 
-        exitCode = cmd.execute(TFVN_EQ_0, SCID_46, VCID_0, MAPID_0, SPI_7, "--st=4", String.format(
+        exitCode = cmd.execute(TFVN_EQ_0, SCID_46, VCID_0, MAPID_0, SPI_7, ST_4, String.format(
                 TYPE_FMT, type.name()));
         assertNotEquals(0, exitCode);
 
         exitCode = cmd.execute(TFVN_EQ_0, SCID_46, VCID_0, MAPID_0, SPI_7, EKID_130, ECS_0_X_01
-                , "--st=4", String.format(TYPE_FMT, type.name()));
+                , ST_4, String.format(TYPE_FMT, type.name()));
         assertNotEquals(0, exitCode);
 
         exitCode = cmd.execute(TFVN_EQ_0, SCID_46, VCID_0, MAPID_0, SPI_7, EKID_130, ECS_0_X_01
-                , "--st=-1", String.format(TYPE_FMT, type.name()));
+                , ST_NEGATIE_1, String.format(TYPE_FMT, type.name()));
         assertNotEquals(0, exitCode);
 
-        exitCode = cmd.execute(TFVN_EQ_0, SCID_46, VCID_0, MAPID_0, SPI_7, "--akid=130", "--acs=0x01"
-                , "--st=4", String.format(TYPE_FMT, type.name()));
+        exitCode = cmd.execute(TFVN_EQ_0, SCID_46, VCID_0, MAPID_0, SPI_7, AKID_130, ACS_0_X_01
+                , ST_4, String.format(TYPE_FMT, type.name()));
         assertNotEquals(0, exitCode);
 
-        exitCode = cmd.execute(TFVN_EQ_0, SCID_46, VCID_0, MAPID_0, SPI_7, "--akid=130", "--acs=0x01"
-                , "--st=-1", String.format(TYPE_FMT, type.name()));
+        exitCode = cmd.execute(TFVN_EQ_0, SCID_46, VCID_0, MAPID_0, SPI_7, AKID_130, ACS_0_X_01
+                , ST_NEGATIE_1, String.format(TYPE_FMT, type.name()));
         assertNotEquals(0, exitCode);
 
-        exitCode = cmd.execute(TFVN_EQ_0, SCID_46, VCID_0, MAPID_0, SPI_7, "--akid=130", "--acs=0x01"
+        exitCode = cmd.execute(TFVN_EQ_0, SCID_46, VCID_0, MAPID_0, SPI_7, AKID_130, ACS_0_X_01
                 , "--st=HI", String.format(TYPE_FMT, type.name()));
         assertNotEquals(0, exitCode);
 
@@ -735,7 +741,7 @@ public class SaCreateTest extends BaseCommandLineTest {
         assertEquals(1, (short) sa.getEst());
         assertEquals(1, (short) sa.getAst());
 
-        exitCode = cmd.execute(TFVN_EQ_0, SCID_46, VCID_0, MAPID_0, "--spi=11", "--st=3",
+        exitCode = cmd.execute(TFVN_EQ_0, SCID_46, VCID_0, MAPID_0, "--spi=11", ST_3,
                 String.format(TYPE_FMT, type.name()));
         assertEquals(0, exitCode);
         sa = dao.getSa(new SpiScid(11, (short) 46), type);

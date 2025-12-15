@@ -29,7 +29,7 @@ public abstract class BaseH2Test {
             stmt.setString(1, PASSWORD);
             stmt.execute();
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new KmcException(e);
         }
 
         dao = new KmcDao(SADB_USER, PASSWORD);
