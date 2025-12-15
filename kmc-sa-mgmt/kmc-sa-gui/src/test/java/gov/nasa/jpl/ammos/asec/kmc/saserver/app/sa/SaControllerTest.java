@@ -71,6 +71,7 @@ public class SaControllerTest extends BaseH2Test {
     public static final String ID_PATH = "/id";
     public static final String IV_PATH = "/iv";
     public static final String ARSN_PATH = "/arsn";
+    public static final String IV_1 = "00000000000000000000000000000001";
     @Autowired
     private SaController sa;
 
@@ -379,7 +380,7 @@ public class SaControllerTest extends BaseH2Test {
         body = restTemplate.postForObject(getUrl() + EXPIRE, node, ObjectNode.class);
         assertEquals(1, body.get(SA_STATE).asInt());
 
-        node.put(IV, "00000000000000000000000000000001");
+        node.put(IV, IV_1);
         node.put(IV_LEN, "16");
         node.put(EKID, "null");
         body = restTemplate.postForObject(getUrl(), node, ObjectNode.class);
@@ -426,7 +427,7 @@ public class SaControllerTest extends BaseH2Test {
         body = restTemplate.postForObject(getUrl() + EXPIRE, node, ObjectNode.class);
         assertEquals(1, body.get(SA_STATE).asInt());
 
-        node.put(IV, "00000000000000000000000000000001");
+        node.put(IV, IV_1);
         node.put(IV_LEN, "16");
         node.put(EKID, "null");
         body = restTemplate.postForObject(getUrl(), node, ObjectNode.class);
@@ -484,7 +485,7 @@ public class SaControllerTest extends BaseH2Test {
         body = restTemplate.postForObject(getUrl() + EXPIRE, node, ObjectNode.class);
         assertEquals(1, body.get(SA_STATE).asInt());
 
-        node.put(IV, "00000000000000000000000000000001");
+        node.put(IV, IV_1);
         node.put(IV_LEN, "16");
         node.put(EKID, "null");
         body = restTemplate.postForObject(getUrl(), node, ObjectNode.class);
@@ -533,7 +534,7 @@ public class SaControllerTest extends BaseH2Test {
         body = restTemplate.postForObject(getUrl() + EXPIRE, node, ObjectNode.class);
         assertEquals(1, body.get(SA_STATE).asInt());
 
-        node.put(IV, "00000000000000000000000000000001");
+        node.put(IV, IV_1);
         node.put(IV_LEN, "16");
         node.put(EKID, "null");
         body = restTemplate.postForObject(getUrl(), node, ObjectNode.class);
@@ -608,7 +609,7 @@ public class SaControllerTest extends BaseH2Test {
         createSaByType(type);
         ObjectNode idIv = mapper.createObjectNode();
         idIv.withObject(ID_PATH).put(SPI, 100).put(SCID, 46);
-        idIv.put(IV, "00000000000000000000000000000001");
+        idIv.put(IV, IV_1);
         idIv.put(IV_LEN, 16);
         ObjectNode body = restTemplate.postForObject(getUrl() + IV_PATH + "/" + type.name(), idIv, ObjectNode.class);
         assertEquals(SUCCESS, body.get(STATUS).asText());
@@ -665,7 +666,7 @@ public class SaControllerTest extends BaseH2Test {
         testCreateSa();
         ObjectNode idIv = mapper.createObjectNode();
         idIv.withObject(ID_PATH).put(SPI, 100).put(SCID, 46);
-        idIv.put(IV, "00000000000000000000000000000001");
+        idIv.put(IV, IV_1);
         idIv.put(IV_LEN, 16);
         ObjectNode body = restTemplate.postForObject(getUrl() + IV_PATH, idIv, ObjectNode.class);
         assertEquals(SUCCESS, body.get(STATUS).asText());
