@@ -84,9 +84,8 @@ public abstract class BaseH2Test {
 
     private static void truncateTable(String tableName) throws SQLException {
         try (Connection conn = DriverManager.getConnection(JDBC_H_2_MEM_TEST, SADB_USER, PASSWORD);
-             PreparedStatement stmt = conn.prepareStatement("TRUNCATE TABLE sadb.?");) {
-            stmt.setString(1, tableName);
-            stmt.execute();
+             Statement stmt = conn.createStatement()) {
+            stmt.execute("TRUNCATE TABLE sadb.%s".formatted(tableName));
         }
     }
 
@@ -104,9 +103,8 @@ public abstract class BaseH2Test {
 
     private static void dropTable(String tableName) throws SQLException {
         try (Connection conn = DriverManager.getConnection(JDBC_H_2_MEM_TEST, SADB_USER, PASSWORD);
-             PreparedStatement stmt = conn.prepareStatement("DROP TABLE sadb.?")) {
-            stmt.setString(1, tableName);
-            stmt.execute();
+             Statement stmt = conn.createStatement()) {
+            stmt.execute("DROP TABLE sadb.%s".formatted(tableName));
         }
     }
 
