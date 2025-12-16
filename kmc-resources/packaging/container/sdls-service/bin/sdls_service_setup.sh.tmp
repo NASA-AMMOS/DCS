@@ -262,7 +262,9 @@ if [ ! -r "${SVC_CFG_DIR}/.props.configured" ]; then
   /bin/sed -i -e "s|^#cryptolib.process_tc.check_fecf=.*|cryptolib.process_tc.check_fecf=${CHECK_FECF}|" "${SVC_PROPS}"
 
   if [ -n "${MANAGED_PARAMS}" ]; then
-    /bin/sed -i -e '/^#  cryptolib.tc.<scid>/a\' -e "${MANAGED_PARAMS}" "${SVC_PROPS}"
+    /bin/echo "" >> "${SVC_PROPS}"
+    /bin/echo "# Managed Parameters" >> "${SVC_PROPS}"
+    /bin/echo "${MANAGED_PARAMS}" >> "${SVC_PROPS}"
   fi
 
   /bin/touch "${SVC_CFG_DIR}/.props.configured"
