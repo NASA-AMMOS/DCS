@@ -4,7 +4,7 @@ import java.security.Provider;
 import java.security.Security;
 import java.util.Enumeration;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
 
