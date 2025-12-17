@@ -61,6 +61,7 @@ AMMOS Key Management & Cryptography Security Association (SA) Management Service
 %attr(0755,root,root) %{binpath}/*
 
 %dir %attr(0755,%{cfgusr},root) %{cfgpath}
+%dir %attr(0755,root,root) %{cfgpath}/sa_mariadb_sql
 %config %attr(0644,%{cfgusr},%{usersgrp}) %{cfgpath}/*
 
 %{incpath}/*
