@@ -131,6 +131,8 @@ while [ : ]; do
   esac
 done
 
+BCFIPS_VER=$(/bin/grep bcfips.version "${DIST}/pom.xml" | /bin/cut -f2 -d'>' | /bin/cut -f1 -d'<')
+
 echo '-------------------------------'
 echo 'KMC Deployment'
 echo '-------------------------------'
@@ -913,7 +915,6 @@ fi
 
 if [ ${BUILD_IMG} -eq 1 ]; then
   # Build Container images for KMC Services
-  BCFIPS_VER=$(/bin/grep -A1 bc-fips "${DIST}/kmc-sdls-service/pom.xml" | /bin/grep version | /bin/cut -f2 -d'>' | /bin/cut -f1 -d'<')
   /bin/sed -e "s|__BCFIPS_VER__|${BCFIPS_VER}|g" -e "s|__CRYPTO_UID__|${CRYPTOUSR_UID}|g" -e "s|__CRYPTO_GID__|${CRYPTOGRP_GID}|g" ${SRC_RSC}/packaging/container/crypto-service/bin/crypto_service_setup.sh.tmp > ${SRC_RSC}/packaging/container/crypto-service/bin/crypto_service_setup.sh
   /bin/sed -e "s|__BCFIPS_VER__|${BCFIPS_VER}|g" -e "s|__CRYPTO_UID__|${CRYPTOUSR_UID}|g" -e "s|__CRYPTO_GID__|${CRYPTOGRP_GID}|g" ${SRC_RSC}/packaging/container/sdls-service/bin/sdls_service_setup.sh.tmp > ${SRC_RSC}/packaging/container/sdls-service/bin/sdls_service_setup.sh
   /bin/sed -e "s|__BCFIPS_VER__|${BCFIPS_VER}|g" -e "s|__CRYPTO_UID__|${CRYPTOUSR_UID}|g" -e "s|__CRYPTO_GID__|${CRYPTOGRP_GID}|g" ${SRC_RSC}/packaging/container/sa-mgmt-service/bin/sa_mgmt_service_setup.sh.tmp > ${SRC_RSC}/packaging/container/sa-mgmt-service/bin/sa_mgmt_service_setup.sh

@@ -12,7 +12,7 @@ debug() {
   done
 }
 
-BCFIPS_VER=2.0.0
+BCFIPS_VER=__BCFIPS_VER__
 
 # ammos-server-cert.pem
 if [ ! -r /etc/pki/tls/certs/ammos-server-cert.pem ]; then
