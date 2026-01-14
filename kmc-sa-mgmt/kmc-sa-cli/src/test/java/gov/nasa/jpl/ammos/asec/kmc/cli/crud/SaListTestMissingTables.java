@@ -18,6 +18,8 @@ import static org.junit.Assert.assertNotEquals;
  */
 public class SaListTestMissingTables extends BaseCommandLineTest {
 
+    public static final String TYPE_FMT = "--type=%s";
+
     @Override
     public void beforeTest() {
         setupTc();
@@ -45,7 +47,7 @@ public class SaListTestMissingTables extends BaseCommandLineTest {
         StringWriter w    = new StringWriter();
         PrintWriter  out  = new PrintWriter(w);
         CommandLine  cli  = getCmd(new SaList(), true, out, null);
-        int          exit = cli.execute("--spi=1", String.format("--type=%s", type.name()));
+        int          exit = cli.execute("--spi=1", String.format(TYPE_FMT, type.name()));
         assertEquals(0, exit);
         if (type.equals(FrameType.TC)) {
             assertEquals("""
@@ -70,7 +72,7 @@ public class SaListTestMissingTables extends BaseCommandLineTest {
         StringWriter w    = new StringWriter();
         PrintWriter  out  = new PrintWriter(w);
         CommandLine  cli  = getCmd(new SaList(), true, out, null);
-        int          exit = cli.execute("--scid=1", String.format("--type=%s", type.name()));
+        int          exit = cli.execute("--scid=1", String.format(TYPE_FMT, type.name()));
         assertEquals(0, exit);
         assertEquals("\"spi\",\"scid\",\"vcid\",\"tfvn\",\"mapid\",\"sa_state\",\"ekid\",\"est\",\"akid\",\"ast\"," +
                 "\"type\"\n", w.toString());
@@ -87,7 +89,7 @@ public class SaListTestMissingTables extends BaseCommandLineTest {
         StringWriter w    = new StringWriter();
         PrintWriter  out  = new PrintWriter(w);
         CommandLine  cli  = getCmd(new SaList(), true, out, null);
-        int          exit = cli.execute("--spi=2", "--scid=46", String.format("--type=%s", type.name()));
+        int          exit = cli.execute("--spi=2", "--scid=46", String.format(TYPE_FMT, type.name()));
         assertEquals(0, exit);
         if (type.equals(FrameType.TC)) {
             assertEquals("""
@@ -113,7 +115,7 @@ public class SaListTestMissingTables extends BaseCommandLineTest {
         PrintWriter  out = new PrintWriter(w);
         dao.createSa(6, (byte) 0, (short) 44, (byte) 0, (byte) 0, type);
         CommandLine cli  = getCmd(new SaList(), true, out, null);
-        int         exit = cli.execute("--active", String.format("--type=%s", type.name()));
+        int         exit = cli.execute("--active", String.format(TYPE_FMT, type.name()));
         assertEquals(0, exit);
         if (type.equals(FrameType.TC)) {
             assertEquals("""
@@ -143,7 +145,7 @@ public class SaListTestMissingTables extends BaseCommandLineTest {
         PrintWriter  out = new PrintWriter(w);
         dao.createSa(6, (byte) 0, (short) 46, (byte) 0, (byte) 0, type);
         CommandLine cli  = getCmd(new SaList(), true, out, null);
-        int         exit = cli.execute("--inactive", String.format("--type=%s", type.name()));
+        int         exit = cli.execute("--inactive", String.format(TYPE_FMT, type.name()));
         assertEquals(0, exit);
         assertEquals("""
                      "spi","scid","vcid","tfvn","mapid","sa_state","ekid","est","akid","ast","type"
@@ -160,10 +162,10 @@ public class SaListTestMissingTables extends BaseCommandLineTest {
 
     public void listFail(FrameType type) {
         CommandLine cli  = getCmd(new SaList(), true);
-        int         exit = cli.execute("-e", "--mysql", String.format("--type=%s", type.name()));
+        int         exit = cli.execute("-e", "--mysql", String.format(TYPE_FMT, type.name()));
         assertNotEquals(0, exit);
 
-        exit = cli.execute("-e", "--json", String.format("--type=%s", type.name()));
+        exit = cli.execute("-e", "--json", String.format(TYPE_FMT, type.name()));
         assertNotEquals(0, exit);
     }
 
@@ -178,7 +180,7 @@ public class SaListTestMissingTables extends BaseCommandLineTest {
         StringWriter w    = new StringWriter();
         PrintWriter  out  = new PrintWriter(w);
         CommandLine  cli  = getCmd(new SaList(), true, out, null);
-        int          exit = cli.execute(String.format("--type=%s", type.name()));
+        int          exit = cli.execute(String.format(TYPE_FMT, type.name()));
         assertEquals(0, exit);
         if (type.equals(FrameType.TC)) {
             assertEquals("""
@@ -207,7 +209,7 @@ public class SaListTestMissingTables extends BaseCommandLineTest {
         StringWriter w    = new StringWriter();
         PrintWriter  out  = new PrintWriter(w);
         CommandLine  cli  = getCmd(new SaList(), true, out, null);
-        int          exit = cli.execute("--extended", String.format("--type=%s", type.name()));
+        int          exit = cli.execute("--extended", String.format(TYPE_FMT, type.name()));
         assertEquals(0, exit);
         if (type == FrameType.TC) {
             assertEquals("""
@@ -236,7 +238,7 @@ public class SaListTestMissingTables extends BaseCommandLineTest {
         StringWriter w    = new StringWriter();
         PrintWriter  out  = new PrintWriter(w);
         CommandLine  cli  = getCmd(new SaList(), true, out, null);
-        int          exit = cli.execute("--mysql", String.format("--type=%s", type.name()));
+        int          exit = cli.execute("--mysql", String.format(TYPE_FMT, type.name()));
         assertEquals(0, exit);
         if (type == FrameType.TC) {
             assertEquals("""
@@ -392,7 +394,7 @@ public class SaListTestMissingTables extends BaseCommandLineTest {
         StringWriter w    = new StringWriter();
         PrintWriter  out  = new PrintWriter(w);
         CommandLine  cli  = getCmd(new SaList(), true, out, null);
-        int          exit = cli.execute("--json", String.format("--type=%s", type.name()));
+        int          exit = cli.execute("--json", String.format(TYPE_FMT, type.name()));
         assertEquals(0, exit);
         if (type == FrameType.TC) {
             assertEquals("""

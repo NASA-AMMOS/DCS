@@ -19,6 +19,10 @@ import static org.junit.Assert.assertNotEquals;
 
 public class SaDeleteTest extends BaseH2Test {
 
+    public static final String TYPE_FMT = "--type=%s";
+    public static final String SPI_1 = "--spi=1";
+    public static final String SCID_46 = "--scid=46";
+
     @Test
     public void testDelete() throws KmcException {
         testDelete(FrameType.TC);
@@ -30,7 +34,7 @@ public class SaDeleteTest extends BaseH2Test {
         CommandLine    cli = getCmd(true, null, null);
         List<ISecAssn> sas = dao.getSas(type);
         assertEquals(5, sas.size());
-        cli.execute("--spi=1", "--scid=46", "-y", String.format("--type=%s", type.name()));
+        cli.execute(SPI_1, SCID_46, "-y", String.format(TYPE_FMT, type.name()));
         sas = dao.getSas(type);
         assertEquals(4, sas.size());
         for (ISecAssn sa : sas) {
@@ -52,7 +56,7 @@ public class SaDeleteTest extends BaseH2Test {
         CommandLine    cli = getCmd(true, null, null);
         List<ISecAssn> sas = dao.getSas(type);
         assertEquals(5, sas.size());
-        cli.execute("--spi=1", "--scid=46", String.format("--type=%s", type.name()));
+        cli.execute(SPI_1, SCID_46, String.format(TYPE_FMT, type.name()));
         sas = dao.getSas(type);
         assertEquals(4, sas.size());
         for (ISecAssn sa : sas) {
@@ -75,7 +79,7 @@ public class SaDeleteTest extends BaseH2Test {
         CommandLine    cli = getCmd(true, null, null);
         List<ISecAssn> sas = dao.getSas(type);
         assertEquals(5, sas.size());
-        cli.execute("--spi=1", "--scid=46", String.format("--type=%s", type.name()));
+        cli.execute(SPI_1, SCID_46, String.format(TYPE_FMT, type.name()));
         sas = dao.getSas(type);
         assertEquals(5, sas.size());
         System.setIn(old);
@@ -92,7 +96,7 @@ public class SaDeleteTest extends BaseH2Test {
         CommandLine    cli = getCmd(true, null, null);
         List<ISecAssn> sas = dao.getSas(type);
         assertEquals(5, sas.size());
-        cli.execute("--spi=1", "--spi=2", "--scid=46", "-y", String.format("--type=%s", type.name()));
+        cli.execute(SPI_1, "--spi=2", SCID_46, "-y", String.format(TYPE_FMT, type.name()));
         sas = dao.getSas(type);
         assertEquals(3, sas.size());
         for (ISecAssn sa : sas) {
@@ -110,7 +114,7 @@ public class SaDeleteTest extends BaseH2Test {
 
     public void testDeleteDne(FrameType type) {
         CommandLine cli  = getCmd(true, null, null);
-        int         exit = cli.execute("--spi=6", "--scid=55", String.format("--type=%s", type.name()));
+        int         exit = cli.execute("--spi=6", "--scid=55", String.format(TYPE_FMT, type.name()));
         assertNotEquals(0, exit);
     }
 
@@ -126,10 +130,10 @@ public class SaDeleteTest extends BaseH2Test {
         assertEquals(5, sas.size());
 
         CommandLine cli  = getCmd(true, null, null);
-        int         exit = cli.execute("--spi=1", String.format("--type=%s", type.name()));
+        int         exit = cli.execute(SPI_1, String.format(TYPE_FMT, type.name()));
         assertNotEquals(0, exit);
 
-        exit = cli.execute("--scid=46", String.format("--type=%s", type.name()));
+        exit = cli.execute(SCID_46, String.format(TYPE_FMT, type.name()));
         assertNotEquals(0, exit);
 
         sas = dao.getSas(type);

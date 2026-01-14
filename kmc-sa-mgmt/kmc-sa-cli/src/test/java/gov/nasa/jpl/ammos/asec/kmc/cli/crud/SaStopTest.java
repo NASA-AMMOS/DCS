@@ -16,6 +16,11 @@ import static org.junit.Assert.assertNotEquals;
  */
 public class SaStopTest extends BaseCommandLineTest {
 
+    public static final String TYPE_FMT = "--type=%s";
+    public static final String SPI = "--spi";
+    public static final String SCID_40 = "--scid=40";
+    public static final String SPI_1 = "--spi=1";
+
     @Test
     public void testStop() throws KmcException {
         testStop(FrameType.TC);
@@ -26,12 +31,12 @@ public class SaStopTest extends BaseCommandLineTest {
     public void testStop(FrameType type) throws KmcException {
         SpiScid     id   = new SpiScid(1, (short) 46);
         CommandLine cli  = getCmd(new SaStop(), true);
-        int         exit = cli.execute(String.format("--type=%s", type.name()));
+        int         exit = cli.execute(String.format(TYPE_FMT, type.name()));
         // no args
         assertNotEquals(0, exit);
         ISecAssn sa = dao.getSa(id, type);
         assertEquals(KmcDao.SA_OPERATIONAL, (short) sa.getSaState());
-        exit = cli.execute("--scid", "46", "--spi", "1", String.format("--type=%s", type.name()));
+        exit = cli.execute("--scid", "46", SPI, "1", String.format(TYPE_FMT, type.name()));
         assertEquals(0, exit);
         sa = dao.getSa(id, type);
         assertEquals(KmcDao.SA_KEYED, (short) sa.getSaState());
@@ -53,7 +58,7 @@ public class SaStopTest extends BaseCommandLineTest {
         assertEquals(KmcDao.SA_OPERATIONAL, (short) sa2.getSaState());
 
         CommandLine cli  = getCmd(new SaStop(), true);
-        int         exit = cli.execute("--scid", "46", "--spi", "1", "--spi", "2", String.format("--type=%s",
+        int         exit = cli.execute("--scid", "46", SPI, "1", SPI, "2", String.format(TYPE_FMT,
                 type.name()));
         assertEquals(0, exit);
         sa1 = dao.getSa(id1, type);
@@ -71,7 +76,7 @@ public class SaStopTest extends BaseCommandLineTest {
 
     public void testStopDne(FrameType type) {
         CommandLine cli  = getCmd(new SaStop(), true);
-        int         exit = cli.execute("--scid=40", "--spi=1", String.format("--type=%s", type.name()));
+        int         exit = cli.execute(SCID_40, SPI_1, String.format(TYPE_FMT, type.name()));
         assertNotEquals(0, exit);
     }
 
@@ -90,7 +95,7 @@ public class SaStopTest extends BaseCommandLineTest {
         sa1 = dao.getSa(id1, type);
         assertEquals(KmcDao.SA_KEYED, (short) sa1.getSaState());
         CommandLine cli  = getCmd(new SaStop(), true);
-        int         exit = cli.execute("--scid=40", "--spi=1", String.format("--type=%s", type.name()));
+        int         exit = cli.execute(SCID_40, SPI_1, String.format(TYPE_FMT, type.name()));
         assertNotEquals(0, exit);
     }
 

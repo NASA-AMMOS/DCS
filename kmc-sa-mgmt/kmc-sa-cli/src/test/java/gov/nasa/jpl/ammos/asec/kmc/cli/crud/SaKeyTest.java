@@ -18,6 +18,18 @@ import static org.junit.Assert.*;
  */
 public class SaKeyTest extends BaseCommandLineTest {
 
+    public static final String SCID_46 = "--scid=46";
+    public static final String AKID_130 = "--akid=130";
+    public static final String EKID_140 = "--ekid=140";
+    public static final String SPI_1 = "--spi=1";
+    public static final String TYPE_FMT = "--type=%s";
+    public static final String ACS_0_X_01 = "--acs=0x01";
+    public static final String EKID_130 = "--ekid=130";
+    public static final String AKID_140 = "--akid=140";
+    public static final String ECS_01 = "--ecs=01";
+    public static final String ACS_01 = "--acs=01";
+    public static final String Y = "-y";
+
     @Test
     public void testRekey() throws KmcException {
         testRekey(FrameType.TC);
@@ -27,7 +39,7 @@ public class SaKeyTest extends BaseCommandLineTest {
 
     public void testRekey(FrameType type) throws KmcException {
         CommandLine cli = getCmd(new SaKey(), true);
-        int exit = cli.execute("--spi=1", "--scid=46", "--akid=130", "--acs=0x01", "-y", String.format("--type=%s",
+        int exit = cli.execute(SPI_1, SCID_46, AKID_130, ACS_0_X_01, Y, String.format(TYPE_FMT,
                 type.name()));
         assertEquals(0, exit);
         ISecAssn sa = dao.getSa(new SpiScid(1, (short) 46), type);
@@ -35,7 +47,7 @@ public class SaKeyTest extends BaseCommandLineTest {
         assertEquals(1, (short) sa.getAcsLen());
         assertArrayEquals(new byte[]{0x01}, sa.getAcs());
 
-        exit = cli.execute("--spi=1", "--scid=46", "--ekid=140", "--ecs=02", "-y", String.format("--type=%s",
+        exit = cli.execute(SPI_1, SCID_46, EKID_140, "--ecs=02", Y, String.format(TYPE_FMT,
                 type.name()));
         assertEquals(0, exit);
         sa = dao.getSa(new SpiScid(1, (short) 46), type);
@@ -43,8 +55,8 @@ public class SaKeyTest extends BaseCommandLineTest {
         assertEquals(1, (short) sa.getEcsLen());
         assertArrayEquals(new byte[]{0x02}, sa.getEcs());
 
-        exit = cli.execute("--spi=2", "--scid=46", "--ekid=140", "--ecs=0002", "--akid=140", "--acs" + "=0002", "-y",
-                String.format("--type=%s", type.name()));
+        exit = cli.execute("--spi=2", SCID_46, EKID_140, "--ecs=0002", AKID_140, "--acs" + "=0002", Y,
+                String.format(TYPE_FMT, type.name()));
         assertEquals(0, exit);
         sa = dao.getSa(new SpiScid(2, (short) 46), type);
         assertEquals("140", sa.getEkid());
@@ -67,7 +79,7 @@ public class SaKeyTest extends BaseCommandLineTest {
         InputStream is  = new ByteArrayInputStream("y".getBytes(StandardCharsets.UTF_8));
         System.setIn(is);
         CommandLine cli = getCmd(new SaKey(), true);
-        int exit = cli.execute("--spi=1", "--scid=46", "--akid=130", "--acs=0x01", String.format("--type=%s",
+        int exit = cli.execute(SPI_1, SCID_46, AKID_130, ACS_0_X_01, String.format(TYPE_FMT,
                 type.name()));
         assertEquals(0, exit);
         ISecAssn sa = dao.getSa(new SpiScid(1, (short) 46), type);
@@ -89,7 +101,7 @@ public class SaKeyTest extends BaseCommandLineTest {
         InputStream is  = new ByteArrayInputStream("n".getBytes(StandardCharsets.UTF_8));
         System.setIn(is);
         CommandLine cli = getCmd(new SaKey(), true);
-        int exit = cli.execute("--spi=1", "--scid=46", "--akid=130", "--acs=0x01", String.format("--type=%s",
+        int exit = cli.execute(SPI_1, SCID_46, AKID_130, ACS_0_X_01, String.format(TYPE_FMT,
                 type.name()));
         assertEquals(0, exit);
         ISecAssn sa = dao.getSa(new SpiScid(1, (short) 46), type);
@@ -108,44 +120,44 @@ public class SaKeyTest extends BaseCommandLineTest {
 
     public void testRekeyFail(FrameType type) {
         CommandLine cli  = getCmd(new SaKey(), true);
-        int         exit = cli.execute("--spi=1", "--scid=46", String.format("--type=%s", type.name()));
+        int         exit = cli.execute(SPI_1, SCID_46, String.format(TYPE_FMT, type.name()));
         assertNotEquals(0, exit);
 
-        exit = cli.execute("--spi=1", "--scid=46", "--ekid=130", String.format("--type=%s", type.name()));
+        exit = cli.execute(SPI_1, SCID_46, EKID_130, String.format(TYPE_FMT, type.name()));
         assertNotEquals(0, exit);
 
-        exit = cli.execute("--spi=1", "--scid=46", "--ecslen=1", String.format("--type=%s", type.name()));
+        exit = cli.execute(SPI_1, SCID_46, "--ecslen=1", String.format(TYPE_FMT, type.name()));
         assertNotEquals(0, exit);
 
-        exit = cli.execute("--spi=1", "--scid=46", "--ecs=01", String.format("--type=%s", type.name()));
+        exit = cli.execute(SPI_1, SCID_46, ECS_01, String.format(TYPE_FMT, type.name()));
         assertNotEquals(0, exit);
 
-        exit = cli.execute("--spi=1", "--scid=46", "--ekid=130", String.format("--type=%s", type.name()));
+        exit = cli.execute(SPI_1, SCID_46, EKID_130, String.format(TYPE_FMT, type.name()));
         assertNotEquals(0, exit);
 
-        exit = cli.execute("--spi=1", "--scid=46", "--ecs=01", "-y", String.format("--type=%s", type.name()));
+        exit = cli.execute(SPI_1, SCID_46, ECS_01, Y, String.format(TYPE_FMT, type.name()));
         assertNotEquals(0, exit);
 
-        exit = cli.execute("--spi=1", "--scid=46", "--ekid=130", "--ecs=01", "--akid=140", String.format("--type=%s",
+        exit = cli.execute(SPI_1, SCID_46, EKID_130, ECS_01, AKID_140, String.format(TYPE_FMT,
                 type.name()));
         assertNotEquals(0, exit);
 
-        exit = cli.execute("--spi=1", "--scid=46", "--akid=130", String.format("--type=%s", type.name()));
+        exit = cli.execute(SPI_1, SCID_46, AKID_130, String.format(TYPE_FMT, type.name()));
         assertNotEquals(0, exit);
 
-        exit = cli.execute("--spi=1", "--scid=46", "--acs=01", String.format("--type=%s", type.name()));
+        exit = cli.execute(SPI_1, SCID_46, ACS_01, String.format(TYPE_FMT, type.name()));
         assertNotEquals(0, exit);
 
-        exit = cli.execute("--spi=1", "--scid=46", String.format("--type=%s", type.name()));
+        exit = cli.execute(SPI_1, SCID_46, String.format(TYPE_FMT, type.name()));
         assertNotEquals(0, exit);
 
-        exit = cli.execute("--spi=1", "--scid=46", "--akid=130", String.format("--type=%s", type.name()));
+        exit = cli.execute(SPI_1, SCID_46, AKID_130, String.format(TYPE_FMT, type.name()));
         assertNotEquals(0, exit);
 
-        exit = cli.execute("--spi=1", "--scid=46", "--acs=01", String.format("--type=%s", type.name()));
+        exit = cli.execute(SPI_1, SCID_46, ACS_01, String.format(TYPE_FMT, type.name()));
         assertNotEquals(0, exit);
 
-        exit = cli.execute("--spi=1", "--scid=46", "--akid=140", "--acs=01", "--ekid=140", String.format("--type=%s",
+        exit = cli.execute(SPI_1, SCID_46, AKID_140, ACS_01, EKID_140, String.format(TYPE_FMT,
                 type.name()));
         assertNotEquals(0, exit);
     }

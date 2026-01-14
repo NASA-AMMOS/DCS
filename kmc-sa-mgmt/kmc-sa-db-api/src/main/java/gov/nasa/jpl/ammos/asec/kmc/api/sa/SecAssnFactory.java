@@ -24,11 +24,10 @@ public class SecAssnFactory {
             case AOS -> {
                 return new SecAssnAos(id);
             }
-            case TC -> {
+            default -> {
                 return new SecAssn(id);
             }
         }
-        return new SecAssn(id);
     }
 
     /**
@@ -45,10 +44,9 @@ public class SecAssnFactory {
             case AOS -> {
                 return new SecAssnAos();
             }
-            case TC -> {
+            default -> {
                 return new SecAssn();
             }
         }
-        return new SecAssn();
     }
 }

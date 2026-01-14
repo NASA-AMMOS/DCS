@@ -10,6 +10,7 @@ import gov.nasa.jpl.ammos.asec.kmc.cli.crud.opts.OptionalOptions;
 import gov.nasa.jpl.ammos.asec.kmc.cli.crud.opts.SaUpdateSingle;
 import gov.nasa.jpl.ammos.asec.kmc.cli.misc.Version;
 import gov.nasa.jpl.ammos.asec.kmc.format.SaCsvInput;
+import org.checkerframework.checker.units.qual.K;
 import picocli.CommandLine;
 
 import java.io.File;
@@ -54,7 +55,7 @@ public class SaUpdate extends BaseCreateUpdate {
             SpiScid  id = new SpiScid(spi, scid);
             ISecAssn sa = dao.getSa(id, frameType);
             if (sa == null) {
-                error(String.format("%s SA %d/%d doesn't exist, can't update", frameType, id.getSpi(), id.getScid()));
+                throw new KmcException(String.format("%s SA %d/%d doesn't exist, can't update", frameType, id.getSpi(), id.getScid()));
             }
             console(String.format("%s updating %s SA", user, frameType));
 

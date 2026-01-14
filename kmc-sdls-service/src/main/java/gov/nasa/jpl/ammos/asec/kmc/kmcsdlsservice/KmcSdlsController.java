@@ -33,7 +33,7 @@ public class KmcSdlsController {
             transferFrameData = IOUtils.toByteArray(request.getInputStream());
         } catch (IOException e) {
             LOG.error("/apply_security: Encountered an I/O error while attempting to " +
-                    "process request Input Stream {} : {}", request, e.getMessage());
+                    "process request Input Stream: {}", e.getMessage(), e);
             throw new RuntimeException("Unable to read Input Stream due to error: " + e.getMessage());
         }
         String transferFrameDataString = Hex.encodeHexString(transferFrameData);
@@ -68,7 +68,7 @@ public class KmcSdlsController {
             sdlsTransferFrameData = IOUtils.toByteArray(request.getInputStream());
         } catch (IOException e) {
             LOG.error("/process_security: Encountered an I/O error while attempting to " +
-                    "read request Input Stream {} : {}", request, e.getMessage());
+                    "read request Input Stream: {}", e.getMessage(), e);
             throw new RuntimeException("Unable to read Input Stream due to error: " + e.getMessage());
         }
         String sdlsTransferFrameDataString = Hex.encodeHexString(sdlsTransferFrameData);

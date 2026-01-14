@@ -12,9 +12,9 @@ import org.apache.commons.csv.CSVRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -33,119 +33,123 @@ public class SaCsvInput {
      */
     public List<ISecAssn> parseCsv(Reader reader, FrameType type) throws KmcException {
         // come in with a desired frame type.
+        if (type == FrameType.UNKNOWN) {
+            return Collections.emptyList();
+        }
         List<ISecAssn> sas = new ArrayList<>();
         try {
             Iterable<CSVRecord> records =
                     CSVFormat.Builder.create(CSVFormat.EXCEL).setHeader().setSkipHeaderRecord(false).build().parse(reader);
-            for (CSVRecord record : records) {
+            for (CSVRecord rec : records) {
                 // if the type column is mapped, then we only want to include those that match the desired type (or ALL)
-                ISecAssn sa;
-                if (record.isMapped("type")) {
-                    FrameType recType = FrameType.fromString(record.get("type"));
+                if (rec.isMapped("type")) {
+                    FrameType recType = FrameType.fromString(rec.get("type"));
                     if (type == FrameType.ALL || recType == type) {
                         // convert if the desired type is ALL, or the recType == the desired type
-                        sa = convertRecord(record, recType);
+                        sas.add(convertRecord(rec, recType));
                         // else, skip
-                    } else if (type == FrameType.UNKNOWN) {
-                        LOG.warn("Unknown frame type encountered, skipping: {}", record.get("type"));
-                        continue;
-                    } else {
-                        continue;
+                    } else if (recType == FrameType.UNKNOWN && LOG.isWarnEnabled()) {
+                        LOG.warn("Unknown frame type encountered, skipping: {}", rec.get("type"));
                     }
                 } else {
                     // unmapped, need to coerce it to desired type, default to TC
-                    FrameType coerceTo;
-                    if (type == FrameType.ALL) {
-                        coerceTo = FrameType.TC;
-                    } else {
-                        coerceTo = type;
-                    }
-                    sa = convertRecord(record, coerceTo);
-                }
-                if (sa != null) {
-                    sas.add(sa);
+                    FrameType coerceTo = getCoerceTo(type);
+                    sas.add(convertRecord(rec, coerceTo));
                 }
             }
-        } catch (IOException e) {
-            LOG.error("Encountered an I/O error while parsing CSV: {}", e.getMessage());
-            throw new KmcException("Unable to parse CSV due to I/O error: ", e);
         } catch (Exception e) {
-            LOG.error("Encountered unexpected exception while parsing CSV: {}", e.getMessage());
-            throw new KmcException("Unable to parse CSV due to unexpected error: ", e);
+            throw new KmcException("Unable to parse CSV due to unexpected error", e);
         }
         return sas;
+    }
+
+    private static FrameType getCoerceTo(FrameType type) {
+        FrameType coerceTo;
+        if (type == FrameType.ALL) {
+            coerceTo = FrameType.TC;
+        } else {
+            coerceTo = type;
+        }
+        return coerceTo;
     }
 
     /**
      * Convert a parsed CSV record to a Security Association object
      *
-     * @param record csv record
+     * @param rec csv record
      * @param type   frame type
      * @return sa
      * @throws KmcException ex
      */
-    public ISecAssn convertRecord(CSVRecord record, FrameType type) throws KmcException {
+    public ISecAssn convertRecord(CSVRecord rec, FrameType type) throws KmcException {
         try {
             ISecAssn sa = SecAssnFactory.createSecAssn(type);
-            sa.setSpi(parseInt(record.get("spi")));
-            sa.setScid(parseShort(record.get("scid")));
-            sa.setVcid(parseByte(record.get("vcid")));
-            sa.setTfvn(parseByte(record.get("tfvn")));
-            sa.setMapid(parseByte(record.get("mapid")));
-            sa.setSaState(parseShort(record.get("sa_state")));
+            sa.setSpi(parseInt(rec.get("spi")));
+            sa.setScid(parseShort(rec.get("scid")));
+            sa.setVcid(parseByte(rec.get("vcid")));
+            sa.setTfvn(parseByte(rec.get("tfvn")));
+            sa.setMapid(parseByte(rec.get("mapid")));
+            sa.setSaState(parseShort(rec.get("sa_state")));
             ServiceType st;
-            try {
-                st = ServiceType.fromShort(parseShort(record.get("st")));
-                if (st == ServiceType.UNKNOWN) {
-                    LOG.warn("Unknown service type provided, skipping");
-                    return null;
-                }
-            } catch (Exception e) {
-                // try to parse out text value
-                LOG.warn("Encountered an error while attempting to parse 'service type' as short, " +
-                        "will attempt to parse value as text: {}", e.getMessage());
-                try {
-                    st = ServiceType.valueOf(record.get("st"));
-                } catch (Exception e1) {
-                    throw new KmcException("Unable to evaluate provided service type");
-                }
-            }
+            st = getServiceType(rec);
+            if (st == null) return null;
             sa.setEst(st.getEncryptionType());
             sa.setAst(st.getAuthenticationType());
-            sa.setShivfLen(parseShort(record.get("shivf_len")));
-            sa.setShsnfLen(parseShort(record.get("shsnf_len")));
-            sa.setShplfLen(parseShort(record.get("shplf_len")));
-            sa.setStmacfLen(parseShort(record.get("stmacf_len")));
+            sa.setShivfLen(parseShort(rec.get("shivf_len")));
+            sa.setShsnfLen(parseShort(rec.get("shsnf_len")));
+            sa.setShplfLen(parseShort(rec.get("shplf_len")));
+            sa.setStmacfLen(parseShort(rec.get("stmacf_len")));
             Short  ecsLen = (short) 1;
-            String ecsStr = record.get("ecs");
+            String ecsStr = rec.get("ecs");
             byte[] ecs    = checkNullValue(ecsStr) ? null : parseHex(ecsStr);
             sa.setEcs(ecsLen, ecs);
-            String ekid = record.get("ekid");
+            String ekid = rec.get("ekid");
             sa.setEkid(checkNullValue(ekid) ? null : ekid);
-            Short  ivLen = parseShort(record.get("iv_len"));
-            String ivStr = record.get("iv");
+            Short  ivLen = parseShort(rec.get("iv_len"));
+            String ivStr = rec.get("iv");
             byte[] iv    = checkNullValue(ivStr) ? null : parseHex(ivStr);
             sa.setIv(ivLen, iv);
-            String acsStr   = record.get("acs");
+            String acsStr   = rec.get("acs");
             byte[] acsBytes = checkNullValue(acsStr) ? null : parseHex(acsStr);
             Short  acsLen   = (short) 1;
             sa.setAcs(acsLen, acsBytes);
-            String akid = record.get("akid");
+            String akid = rec.get("akid");
             sa.setAkid(checkNullValue(akid) ? null : akid);
-            sa.setAbmLen(parseInt(record.get("abm_len")));
-            sa.setAbm(parseHex(record.get("abm")));
-            sa.setArsnLen(parseShort(record.get("arsn_len")));
-            sa.setArsn(parseHex(record.get("arsn")));
-            Short arsnw = parseShort(record.get("arsnw"));
+            sa.setAbmLen(parseInt(rec.get("abm_len")));
+            sa.setAbm(parseHex(rec.get("abm")));
+            sa.setArsnLen(parseShort(rec.get("arsn_len")));
+            sa.setArsn(parseHex(rec.get("arsn")));
+            Short arsnw = parseShort(rec.get("arsnw"));
             sa.setArsnw(arsnw == null ? 0 : arsnw);
             return sa;
         } catch (DecoderException e) {
-            LOG.error("Error parsing a hex value on line {}, skipping", record.getRecordNumber() + 1);
+            LOG.error("Error parsing a hex value on line {}, skipping", rec.getRecordNumber() + 1);
             return null;
         } catch (NumberFormatException e) {
-            LOG.error("Error parsing a number value on line {}, skipping", record.getRecordNumber() + 1);
+            LOG.error("Error parsing a number value on line {}, skipping", rec.getRecordNumber() + 1);
             return null;
         }
+    }
+
+    private ServiceType getServiceType(CSVRecord rec) throws KmcException {
+        ServiceType st;
+        try {
+            st = ServiceType.fromShort(parseShort(rec.get("st")));
+            if (st == ServiceType.UNKNOWN) {
+                LOG.warn("Unknown service type provided, skipping");
+                return null;
+            }
+        } catch (Exception e) {
+            // try to parse out text value
+            LOG.warn("Encountered an error while attempting to parse 'service type' as short, " +
+                    "will attempt to parse value as text: {}", e.getMessage());
+            try {
+                st = ServiceType.valueOf(rec.get("st"));
+            } catch (Exception e1) {
+                throw new KmcException("Unable to evaluate provided service type");
+            }
+        }
+        return st;
     }
 
     /**
@@ -182,7 +186,7 @@ public class SaCsvInput {
             h = h.replaceFirst("^X'", "").replace("'", "");
         }
         if (h.isEmpty()) {
-            return null;
+            return new byte[0];
         }
         return Hex.decodeHex(h);
     }
