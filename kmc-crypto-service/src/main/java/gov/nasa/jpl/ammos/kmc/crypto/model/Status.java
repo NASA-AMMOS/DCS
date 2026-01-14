@@ -1,6 +1,6 @@
 package gov.nasa.jpl.ammos.kmc.crypto.model;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Status response of the key service.
