@@ -12,8 +12,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class SecAssnDeserializerTest {
     private static ObjectMapper mapper = new ObjectMapper();
@@ -56,6 +55,7 @@ public class SecAssnDeserializerTest {
             case TC -> assertTrue(sa instanceof SecAssn);
             case TM -> assertTrue(sa instanceof SecAssnTm);
             case AOS -> assertTrue(sa instanceof SecAssnAos);
+            default -> fail("unknown frame type");
         }
     }
 

@@ -23,6 +23,12 @@ public class SaUpdateTest extends BaseCommandLineTest {
     public static final String BULK_SA_FILE   = "kmc-all-SAs.csv";
     public static final String BULK_SA_FILE_2 = "kmc-all-SAs-type.csv";
     public static final String H2_SA_UPDATES  = "test-sas-h2.csv";
+    public static final String TYPE_FMT = "--type=%s";
+    public static final String FILE_FMT = "--file=%s";
+    public static final String SPI_5 = "--spi=5";
+    public static final String SCID_46 = "--scid=46";
+    public static final String SPI_1 = "--spi=1";
+    public static final String ECS_0_X_01 = "--ecs=0x01";
 
     @Test
     public void testUpdateBulkNotExist() throws KmcException {
@@ -35,8 +41,8 @@ public class SaUpdateTest extends BaseCommandLineTest {
         List<ISecAssn> sas = dao.getSas(type);
         assertEquals(5, sas.size());
         CommandLine cli = getCmd(new SaUpdate(), true);
-        int exit = cli.execute(String.format("--file=%s", getClass().getClassLoader().getResource(
-                BULK_SA_FILE).getFile()), String.format("--type=%s", type.name()));
+        int exit = cli.execute(String.format(FILE_FMT, getClass().getClassLoader().getResource(
+                BULK_SA_FILE).getFile()), String.format(TYPE_FMT, type.name()));
         assertEquals(0, exit);
         sas = dao.getSas(type);
         assertEquals(5, sas.size());
@@ -62,8 +68,8 @@ public class SaUpdateTest extends BaseCommandLineTest {
         List<ISecAssn> sas = dao.getSas(type);
         assertEquals(type.name(), expect, sas.size());
         CommandLine cli = getCmd(new SaUpdate(), true);
-        int exit = cli.execute(String.format("--file=%s", getClass().getClassLoader().getResource(
-                BULK_SA_FILE_2).getFile()), String.format("--type=%s", type.name()));
+        int exit = cli.execute(String.format(FILE_FMT, getClass().getClassLoader().getResource(
+                BULK_SA_FILE_2).getFile()), String.format(TYPE_FMT, type.name()));
         assertEquals(type.name(), 0, exit);
         sas = dao.getSas(type);
         assertEquals(type.name(), expect, sas.size());
@@ -81,8 +87,8 @@ public class SaUpdateTest extends BaseCommandLineTest {
         assertEquals(5, sas.size());
         assertEquals(1, (int) sas.get(0).getSpi());
         CommandLine cli = getCmd(new SaUpdate(), true);
-        int exit = cli.execute(String.format("--file=%s", getClass().getClassLoader().getResource(
-                H2_SA_UPDATES).getFile()), String.format("--type=%s", type.name()));
+        int exit = cli.execute(String.format(FILE_FMT, getClass().getClassLoader().getResource(
+                H2_SA_UPDATES).getFile()), String.format(TYPE_FMT, type.name()));
         assertEquals(0, exit);
         sas = new ArrayList<>(dao.getSas(type));
         assertEquals(5, sas.size());
@@ -120,10 +126,10 @@ public class SaUpdateTest extends BaseCommandLineTest {
         assertEquals(4, (short) sa.getArsnLen());
         assertArrayEquals(new byte[]{0x00, 0x00, 0x00, 0x01}, sa.getArsn());
 
-        int exit = cli.execute("--spi=5", "--scid=46", "--arsn=0x01", String.format("--type=%s", type.name()));
+        int exit = cli.execute(SPI_5, SCID_46, "--arsn=0x01", String.format(TYPE_FMT, type.name()));
         assertNotEquals(0, exit);
 
-        exit = cli.execute("--spi=5", "--scid=46", "--arsnlen=6", String.format("--type=%s", type.name()));
+        exit = cli.execute(SPI_5, SCID_46, "--arsnlen=6", String.format(TYPE_FMT, type.name()));
         assertNotEquals(0, exit);
     }
 
@@ -140,7 +146,7 @@ public class SaUpdateTest extends BaseCommandLineTest {
         ISecAssn    sa  = dao.getSa(id, type);
         assertEquals(4, (short) sa.getArsnLen());
         assertArrayEquals(new byte[]{0x00, 0x00, 0x00, 0x01}, sa.getArsn());
-        int exit = cli.execute("--spi=5", "--scid=46", "--arsn=0x0000000002", "--arsnlen=5", String.format("--type=%s"
+        int exit = cli.execute(SPI_5, SCID_46, "--arsn=0x0000000002", "--arsnlen=5", String.format(TYPE_FMT
                 , type.name()));
         assertEquals(0, exit);
         sa = dao.getSa(id, type);
@@ -161,8 +167,8 @@ public class SaUpdateTest extends BaseCommandLineTest {
         ISecAssn    sa  = dao.getSa(id, type);
         assertEquals(0, (short) sa.getIvLen());
         assertNull(sa.getIv());
-        int exit = cli.execute("--spi=1", "--scid=46", "--iv=0x00112233465566778899aabbccddeeff", "--ivlen=16",
-                String.format("--type=%s", type.name()));
+        int exit = cli.execute(SPI_1, SCID_46, "--iv=0x00112233465566778899aabbccddeeff", "--ivlen=16",
+                String.format(TYPE_FMT, type.name()));
         assertEquals(0, exit);
         sa = dao.getSa(id, type);
         assertEquals(16, (short) sa.getIvLen());
@@ -198,14 +204,14 @@ public class SaUpdateTest extends BaseCommandLineTest {
         assertEquals(0, (short) sa.getIvLen());
         assertNull(sa.getIv());
 
-        int exit = cli.execute("--spi=1", "--scid=46", "--ecs=0x01", "--iv=0x00112233465566778899aabb", "--ivlen=12",
-                String.format("--type=%s", type.name()));
+        int exit = cli.execute(SPI_1, SCID_46, ECS_0_X_01, "--iv=0x00112233465566778899aabb", "--ivlen=12",
+                String.format(TYPE_FMT, type.name()));
         assertNotEquals(0, exit);
 
-        exit = cli.execute("--spi=1", "--scid=46", "--ecs=0x01", "--iv=0x01", String.format("--type=%s", type.name()));
+        exit = cli.execute(SPI_1, SCID_46, ECS_0_X_01, "--iv=0x01", String.format(TYPE_FMT, type.name()));
         assertNotEquals(0, exit);
 
-        exit = cli.execute("--spi=1", "--scid=46", "--ivlen=8", "--ecs=0x01", "--ekid=130", String.format("--type=%s"
+        exit = cli.execute(SPI_1, SCID_46, "--ivlen=8", ECS_0_X_01, "--ekid=130", String.format(TYPE_FMT
                 , type.name()));
         assertNotEquals(0, exit);
     }
@@ -222,7 +228,7 @@ public class SaUpdateTest extends BaseCommandLineTest {
         SpiScid     id  = new SpiScid(1, (short) 46);
         ISecAssn    sa  = dao.getSa(id, type);
         assertEquals(12, (short) sa.getShivfLen());
-        int exit = cli.execute("--spi=1", "--scid=46", "--shivflen=20", String.format("--type=%s", type.name()));
+        int exit = cli.execute(SPI_1, SCID_46, "--shivflen=20", String.format(TYPE_FMT, type.name()));
         assertEquals(0, exit);
         sa = dao.getSa(id, type);
         assertEquals(20, (short) sa.getShivfLen());
@@ -240,7 +246,7 @@ public class SaUpdateTest extends BaseCommandLineTest {
         SpiScid     id  = new SpiScid(1, (short) 46);
         ISecAssn    sa  = dao.getSa(id, type);
         assertEquals(0, (short) sa.getShplfLen());
-        int exit = cli.execute("--spi=1", "--scid=46", "--shplflen=20", String.format("--type=%s", type.name()));
+        int exit = cli.execute(SPI_1, SCID_46, "--shplflen=20", String.format(TYPE_FMT, type.name()));
         assertEquals(0, exit);
         sa = dao.getSa(id, type);
         assertEquals(20, (short) sa.getShplfLen());
@@ -258,7 +264,7 @@ public class SaUpdateTest extends BaseCommandLineTest {
         SpiScid     id  = new SpiScid(1, (short) 46);
         ISecAssn    sa  = dao.getSa(id, type);
         assertEquals(0, (short) sa.getShsnfLen());
-        int exit = cli.execute("--spi=1", "--scid=46", "--shsnflen=20", String.format("--type=%s", type.name()));
+        int exit = cli.execute(SPI_1, SCID_46, "--shsnflen=20", String.format(TYPE_FMT, type.name()));
         assertEquals(0, exit);
         sa = dao.getSa(id, type);
         assertEquals(20, (short) sa.getShsnfLen());
@@ -276,7 +282,7 @@ public class SaUpdateTest extends BaseCommandLineTest {
         SpiScid     id  = new SpiScid(1, (short) 46);
         ISecAssn    sa  = dao.getSa(id, type);
         assertEquals(16, (short) sa.getStmacfLen());
-        int exit = cli.execute("--spi=1", "--scid=46", "--stmacflen=20", String.format("--type=%s", type.name()));
+        int exit = cli.execute(SPI_1, SCID_46, "--stmacflen=20", String.format(TYPE_FMT, type.name()));
         assertEquals(0, exit);
         sa = dao.getSa(id, type);
         assertEquals(20, (short) sa.getStmacfLen());
@@ -294,13 +300,13 @@ public class SaUpdateTest extends BaseCommandLineTest {
         SpiScid     id  = new SpiScid(1, (short) 46);
         ISecAssn    sa  = dao.getSa(id, type);
         assertEquals("130", sa.getEkid());
-        int exitCode = cmd.execute("--spi=1", "--scid=46", "--ekid=140", String.format("--type=%s", type.name()));
+        int exitCode = cmd.execute(SPI_1, SCID_46, "--ekid=140", String.format(TYPE_FMT, type.name()));
         assertNotEquals(0, exitCode);
 
-        exitCode = cmd.execute("--scid=46", "--spi=1", "--ecs=0x01", String.format("--type=%s", type.name()));
+        exitCode = cmd.execute(SCID_46, SPI_1, ECS_0_X_01, String.format(TYPE_FMT, type.name()));
         assertNotEquals(0, exitCode);
 
-        exitCode = cmd.execute("--scid=46", "--spi=1", "--ekid=130", "--ecs=1", String.format("--type=%s",
+        exitCode = cmd.execute(SCID_46, SPI_1, "--ekid=130", "--ecs=1", String.format(TYPE_FMT,
                 type.name()));
         assertNotEquals(0, exitCode);
     }
@@ -318,8 +324,8 @@ public class SaUpdateTest extends BaseCommandLineTest {
         ISecAssn    sa  = dao.getSa(id, type);
         assertEquals("130", sa.getEkid());
         assertArrayEquals(new byte[]{0x01}, sa.getEcs());
-        int exit = cli.execute("--spi=1", "--scid=46", "--ekid=140", "--ecs=0x02", "--ivlen=16", String.format(
-                "--type=%s", type.name()));
+        int exit = cli.execute(SPI_1, SCID_46, "--ekid=140", "--ecs=0x02", "--ivlen=16", String.format(
+                TYPE_FMT, type.name()));
         assertEquals(0, exit);
         sa = dao.getSa(id, type);
         assertEquals("140", sa.getEkid());
@@ -339,13 +345,13 @@ public class SaUpdateTest extends BaseCommandLineTest {
         ISecAssn    sa  = dao.getSa(id, type);
         assertNull(sa.getAkid());
         assertArrayEquals(new byte[]{0x00}, sa.getAcs());
-        int exitCode = cmd.execute("--spi=1", "--scid=46", "--akid=140", String.format("--type=%s", type.name()));
+        int exitCode = cmd.execute(SPI_1, SCID_46, "--akid=140", String.format(TYPE_FMT, type.name()));
         assertNotEquals(0, exitCode);
 
-        exitCode = cmd.execute("--scid=46", "--spi=1", "--acs=0x01", String.format("--type=%s", type.name()));
+        exitCode = cmd.execute(SCID_46, SPI_1, "--acs=0x01", String.format(TYPE_FMT, type.name()));
         assertNotEquals(0, exitCode);
 
-        exitCode = cmd.execute("--scid=46", "--spi=1", "--akid=130", "--acs=1", String.format("--type=%s",
+        exitCode = cmd.execute(SCID_46, SPI_1, "--akid=130", "--acs=1", String.format(TYPE_FMT,
                 type.name()));
         assertNotEquals(0, exitCode);
     }
@@ -363,7 +369,7 @@ public class SaUpdateTest extends BaseCommandLineTest {
         ISecAssn    sa  = dao.getSa(id, type);
         assertNull(sa.getAkid());
         assertArrayEquals(new byte[]{0x00}, sa.getAcs());
-        int exit = cli.execute("--spi=1", "--scid=46", "--akid=140", "--acs=0x02", String.format("--type=%s",
+        int exit = cli.execute(SPI_1, SCID_46, "--akid=140", "--acs=0x02", String.format(TYPE_FMT,
                 type.name()));
         assertEquals(0, exit);
         sa = dao.getSa(id, type);
@@ -402,8 +408,8 @@ public class SaUpdateTest extends BaseCommandLineTest {
                 0x00,
                 0x00,
                 0x00}, sa.getAbm());
-        int exit = cli.execute("--spi=1", "--scid=46", "--abm=0x1111111111111111111111111111111111111111",
-                "--abmlen" + "=20", String.format("--type=%s", type.name()));
+        int exit = cli.execute(SPI_1, SCID_46, "--abm=0x1111111111111111111111111111111111111111",
+                "--abmlen" + "=20", String.format(TYPE_FMT, type.name()));
         assertEquals(0, exit);
         sa = dao.getSa(id, type);
         assertEquals(20, (int) sa.getAbmLen());
@@ -442,16 +448,16 @@ public class SaUpdateTest extends BaseCommandLineTest {
         ISecAssn    sa  = dao.getSa(id, type);
         assertNull(sa.getAkid());
         assertArrayEquals(new byte[]{0x00}, sa.getAcs());
-        int exit = cli.execute("--spi=1", "--scid=46", "--abm=0x1111111111111111111111111111111111111111",
-                "--abmlen" + "=21", String.format("--type=%s", type.name()));
+        int exit = cli.execute(SPI_1, SCID_46, "--abm=0x1111111111111111111111111111111111111111",
+                "--abmlen" + "=21", String.format(TYPE_FMT, type.name()));
         assertNotEquals(0, exit);
 
-        exit = cli.execute("--spi=1", "--scid=46", "--abm=0x11111111111111111111111111111111111111", "--abmlen=20",
-                String.format("--type=%s", type.name()));
+        exit = cli.execute(SPI_1, SCID_46, "--abm=0x11111111111111111111111111111111111111", "--abmlen=20",
+                String.format(TYPE_FMT, type.name()));
         assertNotEquals(0, exit);
 
-        exit = cli.execute("--spi=1", "--scid=46", "--abm=111111111111111111111111111111111111111111", "--abmlen=20",
-                String.format("--type=%s", type.name()));
+        exit = cli.execute(SPI_1, SCID_46, "--abm=111111111111111111111111111111111111111111", "--abmlen=20",
+                String.format(TYPE_FMT, type.name()));
         assertNotEquals(0, exit);
     }
 
@@ -467,7 +473,7 @@ public class SaUpdateTest extends BaseCommandLineTest {
         SpiScid     id  = new SpiScid(1, (short) 46);
         ISecAssn    sa  = dao.getSa(id, type);
         assertEquals(5, (short) sa.getArsnw());
-        int exitCode = cmd.execute("--scid=46", "--spi=1", "--arsnw=10", String.format("--type=%s", type.name()));
+        int exitCode = cmd.execute(SCID_46, SPI_1, "--arsnw=10", String.format(TYPE_FMT, type.name()));
         assertEquals(0, exitCode);
         sa = dao.getSa(new SpiScid(1, (short) 46), type);
         assertEquals(10, (short) sa.getArsnw());
@@ -485,42 +491,42 @@ public class SaUpdateTest extends BaseCommandLineTest {
         SpiScid     id  = new SpiScid(1, (short) 46);
         ISecAssn    sa  = dao.getSa(id, type);
         assertEquals(ServiceType.AUTHENTICATED_ENCRYPTION, sa.getServiceType());
-        int exitCode = cmd.execute("--scid=46", "--spi=1", "--st=1", String.format("--type=%s", type.name()));
+        int exitCode = cmd.execute(SCID_46, SPI_1, "--st=1", String.format(TYPE_FMT, type.name()));
         assertEquals(0, exitCode);
         sa = dao.getSa(new SpiScid(1, (short) 46), type);
         assertEquals(ServiceType.ENCRYPTION, sa.getServiceType());
 
-        exitCode = cmd.execute("--scid=46", "--spi=1", "--st=2", String.format("--type=%s", type.name()));
+        exitCode = cmd.execute(SCID_46, SPI_1, "--st=2", String.format(TYPE_FMT, type.name()));
         assertEquals(0, exitCode);
         sa = dao.getSa(new SpiScid(1, (short) 46), type);
         assertEquals(ServiceType.AUTHENTICATION, sa.getServiceType());
 
-        exitCode = cmd.execute("--scid=46", "--spi=1", "--st=0", String.format("--type=%s", type.name()));
+        exitCode = cmd.execute(SCID_46, SPI_1, "--st=0", String.format(TYPE_FMT, type.name()));
         assertEquals(0, exitCode);
         sa = dao.getSa(new SpiScid(1, (short) 46), type);
         assertEquals(ServiceType.PLAINTEXT, sa.getServiceType());
 
-        exitCode = cmd.execute("--scid=46", "--spi=1", "--st=3", String.format("--type=%s", type.name()));
+        exitCode = cmd.execute(SCID_46, SPI_1, "--st=3", String.format(TYPE_FMT, type.name()));
         assertEquals(0, exitCode);
         sa = dao.getSa(new SpiScid(1, (short) 46), type);
         assertEquals(ServiceType.AUTHENTICATED_ENCRYPTION, sa.getServiceType());
 
-        exitCode = cmd.execute("--scid=46", "--spi=1", "--st=ENCRYPTION", String.format("--type=%s", type.name()));
+        exitCode = cmd.execute(SCID_46, SPI_1, "--st=ENCRYPTION", String.format(TYPE_FMT, type.name()));
         assertEquals(0, exitCode);
         sa = dao.getSa(new SpiScid(1, (short) 46), type);
         assertEquals(ServiceType.ENCRYPTION, sa.getServiceType());
 
-        exitCode = cmd.execute("--scid=46", "--spi=1", "--st=PLAINTEXT", String.format("--type=%s", type.name()));
+        exitCode = cmd.execute(SCID_46, SPI_1, "--st=PLAINTEXT", String.format(TYPE_FMT, type.name()));
         assertEquals(0, exitCode);
         sa = dao.getSa(new SpiScid(1, (short) 46), type);
         assertEquals(ServiceType.PLAINTEXT, sa.getServiceType());
 
-        exitCode = cmd.execute("--scid=46", "--spi=1", "--st=AUTHENTICATION", String.format("--type=%s", type.name()));
+        exitCode = cmd.execute(SCID_46, SPI_1, "--st=AUTHENTICATION", String.format(TYPE_FMT, type.name()));
         assertEquals(0, exitCode);
         sa = dao.getSa(new SpiScid(1, (short) 46), type);
         assertEquals(ServiceType.AUTHENTICATION, sa.getServiceType());
 
-        exitCode = cmd.execute("--scid=46", "--spi=1", "--st=AUTHENTICATED_ENCRYPTION", String.format("--type=%s",
+        exitCode = cmd.execute(SCID_46, SPI_1, "--st=AUTHENTICATED_ENCRYPTION", String.format(TYPE_FMT,
                 type.name()));
         assertEquals(0, exitCode);
         sa = dao.getSa(new SpiScid(1, (short) 46), type);
@@ -536,11 +542,11 @@ public class SaUpdateTest extends BaseCommandLineTest {
 
     public void testResetStFail(FrameType type) {
         CommandLine cmd      = getCmd(new SaUpdate(), true, null, null);
-        int         exitCode = cmd.execute("--scid=46", "--spi=1", "--st=4", String.format("--type=%s", type.name()));
+        int         exitCode = cmd.execute(SCID_46, SPI_1, "--st=4", String.format(TYPE_FMT, type.name()));
         assertNotEquals(0, exitCode);
-        exitCode = cmd.execute("--scid=46", "--spi=1", "--st=-1", String.format("--type=%s", type.name()));
+        exitCode = cmd.execute(SCID_46, SPI_1, "--st=-1", String.format(TYPE_FMT, type.name()));
         assertNotEquals(0, exitCode);
-        exitCode = cmd.execute("--scid=46", "--spi=1", "--st=unknown", String.format("--type=%s", type.name()));
+        exitCode = cmd.execute(SCID_46, SPI_1, "--st=unknown", String.format(TYPE_FMT, type.name()));
         assertNotEquals(0, exitCode);
     }
 

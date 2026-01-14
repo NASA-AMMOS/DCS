@@ -20,7 +20,8 @@ import java.util.List;
  */
 public class Config extends CompositeConfiguration {
 
-    private static boolean SYS_OVERRIDES_ENABLED = true;
+    public static final String ENV_VAR_FOUND_OVERRIDING = "{} env var found, overriding {}";
+    private static boolean sysOverridesEnabled = true;
 
     /**
      * System overrides enabled
@@ -28,7 +29,7 @@ public class Config extends CompositeConfiguration {
      * @param enabled enabled or disabled
      */
     public static void setSysOverridesEnabled(boolean enabled) {
-        SYS_OVERRIDES_ENABLED = enabled;
+        sysOverridesEnabled = enabled;
     }
 
     private static final Logger LOG                = LoggerFactory.getLogger(Config.class);
@@ -163,6 +164,8 @@ public class Config extends CompositeConfiguration {
     public Config(final String basepath, final String filename) {
         super();
         Parameters parameters = new Parameters();
+        IEnvProvider envProvider = System.getProperty("KMC_UNIT_TEST") != null ? new PropsEnvProvider() : new EnvProvider();
+
         try {
             List<FileLocationStrategy> strategies = Arrays.asList(new BasePathLocationStrategy(),
                     new ClasspathLocationStrategy());
@@ -201,16 +204,16 @@ public class Config extends CompositeConfiguration {
                                             .setFileName(filename));
 
 
-            if (SYS_OVERRIDES_ENABLED) {
+            if (sysOverridesEnabled) {
                 LOG.info("{} env var found, making {} primary config", KMC_OVERRIDE_CONFIG,
-                        System.getenv(KMC_OVERRIDE_CONFIG));
+                        envProvider.getEnv(KMC_OVERRIDE_CONFIG));
                 FileBasedConfigurationBuilder<PropertiesConfiguration> devOverride =
                         new FileBasedConfigurationBuilder<>(PropertiesConfiguration.class)
                                 .configure(
                                         parameters
                                                 .properties()
                                                 .setLocationStrategy(strategy)
-                                                .setFileName(System.getenv(KMC_OVERRIDE_CONFIG)));
+                                                .setFileName(envProvider.getEnv(KMC_OVERRIDE_CONFIG)));
                 this.addConfiguration(devOverride.getConfiguration());
             }
 
@@ -243,64 +246,64 @@ public class Config extends CompositeConfiguration {
         }
 
         this.user = getString(DB_AUTH_USER);
-        if (System.getenv(ENV_DB_USER) != null) {
+        if (envProvider.getEnv(ENV_DB_USER) != null) {
             LOG.info("{} env var found, overriding {} user", ENV_DB_USER, DB_AUTH_USER);
-            this.user = System.getenv(ENV_DB_USER);
+            this.user = envProvider.getEnv(ENV_DB_USER);
         }
         this.pass = getString(DB_AUTH_PASS);
-        if (System.getenv(ENV_DB_PASS) != null) {
-            LOG.info("{} env var found, overriding {}", ENV_DB_PASS, DB_AUTH_PASS);
-            this.pass = System.getenv(ENV_DB_PASS);
+        if (envProvider.getEnv(ENV_DB_PASS) != null) {
+            LOG.info(ENV_VAR_FOUND_OVERRIDING, ENV_DB_PASS, DB_AUTH_PASS);
+            this.pass = envProvider.getEnv(ENV_DB_PASS);
         }
         this.conn = getString(DB_CONN_STRING);
-        if (System.getenv(ENV_DB_CONN_STRING) != null) {
-            LOG.info("{} env var found, overriding {}", ENV_DB_CONN_STRING, DB_CONN_STRING);
-            this.conn = System.getenv(ENV_DB_CONN_STRING);
+        if (envProvider.getEnv(ENV_DB_CONN_STRING) != null) {
+            LOG.info(ENV_VAR_FOUND_OVERRIDING, ENV_DB_CONN_STRING, DB_CONN_STRING);
+            this.conn = envProvider.getEnv(ENV_DB_CONN_STRING);
         }
         this.host = getString(DB_HOST);
-        if (System.getenv(ENV_DB_HOST) != null) {
-            LOG.info("{} env var found, overriding {}", ENV_DB_HOST, DB_HOST);
-            this.host = System.getenv(ENV_DB_HOST);
+        if (envProvider.getEnv(ENV_DB_HOST) != null) {
+            LOG.info(ENV_VAR_FOUND_OVERRIDING, ENV_DB_HOST, DB_HOST);
+            this.host = envProvider.getEnv(ENV_DB_HOST);
         }
         this.port = getString(DB_PORT);
-        if (System.getenv(ENV_DB_PORT) != null) {
-            LOG.info("{} env var found, overriding {}", ENV_DB_PORT, DB_PORT);
-            this.port = System.getenv(ENV_DB_PORT);
+        if (envProvider.getEnv(ENV_DB_PORT) != null) {
+            LOG.info(ENV_VAR_FOUND_OVERRIDING, ENV_DB_PORT, DB_PORT);
+            this.port = envProvider.getEnv(ENV_DB_PORT);
         }
         this.schema = getString(DB_SCHEMA);
-        if (System.getenv(ENV_DB_SCHEMA) != null) {
-            LOG.info("{} env var found, overriding {}", ENV_DB_SCHEMA, DB_SCHEMA);
-            this.schema = System.getenv(ENV_DB_SCHEMA);
+        if (envProvider.getEnv(ENV_DB_SCHEMA) != null) {
+            LOG.info(ENV_VAR_FOUND_OVERRIDING, ENV_DB_SCHEMA, DB_SCHEMA);
+            this.schema = envProvider.getEnv(ENV_DB_SCHEMA);
         }
         this.keystore = getString(DB_KEYSTORE);
-        if (System.getenv(ENV_DB_KEYSTORE) != null) {
-            LOG.info("{} env var found, overriding {}", ENV_DB_KEYSTORE, DB_KEYSTORE);
-            this.keystore = System.getenv(ENV_DB_KEYSTORE);
+        if (envProvider.getEnv(ENV_DB_KEYSTORE) != null) {
+            LOG.info(ENV_VAR_FOUND_OVERRIDING, ENV_DB_KEYSTORE, DB_KEYSTORE);
+            this.keystore = envProvider.getEnv(ENV_DB_KEYSTORE);
         }
         this.keystorePass = getString(DB_KEYSTORE_PASS);
-        if (System.getenv(ENV_DB_KEYSTORE_PASS) != null) {
-            LOG.info("{} env var found, overriding {}", ENV_DB_KEYSTORE_PASS, DB_KEYSTORE_PASS);
-            this.keystorePass = System.getenv(ENV_DB_KEYSTORE_PASS);
+        if (envProvider.getEnv(ENV_DB_KEYSTORE_PASS) != null) {
+            LOG.info(ENV_VAR_FOUND_OVERRIDING, ENV_DB_KEYSTORE_PASS, DB_KEYSTORE_PASS);
+            this.keystorePass = envProvider.getEnv(ENV_DB_KEYSTORE_PASS);
         }
         this.truststore = getString(DB_TRUSTSTORE);
-        if (System.getenv(ENV_DB_TRUSTSTORE) != null) {
-            LOG.info("{} env var found, overriding {}", ENV_DB_TRUSTSTORE, DB_TRUSTSTORE);
-            this.keystore = System.getenv(ENV_DB_TRUSTSTORE);
+        if (envProvider.getEnv(ENV_DB_TRUSTSTORE) != null) {
+            LOG.info(ENV_VAR_FOUND_OVERRIDING, ENV_DB_TRUSTSTORE, DB_TRUSTSTORE);
+            this.keystore = envProvider.getEnv(ENV_DB_TRUSTSTORE);
         }
         this.truststorePass = getString(DB_TRUSTSTORE_PASS);
-        if (System.getenv(ENV_DB_TRUSTSTORE_PASS) != null) {
-            LOG.info("{} env var found, overriding {}", ENV_DB_TRUSTSTORE_PASS, DB_TRUSTSTORE_PASS);
-            this.keystore = System.getenv(ENV_DB_TRUSTSTORE_PASS);
+        if (envProvider.getEnv(ENV_DB_TRUSTSTORE_PASS) != null) {
+            LOG.info(ENV_VAR_FOUND_OVERRIDING, ENV_DB_TRUSTSTORE_PASS, DB_TRUSTSTORE_PASS);
+            this.keystore = envProvider.getEnv(ENV_DB_TRUSTSTORE_PASS);
         }
         this.useTls = getBoolean(DB_TLS);
-        if (System.getenv(ENV_DB_TLS) != null) {
-            LOG.info("{} env var found, overriding {}", ENV_DB_TLS, DB_TLS);
-            this.useTls = System.getenv(ENV_DB_TLS).equalsIgnoreCase("true");
+        if (envProvider.getEnv(ENV_DB_TLS) != null) {
+            LOG.info(ENV_VAR_FOUND_OVERRIDING, ENV_DB_TLS, DB_TLS);
+            this.useTls = envProvider.getEnv(ENV_DB_TLS).equalsIgnoreCase("true");
         }
         this.useMtls = getBoolean(DB_MTLS);
-        if (System.getenv(ENV_DB_MTLS) != null) {
-            LOG.info("{} env var found, overriding {}", ENV_DB_MTLS, DB_MTLS);
-            this.useMtls = System.getenv(ENV_DB_MTLS).equalsIgnoreCase("true");
+        if (envProvider.getEnv(ENV_DB_MTLS) != null) {
+            LOG.info(ENV_VAR_FOUND_OVERRIDING, ENV_DB_MTLS, DB_MTLS);
+            this.useMtls = envProvider.getEnv(ENV_DB_MTLS).equalsIgnoreCase("true");
         }
     }
 

@@ -123,7 +123,7 @@ function hexCipherLookup(obj, value) {
         return ''
     }
 
-    let parsed = parseInt(value, 16)
+    let parsed = Number.parseInt(value, 16)
     let entries = Object.entries(obj).find((entry) => {
         const val = entry[1]
         return val.value === parsed
@@ -174,7 +174,7 @@ export function hexToInt(value) {
     if (value === null || value === '') {
         return -1
     }
-    return parseInt(value, 16)
+    return Number.parseInt(value, 16)
 }
 
 /**

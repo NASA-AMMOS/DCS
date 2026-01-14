@@ -55,18 +55,13 @@ public enum ServiceType {
         if (serviceType == null) {
             return UNKNOWN;
         }
-        switch (serviceType) {
-            case 0:
-                return PLAINTEXT;
-            case 1:
-                return ENCRYPTION;
-            case 2:
-                return AUTHENTICATION;
-            case 3:
-                return AUTHENTICATED_ENCRYPTION;
-            default:
-                return UNKNOWN;
-        }
+        return switch (serviceType) {
+            case 0 -> PLAINTEXT;
+            case 1 -> ENCRYPTION;
+            case 2 -> AUTHENTICATION;
+            case 3 -> AUTHENTICATED_ENCRYPTION;
+            default -> UNKNOWN;
+        };
     }
 
     /**

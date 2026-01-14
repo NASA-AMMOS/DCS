@@ -1,6 +1,7 @@
 package gov.nasa.jpl.ammos.asec.kmc.sadb;
 
 import gov.nasa.jpl.ammos.asec.kmc.api.ex.KmcException;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.h2.tools.RunScript;
 import org.junit.After;
 import org.junit.Before;
@@ -9,18 +10,29 @@ import org.junit.BeforeClass;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.sql.*;
 
-public class BaseH2Test {
+public abstract class BaseH2Test {
+    public static final String JDBC_H_2_MEM_TEST = "jdbc:h2:mem:test";
+    public static final String SADB_USER = "sadb_user";
+    public static final String PASSWORD = RandomStringUtils.secure().nextAlphanumeric(10);
     public static KmcDao dao;
 
     @BeforeClass
     public static void beforeClass() throws KmcException {
-        dao = new KmcDao("sadb_user", "sadb_test");
+
+        try (Connection conn = DriverManager.getConnection(JDBC_H_2_MEM_TEST); PreparedStatement stmt =
+                conn.prepareStatement("CREATE USER IF NOT EXISTS sadb_user PASSWORD ? ADMIN")) {
+            stmt.setString(1, PASSWORD);
+            stmt.execute();
+        } catch (SQLException e) {
+            throw new KmcException(e);
+        }
+
+        dao = new KmcDao(SADB_USER, PASSWORD);
         dao.init();
         System.setProperty("KMC_UNIT_TEST", "true");
+        System.setProperty("DB_PASS", PASSWORD);
     }
 
     /**
@@ -46,8 +58,8 @@ public class BaseH2Test {
     }
 
     private void setupTable(String sqlFile) {
-        try (Connection conn = DriverManager.getConnection("jdbc:h2:mem:test", "sadb_user", "sadb_test");
-             Reader reader = new InputStreamReader(getClass().getResourceAsStream(sqlFile))) {
+        try (Connection conn = DriverManager.getConnection(JDBC_H_2_MEM_TEST, SADB_USER, PASSWORD);
+             Reader reader = new InputStreamReader(BaseH2Test.class.getResourceAsStream(sqlFile))) {
             RunScript.execute(conn, reader);
         } catch (SQLException sqlException) {
             throw new RuntimeException("Encountered unexpected SQLException while setting up unit test DB: ",
@@ -71,8 +83,9 @@ public class BaseH2Test {
     }
 
     private static void truncateTable(String tableName) throws SQLException {
-        try (Connection conn = DriverManager.getConnection("jdbc:h2:mem:test", "sadb_user", "sadb_test")) {
-            conn.createStatement().execute("TRUNCATE TABLE sadb.%s".formatted(tableName));
+        try (Connection conn = DriverManager.getConnection(JDBC_H_2_MEM_TEST, SADB_USER, PASSWORD);
+             Statement stmt = conn.createStatement()) {
+            stmt.execute("TRUNCATE TABLE sadb.%s".formatted(tableName));
         }
     }
 
@@ -89,8 +102,9 @@ public class BaseH2Test {
     }
 
     private static void dropTable(String tableName) throws SQLException {
-        try (Connection conn = DriverManager.getConnection("jdbc:h2:mem:test", "sadb_user", "sadb_test")) {
-            conn.createStatement().execute("DROP TABLE sadb.%s".formatted(tableName));
+        try (Connection conn = DriverManager.getConnection(JDBC_H_2_MEM_TEST, SADB_USER, PASSWORD);
+             Statement stmt = conn.createStatement()) {
+            stmt.execute("DROP TABLE sadb.%s".formatted(tableName));
         }
     }
 

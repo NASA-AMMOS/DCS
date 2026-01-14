@@ -378,17 +378,7 @@ public class SaController {
                                                  @RequestParam(name = "force", defaultValue = "false") boolean force,
                                                  HttpServletRequest request) throws IOException,
                                                                                     KmcException {
-        Set<FrameType> frameTypes = new HashSet<>();
-        if (types != null) {
-            for (String type : types) {
-                FrameType frameType = FrameType.fromString(type);
-                if (frameType != FrameType.UNKNOWN) {
-                    frameTypes.add(frameType);
-                }
-            }
-        } else {
-            frameTypes.add(FrameType.TC);
-        }
+        Set<FrameType> frameTypes = getFrameTypes(types);
 
         LOG.info("{} creating SAs from file", request.getRemoteAddr());
         ObjectNode resp   = mapper.createObjectNode();
@@ -436,6 +426,21 @@ public class SaController {
             LOG.info("{} failed to create SAs from file with {} errors", request.getRemoteAddr(), errs);
         }
         return new ResponseEntity<>(resp, status);
+    }
+
+    private static Set<FrameType> getFrameTypes(List<String> types) {
+        Set<FrameType> frameTypes = new HashSet<>();
+        if (types != null) {
+            for (String type : types) {
+                FrameType frameType = FrameType.fromString(type);
+                if (frameType != FrameType.UNKNOWN) {
+                    frameTypes.add(frameType);
+                }
+            }
+        } else {
+            frameTypes.add(FrameType.TC);
+        }
+        return frameTypes;
     }
 
     @GetMapping(value = {"/sa/csv/{type}", "/sa/csv"})

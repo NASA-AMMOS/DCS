@@ -15,6 +15,11 @@ import static org.junit.Assert.assertNotEquals;
  * Tests for starting SAs
  */
 public class SaStartTest extends BaseCommandLineTest {
+
+    public static final String TYPE_FMT = "--type=%s";
+    public static final String SCID = "--scid";
+    public static final String SPI = "--spi";
+
     @Test
     public void testStart() throws KmcException {
         testStart(FrameType.TC);
@@ -24,16 +29,16 @@ public class SaStartTest extends BaseCommandLineTest {
 
     public void testStart(FrameType type) throws KmcException {
         CommandLine cli  = getCmd(new SaStart(), true);
-        int         exit = cli.execute(String.format("--type=%s", type.name()));
+        int         exit = cli.execute(String.format(TYPE_FMT, type.name()));
         // no args
         assertNotEquals(0, exit);
-        exit = cli.execute("--spi=2", "--scid=46", String.format("--type=%s", type.name()));
+        exit = cli.execute("--spi=2", "--scid=46", String.format(TYPE_FMT, type.name()));
         // already started
         assertNotEquals(0, exit);
 
         // start
         createExtraSas(type);
-        exit = cli.execute("--spi", "8", "--scid", "46", String.format("--type=%s", type.name()));
+        exit = cli.execute(SPI, "8", SCID, "46", String.format(TYPE_FMT, type.name()));
         assertEquals(0, exit);
         ISecAssn sa1 = dao.getSa(new SpiScid(8, (short) 46), type);
         ISecAssn sa2 = dao.getSa(new SpiScid(9, (short) 46), type);
@@ -53,7 +58,7 @@ public class SaStartTest extends BaseCommandLineTest {
         createExtraSas(type);
         dao.startSa(new SpiScid(8, (short) 46), false, type);
         CommandLine cli  = getCmd(new SaStart(), true);
-        int         exit = cli.execute("--scid", "46", "--spi", "9", String.format("--type=%s", type.name()));
+        int         exit = cli.execute(SCID, "46", SPI, "9", String.format(TYPE_FMT, type.name()));
         assertNotEquals(0, exit);
     }
 
@@ -68,7 +73,7 @@ public class SaStartTest extends BaseCommandLineTest {
         createExtraSas(type);
         dao.startSa(new SpiScid(8, (short) 46), false, type);
         CommandLine cli  = getCmd(new SaStart(), true);
-        int         exit = cli.execute("--scid", "46", "--spi", "9", "--force", String.format("--type=%s",
+        int         exit = cli.execute(SCID, "46", SPI, "9", "--force", String.format(TYPE_FMT,
                 type.name()));
         assertEquals(0, exit);
     }
@@ -83,7 +88,7 @@ public class SaStartTest extends BaseCommandLineTest {
     public void testStartMultiple(FrameType type) throws KmcException {
         createExtraSas(type);
         CommandLine cli  = getCmd(new SaStart(), true);
-        int         exit = cli.execute("--scid", "46", "--spi", "8", "--spi", "10", String.format("--type=%s",
+        int         exit = cli.execute(SCID, "46", SPI, "8", SPI, "10", String.format(TYPE_FMT,
                 type.name()));
         assertEquals(0, exit);
         ISecAssn sa1 = dao.getSa(new SpiScid(8, (short) 46), type);
@@ -102,7 +107,7 @@ public class SaStartTest extends BaseCommandLineTest {
     public void testStartMultipleFail(FrameType type) throws KmcException {
         createExtraSas(type);
         CommandLine cli  = getCmd(new SaStart(), true);
-        int         exit = cli.execute("--scid", "46", "--spi", "8", "--spi", "9", String.format("--type=%s",
+        int         exit = cli.execute(SCID, "46", SPI, "8", SPI, "9", String.format(TYPE_FMT,
                 type.name()));
         assertNotEquals(0, exit);
         ISecAssn sa1 = dao.getSa(new SpiScid(8, (short) 46), type);
