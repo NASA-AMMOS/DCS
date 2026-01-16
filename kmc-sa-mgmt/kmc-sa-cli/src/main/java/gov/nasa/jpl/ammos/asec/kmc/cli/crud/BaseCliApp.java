@@ -53,7 +53,7 @@ abstract class BaseCliApp implements Callable<Integer> {
      * Frame type
      */
     @CommandLine.Option(names = "--type", required = false, defaultValue = "TC", description = "frame type. TC " +
-            "(default), TM, or AOS", converter = FrameTypeConverter.class)
+            "(default), TM, AOS, or ALL", converter = FrameTypeConverter.class)
     public FrameType frameType = FrameType.TC;
 
     /**
