@@ -184,7 +184,7 @@ if [ ! DISABLE_SRV_MTLS]; then
         /bin/chown root:crypto /etc/pki/tls/private/ammos-mtls-truststore.jks
         /bin/chmod 440 /etc/pki/tls/private/ammos-mtls-truststore.jks
     else
-        echo "TLS_MTLS_TRUSTSTORE not provided - required to use mTLS" >&2
+        echo "ERROR: TLS_MTLS_TRUSTSTORE not provided - required to use mTLS" >&2
         if [ -n "${DEBUG}" ]; then
           debug
         else
@@ -271,6 +271,7 @@ if [ ! -r "${CS_CFG_DIR}/.props.configured" ]; then
   fi
 
   if [ DISABLE_SRV_MTLS ]; then
+    echo "Disabling mTLS in Crypto Service Tomcat & using ammos-truststore.jks"
     /bin/sed -i -e "s|^#server.ssl.client-auth=.*|server.ssl.client-auth=NONE|" "${CS_PROPS}"
     /bin/sed -i -e "s|^#server.ssl.trust-store=.*|server.ssl.trust-store=/etc/pki/tls/certs/ammos-truststore.jks|" "${CS_PROPS}"
   fi
