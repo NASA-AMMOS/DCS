@@ -19,7 +19,7 @@ echo 'Configuring TLS'
 echo '------------------------------'
 # ammos-server-cert.pem
 if [ -r "/etc/pki/tls/certs/ammos-server-cert.pem" ]; then
-    echo "Using ammos-server.cert.pem already in container." >&2
+    echo "Using ammos-server-cert.pem already in container." >&2
 elif [ -r /run/secrets/tls_host_cert ]; then
     echo "Using ammos-server.cert.pem provided as a secret." >&2
     /bin/cp /run/secrets/tls_host_cert /etc/pki/tls/certs/ammos-server-cert.pem
@@ -38,7 +38,7 @@ fi
 if [ -r "/etc/pki/tls/certs/ammos-server-key.pem" ]; then
     echo "Using ammos-server.key.pem already in container." >&2
 elif [ -r /run/secrets/tls_host_key ]; then
-    echo "Using ammos-server.key.pem provided as a secret." >&2
+    echo "Using ammos-server-key.pem provided as a secret." >&2
     /bin/cp /run/secrets/tls_host_key /etc/pki/tls/private/ammos-server-key.pem
     /bin/chown root:crypto /etc/pki/tls/private/ammos-server-key.pem
     /bin/chmod 440 /etc/pki/tls/private/ammos-server-key.pem
@@ -129,52 +129,69 @@ elif [ -r /run/secrets/tls_truststore_pass ]; then
 fi
 
 # ammos-truststore.jks - generated from TLS_CA_BUNDLE if not provided
-if [ ! -r /etc/pki/tls/certs/ammos-truststore.jks ]; then
-  if [ -r /tls/ammos-truststore.jks ]; then
-    /bin/cp /tls/ammos-truststore.jks /etc/pki/tls/certs/ammos-truststore.jks
-  elif [ -r /run/secrets/tls_truststore ]; then
+if [ -r /etc/pki/tls/certs/ammos-truststore.jks ]; then
+    echo "Using ammos-truststore.jks already in container." >&2
+elif [ -r /run/secrets/tls_truststore ]; then
+    echo "Using ammos-truststore.jks provided as a secret." >&2
     /bin/cp /run/secrets/tls_truststore /etc/pki/tls/certs/ammos-truststore.jks
-  elif [ -n "${TLS_TRUSTSTORE}" ]; then
+    /bin/chown root:root /etc/pki/tls/certs/ammos-truststore.jks
+    /bin/chmod 444 /etc/pki/tls/certs/ammos-truststore.jks
+elif [ -n "${TLS_TRUSTSTORE}" ]; then
     echo "${TLS_TRUSTSTORE}" | /bin/base64 -d -> /etc/pki/tls/certs/ammos-truststore.jks
-  else
+    /bin/chown root:root /etc/pki/tls/certs/ammos-truststore.jks
+    /bin/chmod 444 /etc/pki/tls/certs/ammos-truststore.jks
+else
     /opt/ammos/kmc/services/crypto-service/bin/buildjks.sh -f /etc/pki/tls/certs/ammos-truststore.jks -b /etc/pki/tls/certs/ammos-ca-bundle.crt -p "${TRUSTSTORE_PASS}" >/dev/null 2>&1
-  fi
-  /bin/chown root:root /etc/pki/tls/certs/ammos-truststore.jks
-  /bin/chmod 444 /etc/pki/tls/certs/ammos-truststore.jks
+    /bin/chown root:root /etc/pki/tls/certs/ammos-truststore.jks
+    /bin/chmod 444 /etc/pki/tls/certs/ammos-truststore.jks
 fi
 
 # Fix for java system CA
 /bin/cp /etc/pki/tls/certs/ammos-ca-bundle.crt /etc/pki/ca-trust/source/anchors/
 /bin/update-ca-trust
 
-# ammos-mtls-truststore passphrase
-MTLS_TRUSTSTORE_PASS="changeit"
-if [ -r /run/secrets/tls_mtls_truststore_pass ]; then
-  MTLS_TRUSTSTORE_PASS=$(/bin/cat /run/secrets/tls_mtls_truststore_pass)
-elif [ -n "${TLS_MTLS_TRUSTSTORE_PASS}" ]; then
-  MTLS_TRUSTSTORE_PASS=$(echo "${TLS_MTLS_TRUSTSTORE_PASS}" | /bin/base64 -d -)
+# Check if mTLS should be disabled
+if [ -z ${DISABLE_MTLS} ]; then
+   DISABLE_SRV_MTLS=false
+else
+   DISABLE_SRV_TLS=${DISABLE_MTLS}
 fi
 
-# ammos-mtls-truststore.jks - MUST be provided for operation
-if [ -z "${DISABLE_MTLS}" ]; then
-  if [ ! -r /etc/pki/tls/private/ammos-mtls-truststore.jks ]; then
-    if [ -r /tls/ammos-mtls-truststore.jks ]; then
-      /bin/cp /tls/ammos-mtls-truststore.jks /etc/pki/tls/private/ammos-mtls-truststore.jks
-    elif [ -r /run/secrets/tls_mtls_truststore ]; then
-      /bin/cp /run/secrets/tls_mtls_truststore /etc/pki/tls/private/ammos-mtls-truststore.jks
-    elif [ -n "${TLS_MTLS_TRUSTSTORE}" ]; then
-      echo "${TLS_MTLS_TRUSTSTORE}" | /bin/base64 -d - > /etc/pki/tls/private/ammos-mtls-truststore.jks
-    else
-      echo "TLS_MTLS_TRUSTSTORE not provided - required for operation" >&2
-      if [ -n "${DEBUG}" ]; then
-        debug
-      else
-        exit 1
-      fi
+# Set up mTLS if not disabled
+if [ ! DISABLE_SRV_MTLS]; then
+
+    # ammos-mtls-truststore passphrase
+    MTLS_TRUSTSTORE_PASS="changeit"
+    if [ -r /run/secrets/tls_mtls_truststore_pass ]; then
+        MTLS_TRUSTSTORE_PASS=$(/bin/cat /run/secrets/tls_mtls_truststore_pass)
+    elif [ -n "${TLS_MTLS_TRUSTSTORE_PASS}" ]; then
+        MTLS_TRUSTSTORE_PASS=$(echo "${TLS_MTLS_TRUSTSTORE_PASS}" | /bin/base64 -d -)
     fi
-    /bin/chown root:crypto /etc/pki/tls/private/ammos-mtls-truststore.jks
-    /bin/chmod 440 /etc/pki/tls/private/ammos-mtls-truststore.jks
-  fi
+
+    # ammos-mtls-truststore.jks - MUST be provided to use mTLS 
+    if [ -r /etc/pki/tls/private/ammos-mtls-truststore.jks ]; then
+        echo "Using ammos-mtls-truststore.jks already in container." >&2
+    elif [ -r /run/secrets/tls_mtls_truststore ]; then
+        echo "Using ammos-mtls-truststore.jks provided as a secret." >&2
+        /bin/cp /run/secrets/tls_mtls_truststore /etc/pki/tls/private/ammos-mtls-truststore.jks
+        /bin/chown root:crypto /etc/pki/tls/private/ammos-mtls-truststore.jks
+        /bin/chmod 440 /etc/pki/tls/private/ammos-mtls-truststore.jks
+    elif [ -n "${TLS_MTLS_TRUSTSTORE}" ]; then
+        echo "Using ammos-mtls-truststore.jks provided as a env variable." >&2
+        echo "${TLS_MTLS_TRUSTSTORE}" | /bin/base64 -d - > /etc/pki/tls/private/ammos-mtls-truststore.jks
+        /bin/chown root:crypto /etc/pki/tls/private/ammos-mtls-truststore.jks
+        /bin/chmod 440 /etc/pki/tls/private/ammos-mtls-truststore.jks
+    else
+        echo "TLS_MTLS_TRUSTSTORE not provided - required to use mTLS" >&2
+        if [ -n "${DEBUG}" ]; then
+          debug
+        else
+          exit 1
+        fi
+    fi
+
+else
+   # TBD - add code to change client auth to WANT and use ammos-truststore.jks instead of ammos-mtls-truststore.jks
 fi
 
 echo '------------------------------'
