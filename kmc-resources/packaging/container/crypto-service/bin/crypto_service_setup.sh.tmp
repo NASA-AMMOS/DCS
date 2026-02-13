@@ -190,8 +190,6 @@ if [ ! DISABLE_SRV_MTLS]; then
         fi
     fi
 
-else
-   # TBD - add code to change client auth to WANT and use ammos-truststore.jks instead of ammos-mtls-truststore.jks
 fi
 
 echo '------------------------------'
@@ -270,8 +268,9 @@ if [ ! -r "${CS_CFG_DIR}/.props.configured" ]; then
     /bin/sed -i -e "s|^#server.ssl.key-store-type=.*|server.ssl.key-store-type=PKCS12|" "${CS_PROPS}"
   fi
 
-  if [ -n "${DISABLE_MTLS}" ]; then
-    /bin/sed -i -e "s|^#server.ssl.client-auth=.*|server.ssl.client-auth=WANT|" "${CS_PROPS}"
+  if [ DISABLE_SRV_MTLS ]; then
+    /bin/sed -i -e "s|^#server.ssl.client-auth=.*|server.ssl.client-auth=NONE|" "${CS_PROPS}"
+    /bin/sed -i -e "s|^#server.ssl.trust-store=.*|server.ssl.trust-store=/etc/pki/tls/certs/ammos-truststore.jks|" "${CS_PROPS}"
   fi
 
   /bin/touch "${CS_CFG_DIR}/.props.configured"
