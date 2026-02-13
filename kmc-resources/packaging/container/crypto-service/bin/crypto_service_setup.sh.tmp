@@ -21,7 +21,7 @@ echo '------------------------------'
 if [ -r "/etc/pki/tls/certs/ammos-server-cert.pem" ]; then
     echo "Using ammos-server-cert.pem already in container." >&2
 elif [ -r /run/secrets/tls_host_cert ]; then
-    echo "Using ammos-server.cert.pem provided as a secret." >&2
+    echo "Using ammos-server-cert.pem provided as a secret." >&2
     /bin/cp /run/secrets/tls_host_cert /etc/pki/tls/certs/ammos-server-cert.pem
     /bin/chown root:root /etc/pki/tls/certs/ammos-server-cert.pem
     /bin/chmod 444 /etc/pki/tls/certs/ammos-server-cert.pem
@@ -36,7 +36,7 @@ fi
 
 # ammos-server-key.pem
 if [ -r "/etc/pki/tls/certs/ammos-server-key.pem" ]; then
-    echo "Using ammos-server.key.pem already in container." >&2
+    echo "Using ammos-server-key.pem already in container." >&2
 elif [ -r /run/secrets/tls_host_key ]; then
     echo "Using ammos-server-key.pem provided as a secret." >&2
     /bin/cp /run/secrets/tls_host_key /etc/pki/tls/private/ammos-server-key.pem
@@ -76,14 +76,14 @@ HOST_KEY_PASS="${HOST_KEYSTORE_PASS}"
 
 # ammos-server-keystore -- needed for TLS connections
 if [ -r "/etc/pki/tls/private/ammos-server-keystore.${KEYSTORE_FILE_EXT}" ]; then
-    echo "Using ammos-server.keystore."${KEYSTORE_FILE_EXT}" already in container." >&2
+    echo "Using ammos-server-keystore."${KEYSTORE_FILE_EXT}" already in container." >&2
 elif [ -r /run/secrets/tls_host_keystore ]; then
-    echo "Using ammos-server.keystore."${KEYSTORE_FILE_EXT}" provided as a secret." >&2
+    echo "Using ammos-server-keystore."${KEYSTORE_FILE_EXT}" provided as a secret." >&2
     /bin/cp /run/secrets/tls_host_keystore "/etc/pki/tls/private/ammos-server-keystore.${KEYSTORE_FILE_EXT}"
     /bin/chown root:crypto /etc/pki/tls/private/ammos-server-keystore.*
     /bin/chmod 440 /etc/pki/tls/private/ammos-server-keystore.*
 elif [ -r /etc/pki/tls/certs/ammos-server-cert.pem ] && [ -r /etc/pki/tls/private/ammos-server-key.pem ]; then
-    echo "Creating ammos-server.keystore."${KEYSTORE_FILE_EXT}" from key and cert files." >&2
+    echo "Creating ammos-server-keystore."${KEYSTORE_FILE_EXT}" from key and cert files." >&2
     /usr/bin/openssl pkcs12 -export -in /etc/pki/tls/certs/ammos-server-cert.pem -inkey /etc/pki/tls/private/ammos-server-key.pem -out /etc/pki/tls/private/ammos-server-keystore.p12 --password "pass:${HOST_KEYSTORE_PASS}"
     if [ "${KEYSTORE_FORMAT}" == "BCFKS" ]; then
       # Generate BCFKS keystore if needed 
@@ -137,10 +137,12 @@ elif [ -r /run/secrets/tls_truststore ]; then
     /bin/chown root:root /etc/pki/tls/certs/ammos-truststore.jks
     /bin/chmod 444 /etc/pki/tls/certs/ammos-truststore.jks
 elif [ -n "${TLS_TRUSTSTORE}" ]; then
+    echo "Using ammos-truststore.jks provided as env variable." >&2
     echo "${TLS_TRUSTSTORE}" | /bin/base64 -d -> /etc/pki/tls/certs/ammos-truststore.jks
     /bin/chown root:root /etc/pki/tls/certs/ammos-truststore.jks
     /bin/chmod 444 /etc/pki/tls/certs/ammos-truststore.jks
 else
+    echo "Creating ammos-truststore.jks from CA Bundle." >&2
     /opt/ammos/kmc/services/crypto-service/bin/buildjks.sh -f /etc/pki/tls/certs/ammos-truststore.jks -b /etc/pki/tls/certs/ammos-ca-bundle.crt -p "${TRUSTSTORE_PASS}" >/dev/null 2>&1
     /bin/chown root:root /etc/pki/tls/certs/ammos-truststore.jks
     /bin/chmod 444 /etc/pki/tls/certs/ammos-truststore.jks
@@ -177,7 +179,7 @@ if [ ! DISABLE_SRV_MTLS]; then
         /bin/chown root:crypto /etc/pki/tls/private/ammos-mtls-truststore.jks
         /bin/chmod 440 /etc/pki/tls/private/ammos-mtls-truststore.jks
     elif [ -n "${TLS_MTLS_TRUSTSTORE}" ]; then
-        echo "Using ammos-mtls-truststore.jks provided as a env variable." >&2
+        echo "Using ammos-mtls-truststore.jks provided as env variable." >&2
         echo "${TLS_MTLS_TRUSTSTORE}" | /bin/base64 -d - > /etc/pki/tls/private/ammos-mtls-truststore.jks
         /bin/chown root:crypto /etc/pki/tls/private/ammos-mtls-truststore.jks
         /bin/chmod 440 /etc/pki/tls/private/ammos-mtls-truststore.jks
