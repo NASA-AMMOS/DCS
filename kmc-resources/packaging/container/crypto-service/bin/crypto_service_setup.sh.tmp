@@ -18,47 +18,32 @@ echo '------------------------------'
 echo 'Configuring TLS'
 echo '------------------------------'
 # ammos-server-cert.pem
-if [ ! -r /etc/pki/tls/certs/ammos-server-cert.pem ]; then
-  if [ -r /tls/ammos-server-cert.pem ]; then
-    /bin/cp /tls/ammos-server-cert.pem /etc/pki/tls/certs/ammos-server-cert.pem
-  elif [ -r /run/secrets/tls_host_cert ]; then
+if [ -r /run/secrets/tls_host_cert ]; then
     /bin/cp /run/secrets/tls_host_cert /etc/pki/tls/certs/ammos-server-cert.pem
-  elif [ -n "${TLS_HOST_CERT}" ]; then
-    echo "${TLS_HOST_CERT}" > /etc/pki/tls/certs/ammos-server-cert.pem
-  else
-    echo "TLS_HOST_CERT not provided - required for operation" >&2
+    /bin/chown root:root /etc/pki/tls/certs/ammos-server-cert.pem
+    /bin/chmod 444 /etc/pki/tls/certs/ammos-server-cert.pem
+else
+    echo "tls_host_cert secret not provided - required for operation" >&2
     if [ -n "${DEBUG}" ]; then
-      debug
-    else
-      if [ -n "${DEBUG}" ]; then
         debug
-      else
+    else
         exit 1
-      fi
     fi
-  fi
-  /bin/chown root:root /etc/pki/tls/certs/ammos-server-cert.pem
-  /bin/chmod 444 /etc/pki/tls/certs/ammos-server-cert.pem
 fi
 
 # ammos-server-key.pem
-if [ ! -r /etc/pki/tls/private/ammos-server-key.pem ]; then
-  if [ -r /tls/ammos-server-key.pem ]; then
-    /bin/cp /tls/ammos-server-key.pem /etc/pki/tls/private/ammos-server-key.pem
-  elif [ -r /run/secrets/tls_host_key ]; then
+# If ammos-server-key.pem is provided as a secret, use it.
+if [ -r /run/secrets/tls_host_key ]; then
     /bin/cp /run/secrets/tls_host_key /etc/pki/tls/private/ammos-server-key.pem
-  elif [ -n "${TLS_HOST_KEY}" ]; then
-    echo "${TLS_HOST_KEY}" > /etc/pki/tls/private/ammos-server-key.pem
-  else
-    echo "TLS_HOST_KEY not provided - required for operation" >&2
+    /bin/chown root:crypto /etc/pki/tls/private/ammos-server-key.pem
+    /bin/chmod 440 /etc/pki/tls/private/ammos-server-key.pem
+else
+    echo "tls_host_key secret not provided - required for operation" >&2
     if [ -n "${DEBUG}" ]; then
       debug
     else
       exit 1
     fi
-  fi
-  /bin/chown root:crypto /etc/pki/tls/private/ammos-server-key.pem
-  /bin/chmod 440 /etc/pki/tls/private/ammos-server-key.pem
 fi
 
 # KEYSTORE_FORMAT - PKCS12/BCFKS keystore formats - defaults to BCFKS
@@ -71,9 +56,7 @@ fi
 
 # ammos-server-keystore PASSPHRASE - defaults to changeit
 HOST_KEYSTORE_PASS='changeit'
-if [ -n "${TLS_HOST_KEYSTORE_PASS}" ]; then
-  HOST_KEYSTORE_PASS=$(echo "${TLS_HOST_KEYSTORE_PASS}" | /bin/base64 -d -)
-elif [ -r /run/secrets/tls_host_keystore_pass ]; then
+if [ -r /run/secrets/tls_host_keystore_pass ]; then
   HOST_KEYSTORE_PASS=$(cat /run/secrets/tls_host_keystore_pass)
 fi
 
@@ -86,7 +69,7 @@ HOST_KEY_PASS="${HOST_KEYSTORE_PASS}"
 #  HOST_KEYSTORE_PASS=$(echo ${TLS_HOST_KEY_PASS} | /bin/base64 -d -)
 #fi
 
-# ammos-server-keystore -- needed by SAMgnt app
+# ammos-server-keystore -- needed for TLS connections
 if [ ! -r "/etc/pki/tls/private/ammos-server-keystore.${KEYSTORE_FILE_EXT}" ]; then
   if [ -r "/tls/ammos-server-keystore.${KEYSTORE_FILE_EXT}" ]; then
     /bin/cp "/tls/ammos-server-keystore.${KEYSTORE_FILE_EXT}" "/etc/pki/tls/private/ammos-server-keystore.${KEYSTORE_FILE_EXT}"
