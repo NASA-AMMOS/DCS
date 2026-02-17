@@ -14,20 +14,24 @@ debug() {
 
 BCFIPS_VER=__BCFIPS_VER__
 
+echo '------------------------------'
+echo 'Configuring TLS'
+echo '------------------------------'
 # ammos-server-cert.pem
-if [ ! -r /etc/pki/tls/certs/ammos-server-cert.pem ]; then
+if [ ! -r "/etc/pki/tls/certs/ammos-server-cert.pem" ]; then
   if [ -r /run/secrets/tls_host_cert ]; then
     echo "Using ammos-server-cert.pem provided as tls_host_cert secret." >&2
     /bin/cp /run/secrets/tls_host_cert /etc/pki/tls/certs/ammos-server-cert.pem
   elif [ -n "${TLS_HOST_CERT}" ]; then
     echo "Using ammos-server-cert.pem provided as TLS_HOST_CERT env variable." >&2
     echo "${TLS_HOST_CERT}" > /etc/pki/tls/certs/ammos-server-cert.pem
-  else
-    echo "ERROR: tls_host_cert or TLS_HOST_CERT not provided - required for operation." >&2
-    if [ -n "${DEBUG}" ]; then
-      debug
     else
-      exit 1
+      echo "ERROR: tls_host_cert or TLS_HOST_CERT not provided - required for operation." >&2
+      if [ -n "${DEBUG}" ]; then
+        debug
+      else
+        exit 1
+    fi
   fi
   /bin/chown root:root /etc/pki/tls/certs/ammos-server-cert.pem
   /bin/chmod 444 /etc/pki/tls/certs/ammos-server-cert.pem
