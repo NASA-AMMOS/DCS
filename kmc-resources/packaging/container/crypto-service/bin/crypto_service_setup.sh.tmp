@@ -73,8 +73,6 @@ fi
 HOST_KEY_PASS="${HOST_KEYSTORE_PASS}"
 #if [ -r /run/secrets/tls_host_key_pass ]; then
 #  HOST_KEY_PASS=$(cat /run/secrets/tls_host_key_pass)
-#elif [ -n "${TLS_HOST_KEY_PASS}" ]; then
-#  HOST_KEYSTORE_PASS=$(echo ${TLS_HOST_KEY_PASS} | /bin/base64 -d -)
 #fi
 
 # ammos-server-keystore -- needed for TLS connections
@@ -123,9 +121,7 @@ fi
 
 # ammos-truststore.jks PASSPHRASE - defaults to changeit
 TRUSTSTORE_PASS='changeit'
-if [ -n "${TLS_TRUSTSTORE_PASS}" ]; then
-  TRUSTSTORE_PASS=$(echo "${TLS_TRUSTSTORE_PASS}" | /bin/base64 -d -)
-elif [ -r /run/secrets/tls_truststore_pass ]; then
+if [ -r /run/secrets/tls_truststore_pass ]; then
   TRUSTSTORE_PASS=$(/bin/cat /run/secrets/tls_truststore_pass)
 fi
 
@@ -162,8 +158,6 @@ if [ $DISABLE_SRV_MTLS -eq 0 ]; then
   MTLS_TRUSTSTORE_PASS="changeit"
   if [ -r /run/secrets/tls_mtls_truststore_pass ]; then
     MTLS_TRUSTSTORE_PASS=$(/bin/cat /run/secrets/tls_mtls_truststore_pass)
-  elif [ -n "${TLS_MTLS_TRUSTSTORE_PASS}" ]; then
-    MTLS_TRUSTSTORE_PASS=$(echo "${TLS_MTLS_TRUSTSTORE_PASS}" | /bin/base64 -d -)
   fi
 
   # ammos-mtls-truststore.jks - MUST be provided to use mTLS 
@@ -205,9 +199,8 @@ if [ ! -r "${CS_CFG_DIR}/.crypto.configured" ]; then
     # Update the default kmc-crypto.cfg with key params
     # Crypto Keystore
     if [ ! -r "${CS_CFG_DIR}/crypto.keystore.${KEYSTORE_FILE_EXT}" ]; then
-      if [ -r "/config/crypto_keystore.${KEYSTORE_FILE_EXT}" ]; then
-        /bin/cp "/config/crypto_keystore.${KEYSTORE_FILE_EXT}" "${CS_CFG_DIR}/crypto_keystore.${KEYSTORE_FILE_EXT}"
-      elif [ -r /run/secrets/crypto_keystore ]; then
+      if [ -r /run/secrets/crypto_keystore ]; then
+        echo "Using Crypto Keystore provided as crypto_keystore secret." >&2
         /bin/cp /run/secrets/crypto_keystore "${CS_CFG_DIR}/crypto_keystore.${KEYSTORE_FILE_EXT}"
       else
         echo "CRYPTO_KEYSTORE missing -- needed for operation"
@@ -239,8 +232,6 @@ if [ ! -r "${CS_CFG_DIR}/.crypto.configured" ]; then
     CRYPTO_KEY_PW="${CRYPTO_KEYSTORE_PW}"
     if [ -r /run/secrets/crypto_key_pass ]; then
       CRYPTO_KEY_PW=$(/bin/cat /run/secrets/crypto_key_pass)
-    elif [ -n "${CRYPTO_KEY_PASS}" ]; then
-      CRYPTO_KEY_PW=$(echo "${CRYPTO_KEY_PASS}" | /bin/base64 -d -)
     fi
     /bin/sed -i -e "s|^#crypto_key_password=.*|crypto_key_password=${CRYPTO_KEY_PW}|" "${CS_CFG}"
     /bin/sed -i -e "s|^#crypto_keystore_type=.*|crypto_keystore_type=${KEYSTORE_FORMAT}|" "${CS_CFG}"
@@ -253,14 +244,18 @@ fi
 CS_PROPS="${CS_CFG_DIR}/kmc-crypto-service.properties"
 if [ ! -r "${CS_CFG_DIR}/.props.configured" ]; then 
   /bin/sed -i -e "s|^#server.ssl.key-store.password=.*|server.ssl.key-store.password=${HOST_KEYSTORE_PASS}|" "${CS_PROPS}"
-  /bin/sed -i -e "s|^#server.ssl.trust-store.password=.*|server.ssl.trust-store.password=${MTLS_TRUSTSTORE_PASS}|" "${CS_PROPS}"
+  if [ $DISABLE_SRV_MTLS -eq 1 ]; then
+    /bin/sed -i -e "s|^#server.ssl.trust-store.password=.*|server.ssl.trust-store.password=${TRUSTSTORE_PASS}|" "${CS_PROPS}"
+  else
+    /bin/sed -i -e "s|^#server.ssl.trust-store.password=.*|server.ssl.trust-store.password=${MTLS_TRUSTSTORE_PASS}|" "${CS_PROPS}"
+  fi
 
   if [ "${KEYSTORE_FORMAT}" == "PKCS12" ]; then
     /bin/sed -i -e "s|^#server.ssl.key-store=.*|server.ssl.key-store=/etc/pki/tls/private/ammos-server-keystore.${KEYSTORE_FILE_EXT}|" "${CS_PROPS}"
     /bin/sed -i -e "s|^#server.ssl.key-store-type=.*|server.ssl.key-store-type=PKCS12|" "${CS_PROPS}"
   fi
 
-  if [ $DISABLE_SRV_MTLS ]; then
+  if [ $DISABLE_SRV_MTLS -eq 1 ]; then
     echo "Disabling mTLS in Crypto Service Tomcat & using ammos-truststore.jks"
     /bin/sed -i -e "s|^#server.ssl.client-auth=.*|server.ssl.client-auth=NONE|" "${CS_PROPS}"
     /bin/sed -i -e "s|^#server.ssl.trust-store=.*|server.ssl.trust-store=/etc/pki/tls/certs/ammos-truststore.jks|" "${CS_PROPS}"
