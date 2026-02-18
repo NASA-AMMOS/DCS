@@ -73,8 +73,6 @@ fi
 HOST_KEY_PASS="${HOST_KEYSTORE_PASS}"
 #if [ -r /run/secrets/tls_host_key_pass ]; then
 #  HOST_KEY_PASS=`cat /run/secrets/tls_host_key_pass`
-#elif [ ! -z "${TLS_HOST_KEY_PASS}" ]; then
-#  HOST_KEYSTORE_PASS=`echo ${TLS_HOST_KEY_PASS} | /bin/base64 -d -`
 #fi
 
 # ammos-server-keystore -- needed for TLS connections
@@ -149,7 +147,7 @@ fi
 
 # Check if mTLS should be disabled
 DISABLE_SRV_MTLS=0
-if [ $DISABLE_TLS -eq 1 ]; then
+if [ $DISABLE_MTLS -eq 1 ]; then
     DISABLE_SRV_MTLS=1
 fi
 
@@ -212,7 +210,7 @@ if [ ! -r "${SVC_CFG_DIR}/.props.configured" ]; then
   fi
 
   if [ $DISABLE_SRV_MTLS -eq 1 ]; then
-    echo "Disabling mTLS in Crypto Service Tomcat & using ammos-truststore.jks"
+    echo "Disabling mTLS in SA Mgmt Service Tomcat & using ammos-truststore.jks"
     /bin/sed -i -e "s|^#server.ssl.client-auth=.*|server.ssl.client-auth=NONE|" "${SVC_PROPS}"
     /bin/sed -i -e "s|^#server.ssl.trust-store=.*|server.ssl.trust-store=/etc/pki/tls/certs/ammos-truststore.jks|" "${SVC_PROPS}"
   fi
