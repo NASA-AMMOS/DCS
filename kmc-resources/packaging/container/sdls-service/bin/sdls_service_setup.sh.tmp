@@ -134,7 +134,7 @@ if [ ! -r /etc/pki/tls/certs/ammos-truststore.jks ]; then
     echo "Using ammos-truststore.jks provided as TLS_TRUSTSTORE env variable." >&2
     echo "${TLS_TRUSTSTORE}" | /bin/base64 -d -> /etc/pki/tls/certs/ammos-truststore.jks
   else
-    echo "Creating ammos-truststore.jks from CA Bundle." >&2
+    echo "Creating ammos-truststore.jks from AMMOS CA Bundle." >&2
     /opt/ammos/kmc/services/crypto-service/bin/buildjks.sh -f /etc/pki/tls/certs/ammos-truststore.jks -b /etc/pki/tls/certs/ammos-ca-bundle.crt -p "${TRUSTSTORE_PASS}" >/dev/null 2>&1
   fi
   /bin/chown root:root /etc/pki/tls/certs/ammos-truststore.jks
