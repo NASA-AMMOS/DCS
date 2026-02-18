@@ -132,7 +132,7 @@ if [ ! -r /etc/pki/tls/certs/ammos-truststore.jks ]; then
   elif [ ! -z "${TLS_TRUSTSTORE}" ]; then
     echo "${TLS_TRUSTSTORE}" | /bin/base64 -d -> /etc/pki/tls/certs/ammos-truststore.jks
   else
-    [ -n "${DEBUG}" ] && echo "DEBUG: Generating ammos-truststore.jks from AMMOS CA Bundle"
+    echo "Generating ammos-truststore.jks from AMMOS CA Bundle"
     /opt/ammos/kmc/services/sa-mgmt/bin/buildjks.sh -f /etc/pki/tls/certs/ammos-truststore.jks -b /etc/pki/tls/certs/ammos-ca-bundle.crt -p "${TRUSTSTORE_PASS}" >/dev/null 2>&1
   fi
   /bin/chown root:root /etc/pki/tls/certs/ammos-truststore.jks
