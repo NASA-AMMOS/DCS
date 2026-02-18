@@ -147,7 +147,7 @@ fi
 
 # Check if mTLS should be disabled
 DISABLE_SRV_MTLS=0
-if [ $DISABLE_TLS -eq 1 ]; then
+if [ $DISABLE_MTLS -eq 1 ]; then
     DISABLE_SRV_MTLS=1
 fi
 
