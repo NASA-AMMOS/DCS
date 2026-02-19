@@ -18,19 +18,19 @@ echo '-------------------------------'
 echo 'Configuring TLS'
 echo '-------------------------------'
 # ammos-server-cert.pem
-if [ ! -r /etc/pki/tls/certs/ammos-server-cert.pem ]; then
-  if [ -r /tls/ammos-server-cert.pem ]; then
-    /bin/cp /tls/ammos-server-cert.pem /etc/pki/tls/certs/ammos-server-cert.pem
-  elif [ -r /run/secrets/tls_host_cert ]; then
+if [ ! -r "/etc/pki/tls/certs/ammos-server-cert.pem" ]; then
+  if [ -r /run/secrets/tls_host_cert ]; then
+    echo "Using ammos-server-cert.pem provided as tls_host_cert secret." >&2
     /bin/cp /run/secrets/tls_host_cert /etc/pki/tls/certs/ammos-server-cert.pem
-  elif [ ! -z "${TLS_HOST_CERT}" ]; then
+  elif [ -n "${TLS_HOST_CERT}" ]; then
+    echo "Using ammos-server-cert.pem provided as TLS_HOST_CERT env variable." >&2
     echo "${TLS_HOST_CERT}" > /etc/pki/tls/certs/ammos-server-cert.pem
-  else
-    echo "TLS_HOST_CERT not provided - required for operation" >&2
-    if [ -n "${DEBUG}" ]; then
-      debug
     else
-      exit 1
+      echo "ERROR: tls_host_cert or TLS_HOST_CERT not provided - required for operation." >&2
+      if [ -n "${DEBUG}" ]; then
+        debug
+      else
+        exit 1
     fi
   fi
   /bin/chown root:root /etc/pki/tls/certs/ammos-server-cert.pem
@@ -38,15 +38,15 @@ if [ ! -r /etc/pki/tls/certs/ammos-server-cert.pem ]; then
 fi
 
 # ammos-server-key.pem
-if [ ! -r /etc/pki/tls/private/ammos-server-key.pem ]; then
-  if [ -r /tls/ammos-server-key.pem ]; then
-    /bin/cp /tls/ammos-server-key.pem /etc/pki/tls/private/ammos-server-key.pem
-  elif [ -r /run/secrets/tls_host_key ]; then
+if [ ! -r "/etc/pki/tls/certs/ammos-server-key.pem" ]; then
+  if [ -r /run/secrets/tls_host_key ]; then
+    echo "Using ammos-server-key.pem provided as tls_host_key secret." >&2
     /bin/cp /run/secrets/tls_host_key /etc/pki/tls/private/ammos-server-key.pem
-  elif [ ! -z "${TLS_HOST_KEY}" ]; then
+  elif [ -n "${TLS_HOST_KEY}" ]; then
+    echo "Using ammos-server-key.pem provided as TLS_HOST_KEY env variable." >&2
     echo "${TLS_HOST_KEY}" > /etc/pki/tls/private/ammos-server-key.pem
   else
-    echo "TLS_HOST_KEY not provided - required for operation" >&2
+    echo "ERROR: tls_host_key secret not provided - required for operation." >&2
     if [ -n "${DEBUG}" ]; then
       debug
     else
@@ -55,46 +55,6 @@ if [ ! -r /etc/pki/tls/private/ammos-server-key.pem ]; then
   fi
   /bin/chown root:crypto /etc/pki/tls/private/ammos-server-key.pem
   /bin/chmod 440 /etc/pki/tls/private/ammos-server-key.pem
-fi
-
-# ammos-admin-cert.pem - used for accessing mTLS protected crypto service
-if [ ! -r /etc/pki/tls/private/ammos-admin-cert.pem ]; then
-  if [ -r /tls/ammos-admin-cert.pem ]; then
-    /bin/cp /tls/ammos-admin-cert.pem /etc/pki/tls/private/ammos-admin-cert.pem
-  elif [ -r /run/secrets/tls_admin_cert ]; then
-    /bin/cp /run/secrets/tls_admin_cert /etc/pki/tls/private/ammos-admin-cert.pem
-  elif [ ! -z "${TLS_ADMIN_CERT}" ]; then
-    echo "${TLS_ADMIN_CERT}" > /etc/pki/tls/private/ammos-admin-cert.pem
-  else
-    echo "TLS_ADMIN_CERT not provided - required for operation with mTLS-protected Crypto Service" >&2
-    if [ -n "${DEBUG}" ]; then
-      debug
-    else
-      exit 1
-    fi
-  fi
-  /bin/chown root:root /etc/pki/tls/private/ammos-admin-cert.pem
-  /bin/chmod 444 /etc/pki/tls/private/ammos-admin-cert.pem
-fi
-
-# ammos-server-key.pem
-if [ ! -r /etc/pki/tls/private/ammos-admin-key.pem ]; then
-  if [ -r /tls/ammos-admin-key.pem ]; then
-    /bin/cp /tls/ammos-admin-key.pem /etc/pki/tls/private/ammos-admin-key.pem
-  elif [ -r /run/secrets/tls_admin_key ]; then
-    /bin/cp /run/secrets/tls_admin_key /etc/pki/tls/private/ammos-admin-key.pem
-  elif [ ! -z "${TLS_ADMIN_KEY}" ]; then
-    echo "${TLS_ADMIN_KEY}" > /etc/pki/tls/private/ammos-admin-key.pem
-  else
-    echo "TLS_ADMIN_KEY not provided - required for operation with mTLS-protected Crypto Service" >&2
-    if [ -n "${DEBUG}" ]; then
-      debug
-    else
-      exit 1
-    fi
-  fi
-  /bin/chown root:crypto /etc/pki/tls/private/ammos-admin-key.pem
-  /bin/chmod 440 /etc/pki/tls/private/ammos-admin-key.pem
 fi
 
 # KEYSTORE_FORMAT - PKCS12/BCFKS keystore formats - defaults to BCFKS
@@ -107,39 +67,40 @@ fi
 
 # ammos-server-keystore PASSPHRASE - defaults to changeit
 HOST_KEYSTORE_PASS='changeit'
-if [ ! -z "${TLS_HOST_KEYSTORE_PASS}" ]; then
-  HOST_KEYSTORE_PASS=$(echo ${TLS_HOST_KEYSTORE_PASS} | /bin/base64 -d -)
-elif [ -r /run/secrets/tls_host_keystore_pass ]; then
-  HOST_KEYSTORE_PASS=$(cat /run/secrets/tls_host_keystore_pass)
+if [ -r /run/secrets/tls_host_keystore_pass ]; then
+  echo "Using keystore password provided as tls_host_keystore_pass secret." >&2
+  HOST_KEYSTORE_PASS=$(/bin/cat /run/secrets/tls_host_keystore_pass)
+elif [ -n "${TLS_HOST_KEYSTORE_PASS}" ]; then
+  echo "Using keystore password provided as TLS_HOST_KEYSTORE_PASS env variable." >&2
+  HOST_KEYSTORE_PASS=$(echo "${TLS_HOST_KEYSTORE_PASS}" | /bin/base64 -d -)
 fi
 
 # ammos-server-keystore KEY PASSPHRASE - defaults to HOST_KEYSTORE_PASS
 # NOT CURRENTLY USED - 3.7.0
 HOST_KEY_PASS="${HOST_KEYSTORE_PASS}"
 #if [ -r /run/secrets/tls_host_key_pass ]; then
-#  HOST_KEY_PASS=$(cat /run/secrets/tls_host_key_pass)
-#elif [ ! -z "${TLS_HOST_KEY_PASS}" ]; then
+#  HOST_KEY_PASS=$(/bin/cat /run/secrets/tls_host_key_pass)
+#elif [ -n "${TLS_HOST_KEY_PASS}" ]; then
 #  HOST_KEYSTORE_PASS=$(echo ${TLS_HOST_KEY_PASS} | /bin/base64 -d -)
 #fi
 
-# ammos-server-keystore -- needed by SAMgnt app
+# ammos-server-keystore -- needed for TLS connections
 if [ ! -r "/etc/pki/tls/private/ammos-server-keystore.${KEYSTORE_FILE_EXT}" ]; then
-  if [ -r "/tls/ammos-server-keystore.${KEYSTORE_FILE_EXT}" ]; then
-    /bin/cp "/tls/ammos-server-keystore.${KEYSTORE_FILE_EXT}" "/etc/pki/tls/private/ammos-server-keystore.${KEYSTORE_FILE_EXT}"
-  elif [ -r /run/secrets/tls_host_keystore ]; then
+  if [ -r /run/secrets/tls_host_keystore ]; then
+    echo "Using ammos-server-keystore."${KEYSTORE_FILE_EXT}" provided as a secret." >&2
     /bin/cp /run/secrets/tls_host_keystore "/etc/pki/tls/private/ammos-server-keystore.${KEYSTORE_FILE_EXT}"
-  elif [ ! -z "${TLS_HOST_KEYSTORE}" ]; then
+  elif [ -n "${TLS_HOST_KEYSTORE}" ]; then
+    echo "Using ammos-server-keystore."${KEYSTORE_FILE_EXT}" provided as TLS_HOST_KEYSTORE env variable." >&2
     echo "${TLS_HOST_KEYSTORE}" | /bin/base64 -d - > "/etc/pki/tls/private/ammos-server-keystore.${KEYSTORE_FILE_EXT}"
-  elif [ -r /etc/pki/tls/certs/ammos-server-cert.pem -a -r /etc/pki/tls/private/ammos-server-key.pem ]; then
-    [ -n "${DEBUG}" ] && echo "DEBUG: Generating HOST PKCS12 keystore from ammos-server-key.pem and ammos-server-cert.pem"
+  elif [ -r /etc/pki/tls/certs/ammos-server-cert.pem ] && [ -r /etc/pki/tls/private/ammos-server-key.pem ]; then
+    echo "Creating ammos-server-keystore."${KEYSTORE_FILE_EXT}" from key and cert files." >&2
     /usr/bin/openssl pkcs12 -export -in /etc/pki/tls/certs/ammos-server-cert.pem -inkey /etc/pki/tls/private/ammos-server-key.pem -out /etc/pki/tls/private/ammos-server-keystore.p12 --password "pass:${HOST_KEYSTORE_PASS}"
     if [ "${KEYSTORE_FORMAT}" == "BCFKS" ]; then
-      # Generate BCFKS keystore if needed -- WARNING: can take a LONG time >45m
-      [ -n "${DEBUG}" ] && echo "DEBUG: Generating HOST BCFKS keystore from ammos-server-key.pem and ammos-server-cert.pem"
+      # Generate BCFKS keystore if needed 
       /usr/lib/jvm/jre-17-openjdk/bin/keytool -J-Dcom.redhat.fips=false -providerclass org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider -providerpath "/opt/ammos/kmc/lib/bc-fips-${BCFIPS_VER}.jar" -importkeystore -srckeystore /etc/pki/tls/private/ammos-server-keystore.p12 -srcstoretype PKCS12 -srcstorepass "${HOST_KEYSTORE_PASS}" -deststoretype BCFKS -deststorepass "${HOST_KEYSTORE_PASS}" -destkeystore /etc/pki/tls/private/ammos-server-keystore.bcfks >/dev/null 2>&1
     fi
   else
-    echo "TLS_HOST_KEYSTORE not provided or generated - required for operation" >&2
+    echo "ERROR: tls_host_keystore not provided or generated - required for operation" >&2
     if [ -n "${DEBUG}" ]; then
       debug
     else
@@ -152,19 +113,19 @@ fi
 
 # ammos-ca-bundle.crt - must be provided
 if [ ! -r /etc/pki/tls/certs/ammos-ca-bundle.crt ]; then
-  if [ ! -z "${TLS_CA_BUNDLE}" ]; then
-    echo "${TLS_CA_BUNDLE}" > /etc/pki/tls/certs/ammos-ca-bundle.crt
-  elif [ -r /tls/ammos-ca-bundle.crt ]; then
-    /bin/cp /tls/ammos-ca-bundle.crt /etc/pki/tls/certs/ammos-ca-bundle.crt
-  elif [ -r /run/secrets/tls_ca_bundle ]; then
+  if [ -r /run/secrets/tls_ca_bundle ]; then
+    echo "Using ammos-ca-bundle.crt provided as tls_ca_bundle secret." >&2
     /bin/cp /run/secrets/tls_ca_bundle /etc/pki/tls/certs/ammos-ca-bundle.crt
+  elif [ -n "${TLS_CA_BUNDLE}" ]; then
+    echo "Using ammos-ca-bundle.crt provided as TLS_CA_BUNDLE env variable." >&2
+    echo "${TLS_CA_BUNDLE}" > /etc/pki/tls/certs/ammos-ca-bundle.crt
   else
-    echo "TLS_CA_BUNDLE not provided - required for operation" >&2
+    echo "ERROR: tls_ca_bundle or TLS_CA_BUNDLE not provided - required for operation" >&2
     if [ -n "${DEBUG}" ]; then
       debug
     else
       exit 1
-    fi
+    fi 
   fi
   /bin/chown root:root /etc/pki/tls/certs/ammos-ca-bundle.crt
   /bin/chmod 444 /etc/pki/tls/certs/ammos-ca-bundle.crt
@@ -172,23 +133,25 @@ fi
 
 # ammos-truststore.jks PASSPHRASE - defaults to changeit
 TRUSTSTORE_PASS='changeit'
-if [ ! -z "${TLS_TRUSTSTORE_PASS}" ]; then
-  TRUSTSTORE_PASS=$(echo ${TLS_TRUSTSTORE_PASS} | /bin/base64 -d -)
-elif [ -r /run/secrets/tls_truststore_pass ]; then
+if [ -r /run/secrets/tls_truststore_pass ]; then
+  echo "Using truststore password provided as tls_truststore_pass secret." >&2
   TRUSTSTORE_PASS=$(/bin/cat /run/secrets/tls_truststore_pass)
+elif [ -n "${TLS_TRUSTSTORE_PASS}" ]; then
+  echo "Using truststore password provided as TLS_TRUSTSTORE_PASS env variable." >&2
+  TRUSTSTORE_PASS=$(echo "${TLS_TRUSTSTORE_PASS}" | /bin/base64 -d -)
 fi
 
 # ammos-truststore.jks - generated from TLS_CA_BUNDLE if not provided
 if [ ! -r /etc/pki/tls/certs/ammos-truststore.jks ]; then
-  if [ -r /tls/ammos-truststore.jks ]; then
-    /bin/cp /tls/ammos-truststore.jks /etc/pki/tls/certs/ammos-truststore.jks
-  elif [ -r /run/secrets/tls_truststore ]; then
+  if [ -r /run/secrets/tls_truststore ]; then
+    echo "Using ammos-truststore.jks provided as tls_truststore secret." >&2
     /bin/cp /run/secrets/tls_truststore /etc/pki/tls/certs/ammos-truststore.jks
-  elif [ ! -z "${TLS_TRUSTSTORE}" ]; then
+  elif [ -n "${TLS_TRUSTSTORE}" ]; then
+    echo "Using ammos-truststore.jks provided as TLS_TRUSTSTORE env variable." >&2
     echo "${TLS_TRUSTSTORE}" | /bin/base64 -d -> /etc/pki/tls/certs/ammos-truststore.jks
   else
-    [ -n "${DEBUG}" ] && echo "DEBUG: Generating ammos-truststore.jks from AMMOS CA Bundle"
-    /opt/ammos/kmc/services/sdls-service/bin/buildjks.sh -f /etc/pki/tls/certs/ammos-truststore.jks -b /etc/pki/tls/certs/ammos-ca-bundle.crt -p "${TRUSTSTORE_PASS}" >/dev/null 2>&1
+    echo "Creating ammos-truststore.jks from AMMOS CA Bundle." >&2
+    /opt/ammos/kmc/services/crypto-service/bin/buildjks.sh -f /etc/pki/tls/certs/ammos-truststore.jks -b /etc/pki/tls/certs/ammos-ca-bundle.crt -p "${TRUSTSTORE_PASS}" >/dev/null 2>&1
   fi
   /bin/chown root:root /etc/pki/tls/certs/ammos-truststore.jks
   /bin/chmod 444 /etc/pki/tls/certs/ammos-truststore.jks
@@ -198,25 +161,35 @@ fi
 /bin/cp /etc/pki/tls/certs/ammos-ca-bundle.crt /etc/pki/ca-trust/source/anchors/
 /bin/update-ca-trust
 
-# ammos-mtls-truststore passphrase
-MTLS_TRUSTSTORE_PASS="changeit"
-if [ -r /run/secrets/tls_mtls_truststore_pass ]; then
-  MTLS_TRUSTSTORE_PASS=$(/bin/cat /run/secrets/tls_mtls_truststore_pass)
-elif [ ! -z "${TLS_MTLS_TRUSTSTORE_PASS}" ]; then
-  MTLS_TRUSTSTORE_PASS=$(echo ${TLS_MTLS_TRUSTSTORE_PASS} | /bin/base64 -d -)
+# Check if mTLS should be disabled
+DISABLE_SRV_MTLS=0
+if [ $DISABLE_MTLS -eq 1 ]; then
+    DISABLE_SRV_MTLS=1
 fi
 
-# ammos-mtls-truststore.jks - MUST be provided for operation
-if [ -z "${DISABLE_MTLS}" ]; then
+# Set up mTLS if not disabled
+if [ $DISABLE_SRV_MTLS -eq 0 ]; then
+
+  # ammos-mtls-truststore passphrase
+  MTLS_TRUSTSTORE_PASS="changeit"
+  if [ -r /run/secrets/tls_mtls_truststore_pass ]; then
+    echo "Using mtls truststore password provided as tls_mtls_truststore_pass secret." >&2
+    MTLS_TRUSTSTORE_PASS=$(/bin/cat /run/secrets/tls_mtls_truststore_pass)
+  elif [ -n "${TLS_MTLS_TRUSTSTORE_PASS}" ]; then
+    echo "Using mtls truststore password provided as TLS_MTLS_TRUSTSTORE_PASS env variable." >&2
+    MTLS_TRUSTSTORE_PASS=$(echo "${TLS_MTLS_TRUSTSTORE_PASS}" | /bin/base64 -d -)
+  fi
+
+  # ammos-mtls-truststore.jks - MUST be provided to use mTLS 
   if [ ! -r /etc/pki/tls/private/ammos-mtls-truststore.jks ]; then
-    if [ -r /tls/ammos-mtls-truststore.jks ]; then
-      /bin/cp /tls/ammos-mtls-truststore.jks /etc/pki/tls/private/ammos-mtls-truststore.jks
-    elif [ -r /run/secrets/tls_mtls_truststore ]; then
+    if [ -r /run/secrets/tls_mtls_truststore ]; then
+      echo "Using ammos-mtls-truststore.jks provided as tls_mtls_truststore secret." >&2
       /bin/cp /run/secrets/tls_mtls_truststore /etc/pki/tls/private/ammos-mtls-truststore.jks
-    elif [ ! -z "${TLS_MTLS_TRUSTSTORE}" ]; then
+    elif [ -n "${TLS_MTLS_TRUSTSTORE}" ]; then
+      echo "Using ammos-mtls-truststore.jks provided as TLS_MTLS_TRUSTSTORE env variable." >&2
       echo "${TLS_MTLS_TRUSTSTORE}" | /bin/base64 -d - > /etc/pki/tls/private/ammos-mtls-truststore.jks
     else
-      echo "TLS_MTLS_TRUSTSTORE not provided - required for operation" >&2
+      echo "ERROR: tls_mtls_truststore or TLS_MTLS_TRUSTSTORE not provided - required for mTLS" >&2
       if [ -n "${DEBUG}" ]; then
         debug
       else
@@ -226,6 +199,7 @@ if [ -z "${DISABLE_MTLS}" ]; then
     /bin/chown root:crypto /etc/pki/tls/private/ammos-mtls-truststore.jks
     /bin/chmod 440 /etc/pki/tls/private/ammos-mtls-truststore.jks
   fi
+
 fi
 
 echo '-------------------------------'
@@ -254,7 +228,11 @@ SVC_CFG_DIR='/opt/ammos/kmc/services/sdls-service/etc'
 SVC_PROPS="${SVC_CFG_DIR}/kmc-sdls-service.properties"
 if [ ! -r "${SVC_CFG_DIR}/.props.configured" ]; then 
   /bin/sed -i -e "s|^#server.ssl.key-store.password=.*|server.ssl.key-store.password=${HOST_KEYSTORE_PASS}|" "${SVC_PROPS}"
-  /bin/sed -i -e "s|^#server.ssl.trust-store.password=.*|server.ssl.trust-store.password=${MTLS_TRUSTSTORE_PASS}|" "${SVC_PROPS}"
+  if [ $DISABLE_SRV_MTLS -eq 1 ]; then
+    /bin/sed -i -e "s|^#server.ssl.trust-store.password=.*|server.ssl.trust-store.password=${TRUSTSTORE_PASS}|" "$SVC_PROPS}"
+  else
+    /bin/sed -i -e "s|^#server.ssl.trust-store.password=.*|server.ssl.trust-store.password=${MTLS_TRUSTSTORE_PASS}|" "$SVC_PROPS}"
+  fi
 
   /bin/sed -i -e "s|^#cryptolib.sadb.mariadb.fqdn=.*|cryptolib.sadb.mariadb.fqdn=${SADB_FQDN}|" "${SVC_PROPS}"
   /bin/sed -i -e "s|^#cryptolib.crypto.kmccryptoservice.fqdn=localhost|cryptolib.crypto.kmccryptoservice.fqdn=${CRYPTO_FQDN}|" "${SVC_PROPS}"
@@ -267,8 +245,10 @@ if [ ! -r "${SVC_CFG_DIR}/.props.configured" ]; then
     /bin/sed -i -e "s|^#server.ssl.key-store-type=.*|server.ssl.key-store-type=${KEYSTORE_FORMAT}|" "${SVC_PROPS}"
   fi
 
-  if [ -n "${DISABLE_MTLS}" ]; then
-    /bin/sed -i -e "s|^#server.ssl.client-auth=.*|server.ssl.client-auth=WANT|" "${SVC_PROPS}"
+  if [ $DISABLE_SRV_MTLS -eq 1 ]; then
+    echo "Disabling mTLS in SDLS Service Tomcat & using ammos-truststore.jks"
+    /bin/sed -i -e "s|^#server.ssl.client-auth=.*|server.ssl.client-auth=NONE|" "$SVC_PROPS}"
+    /bin/sed -i -e "s|^#server.ssl.trust-store=.*|server.ssl.trust-store=/etc/pki/tls/certs/ammos-truststore.jks|" "$SVC_PROPS}"
   fi
 
   if [ -z "${CREATE_ECF}" ]; then
