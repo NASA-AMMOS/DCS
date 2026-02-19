@@ -79,7 +79,7 @@ fi
 # NOT CURRENTLY USED - 3.7.0
 HOST_KEY_PASS="${HOST_KEYSTORE_PASS}"
 #if [ -r /run/secrets/tls_host_key_pass ]; then
-#  HOST_KEY_PASS=`cat /run/secrets/tls_host_key_pass`
+#  HOST_KEY_PASS=$(/bin/cat /run/secrets/tls_host_key_pass)
 #elif [ -n "${TLS_HOST_KEY_PASS}" ]; then
 #  HOST_KEYSTORE_PASS=$(echo ${TLS_HOST_KEY_PASS} | /bin/base64 -d -)
 #fi
