@@ -25,12 +25,12 @@ if [ ! -r "/etc/pki/tls/certs/ammos-server-cert.pem" ]; then
   elif [ -n "${TLS_HOST_CERT}" ]; then
     echo "Using ammos-server-cert.pem provided as TLS_HOST_CERT env variable." >&2
     echo "${TLS_HOST_CERT}" > /etc/pki/tls/certs/ammos-server-cert.pem
+  else
+    echo "ERROR: tls_host_cert or TLS_HOST_CERT not provided - required for operation." >&2
+    if [ -n "${DEBUG}" ]; then
+      debug
     else
-      echo "ERROR: tls_host_cert or TLS_HOST_CERT not provided - required for operation." >&2
-      if [ -n "${DEBUG}" ]; then
-        debug
-      else
-        exit 1
+      exit 1
     fi
   fi
   /bin/chown root:root /etc/pki/tls/certs/ammos-server-cert.pem
@@ -42,8 +42,11 @@ if [ ! -r "/etc/pki/tls/certs/ammos-server-key.pem" ]; then
   if [ -r /run/secrets/tls_host_key ]; then
     echo "Using ammos-server-key.pem provided as tls_host_key secret." >&2
     /bin/cp /run/secrets/tls_host_key /etc/pki/tls/private/ammos-server-key.pem
+  elif [ -n "${TLS_HOST_KEY}" ]; then
+    echo "Using ammos-server-key.pem provided as TLS_HOST_KEY env variable." >&2
+    echo "${TLS_HOST_KEY}" > /etc/pki/tls/private/ammos-server-key.pem
   else
-    echo "ERROR: tls_host_key secret not provided - required for operation." >&2
+    echo "ERROR: tls_host_key or TLS_HOST_KEY not provided - required for operation." >&2
     if [ -n "${DEBUG}" ]; then
       debug
     else
@@ -65,7 +68,11 @@ fi
 # ammos-server-keystore PASSPHRASE - defaults to changeit
 HOST_KEYSTORE_PASS='changeit'
 if [ -r /run/secrets/tls_host_keystore_pass ]; then
+  echo "Using keystore password provided as tls_host_keystore_pass secret." >&2
   HOST_KEYSTORE_PASS=$(cat /run/secrets/tls_host_keystore_pass)
+elif [ -n "${TLS_HOST_KEYSTORE_PASS}" ]; then
+  echo "Using keystore password provided as TLS_HOST_KEYSTORE_PASS env variable." >&2
+  HOST_KEYSTORE_PASS=$(echo "${TLS_HOST_KEYSTORE_PASS}" | /bin/base64 -d -)
 fi
 
 # ammos-server-keystore KEY PASSPHRASE - defaults to HOST_KEYSTORE_PASS
@@ -73,13 +80,18 @@ fi
 HOST_KEY_PASS="${HOST_KEYSTORE_PASS}"
 #if [ -r /run/secrets/tls_host_key_pass ]; then
 #  HOST_KEY_PASS=$(cat /run/secrets/tls_host_key_pass)
+#elif [ -n "${TLS_HOST_KEY_PASS}" ]; then
+#  HOST_KEYSTORE_PASS=$(echo ${TLS_HOST_KEY_PASS} | /bin/base64 -d -)
 #fi
 
 # ammos-server-keystore -- needed for TLS connections
 if [ ! -r "/etc/pki/tls/private/ammos-server-keystore.${KEYSTORE_FILE_EXT}" ]; then
   if [ -r /run/secrets/tls_host_keystore ]; then
-    echo "Using ammos-server-keystore."${KEYSTORE_FILE_EXT}" provided as a secret." >&2
+    echo "Using ammos-server-keystore."${KEYSTORE_FILE_EXT}" provided as tls_host_keystore secret." >&2
     /bin/cp /run/secrets/tls_host_keystore "/etc/pki/tls/private/ammos-server-keystore.${KEYSTORE_FILE_EXT}"
+  elif [ -n "${TLS_HOST_KEYSTORE}" ]; then
+    echo "Using ammos-server-keystore."${KEYSTORE_FILE_EXT}" provided as TLS_HOST_KEYSTORE env variable." >&2
+    echo "${TLS_HOST_KEYSTORE}" | /bin/base64 -d - > "/etc/pki/tls/private/ammos-server-keystore.${KEYSTORE_FILE_EXT}"
   elif [ -r /etc/pki/tls/certs/ammos-server-cert.pem ] && [ -r /etc/pki/tls/private/ammos-server-key.pem ]; then
     echo "Creating ammos-server-keystore."${KEYSTORE_FILE_EXT}" from key and cert files." >&2
     /usr/bin/openssl pkcs12 -export -in /etc/pki/tls/certs/ammos-server-cert.pem -inkey /etc/pki/tls/private/ammos-server-key.pem -out /etc/pki/tls/private/ammos-server-keystore.p12 --password "pass:${HOST_KEYSTORE_PASS}"
@@ -122,7 +134,11 @@ fi
 # ammos-truststore.jks PASSPHRASE - defaults to changeit
 TRUSTSTORE_PASS='changeit'
 if [ -r /run/secrets/tls_truststore_pass ]; then
+  echo "Using truststore password provided as tls_truststore_pass secret." >&2
   TRUSTSTORE_PASS=$(/bin/cat /run/secrets/tls_truststore_pass)
+elif [ -n "${TLS_TRUSTSTORE_PASS}" ]; then
+  echo "Using truststore password provided as TLS_TRUSTSTORE_PASS env variable." >&2
+  TRUSTSTORE_PASS=$(echo "${TLS_TRUSTSTORE_PASS}" | /bin/base64 -d -)
 fi
 
 # ammos-truststore.jks - generated from TLS_CA_BUNDLE if not provided
@@ -157,7 +173,11 @@ if [ $DISABLE_SRV_MTLS -eq 0 ]; then
   # ammos-mtls-truststore passphrase
   MTLS_TRUSTSTORE_PASS="changeit"
   if [ -r /run/secrets/tls_mtls_truststore_pass ]; then
+    echo "Using mtls truststore password provided as tls_mtls_truststore_pass secret." >&2
     MTLS_TRUSTSTORE_PASS=$(/bin/cat /run/secrets/tls_mtls_truststore_pass)
+  elif [ -n "${TLS_MTLS_TRUSTSTORE_PASS}" ]; then
+    echo "Using mtls truststore password provided as TLS_MTLS_TRUSTSTORE_PASS env variable." >&2
+    MTLS_TRUSTSTORE_PASS=$(echo "${TLS_MTLS_TRUSTSTORE_PASS}" | /bin/base64 -d -)
   fi
 
   # ammos-mtls-truststore.jks - MUST be provided to use mTLS 
@@ -202,6 +222,9 @@ if [ ! -r "${CS_CFG_DIR}/.crypto.configured" ]; then
       if [ -r /run/secrets/crypto_keystore ]; then
         echo "Using Crypto Keystore provided as crypto_keystore secret." >&2
         /bin/cp /run/secrets/crypto_keystore "${CS_CFG_DIR}/crypto_keystore.${KEYSTORE_FILE_EXT}"
+      elif [ -n "${CRYPTO_KEYSTORE}" ]; then
+        echo "Using Crypto Keystore provided as CRYPTO_KEYSTORE env variable." >&2
+        echo "${CRYPTO_KEYSTORE}" | /bin/base64 -d - > "${CS_CFG_DIR}/crypto_keystore.${KEYSTORE_FILE_EXT}"
       else
         echo "CRYPTO_KEYSTORE missing -- needed for operation"
         if [ -n "${DEBUG}" ]; then
@@ -217,7 +240,11 @@ if [ ! -r "${CS_CFG_DIR}/.crypto.configured" ]; then
 
     # Crypto Keystore Passphrase
     if [ -r /run/secrets/crypto_keystore_pass ]; then
+      echo "Using Crypto Keystore Passphrase provided as crypto_keystore_pass secret." >&2
       CRYPTO_KEYSTORE_PW=$(/bin/cat /run/secrets/crypto_keystore_pass)
+    elif [ -n "${CRYPTO_KEYSTORE_PASS}" ]; then
+      echo "Using Crypto Keystore Passphrase provided as CRYPTO_KEYSTORE_PASS env variable." >&2
+      CRYPTO_KEYSTORE_PW=$(echo "${CRYPTO_KEYSTORE_PASS}" | /bin/base64 -d - )
     else
       echo "CRYPTO_KEYSTORE_PASS missing -- needed for operation"
       if [ -n "${DEBUG}" ]; then
@@ -231,7 +258,11 @@ if [ ! -r "${CS_CFG_DIR}/.crypto.configured" ]; then
     # Crypto Key Passphrase - defaults to CRYPTO_KEYSTORE_PW
     CRYPTO_KEY_PW="${CRYPTO_KEYSTORE_PW}"
     if [ -r /run/secrets/crypto_key_pass ]; then
+      echo "Using Crypto Key Passphrase provided as crypto_keys_pass secret." >&2
       CRYPTO_KEY_PW=$(/bin/cat /run/secrets/crypto_key_pass)
+    elif [ -n "${CRYPTO_KEY_PASS}" ]; then
+      echo "Using Crypto Key Passphrase provided as CRYPTO_KEYS_PASS env variable." >&2
+      CRYPTO_KEY_PW=$(echo "${CRYPTO_KEY_PASS}" | /bin/base64 -d -)
     fi
     /bin/sed -i -e "s|^#crypto_key_password=.*|crypto_key_password=${CRYPTO_KEY_PW}|" "${CS_CFG}"
     /bin/sed -i -e "s|^#crypto_keystore_type=.*|crypto_keystore_type=${KEYSTORE_FORMAT}|" "${CS_CFG}"
