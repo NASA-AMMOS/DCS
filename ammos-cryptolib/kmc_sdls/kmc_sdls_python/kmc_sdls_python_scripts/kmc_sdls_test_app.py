@@ -172,7 +172,7 @@ class TM(Frame):
     def __init__(self):
         self.version = "00"
         self.vc_id = "000"        #  3 bit virtual channel id
-        self.sc_id = "0000101100" # 10 bit spacecraft id (255)
+        self.sc_id = "0000101100" # 10 bit spacecraft id (44)
         self.frame_body_hex = "0000000000000000000000000000111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111100000000000000000000000000000000"
         self.frame_header_hex = "02C000000000"
         self.default_frame_hex = "{}{}".format(self.frame_header_hex, self.frame_body_hex)
@@ -199,7 +199,7 @@ class AOS(Frame):
     def __init__(self):
         self.version = "01"
         self.vc_id = "000000"   #  6 bit virtual channel id
-        self.sc_id = "00101100" # 8 bit spacecraft id (255)
+        self.sc_id = "00101100" # 8 bit spacecraft id (44)
         self.frame_body_hex = "0000000000000000000000000000111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111100000000000000000000000000000000"
         self.frame_header_hex = "4b0000000000"
         self.default_frame_hex = "{}{}".format(self.frame_header_hex, self.frame_body_hex)
