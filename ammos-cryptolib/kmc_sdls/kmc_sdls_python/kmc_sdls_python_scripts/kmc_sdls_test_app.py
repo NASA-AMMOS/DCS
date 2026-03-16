@@ -29,26 +29,26 @@ def build_options_parser():
     arg_parser.add_argument("-f", "--frame",
                             dest="frame",
                             help="Hex frame string representation of telecommand transfer-frame to apply & process SDLS layering on.")
-    arg_parser.add_argument("-p", "--properties", 
-                            dest="properties", 
-                            help="The properties file that contains all the configuration needed by this application (supported properties defined in KMC SIS)", 
-                            default=(os.path.dirname(os.path.realpath(__file__))+"/../etc/kmc_sdls_test_app.properties"), 
+    arg_parser.add_argument("-p", "--properties",
+                            dest="properties",
+                            help="The properties file that contains all the configuration needed by this application (supported properties defined in KMC SIS)",
+                            default=(os.path.dirname(os.path.realpath(__file__))+"/../etc/kmc_sdls_test_app.properties"),
                             type=argparse.FileType('r'))
-    arg_parser.add_argument("-P", "--processOnly", 
-                            dest="process_only", 
-                            help="Flag to only process security on the frame (default is to apply & process)", 
+    arg_parser.add_argument("-P", "--processOnly",
+                            dest="process_only",
+                            help="Flag to only process security on the frame (default is to apply & process)",
                             action='store_true')
-    arg_parser.add_argument("-A", "--applyOnly", 
-                            dest="apply_only", 
-                            help="Flag to only apply security on the frame (default is to apply & process)", 
+    arg_parser.add_argument("-A", "--applyOnly",
+                            dest="apply_only",
+                            help="Flag to only apply security on the frame (default is to apply & process)",
                             action='store_true')
-    arg_parser.add_argument("-s", "--scid", 
-                            dest="scid", 
-                            type=scid_type, 
+    arg_parser.add_argument("-s", "--scid",
+                            dest="scid",
+                            type=scid_type,
                             help="Override the default frame SC ID field")
-    arg_parser.add_argument("-V", "--vcid", 
-                            dest="vcid", 
-                            type=vcid_type, 
+    arg_parser.add_argument("-V", "--vcid",
+                            dest="vcid",
+                            type=vcid_type,
                             help="Override the default frame VC ID field")
     arg_parser.add_argument("-t", "--type",
                             dest="type",
@@ -65,7 +65,7 @@ def scid_type(scid):
     return scid
 
 def vcid_type(vcid):
-    msg = "VC ID must be a number between 0 and 63 inclusive"    
+    msg = "VC ID must be a number between 0 and 63 inclusive"
     try:
         int(vcid) >= 0 and int(vcid) <= 63
     except:
@@ -104,6 +104,7 @@ tm_defaults = {
 }
 
 class Frame(ABC):
+    version = None
     sc_id = None
     vc_id = None
     hex_value = None
@@ -133,7 +134,6 @@ class Frame(ABC):
 
 class TC(Frame):
     # Default frame header (202c040800) fields in binary
-    version = "00"                     #  2 bit version number
     bypass_flag = "1"                  #  1 bit bypass flag
     ctrl_cmd_flag = "0"                #  1 bit control command flag
     spare = "00"                       #  2 bit spare
@@ -141,6 +141,7 @@ class TC(Frame):
     frame_sequence_number = "00000000" #  8 bit frame sequence number
 
     def __init__(self):
+        self.version = "00"                     #  2 bit version number
         self.vc_id = "000001"                   #  6 bit virtual channel id
         self.sc_id = "0000101100"               # 10 bit spacecraft id (44)
         self.frame_body_hex = "0001bd37"        # default frame body
@@ -160,11 +161,20 @@ class TC(Frame):
 
 
 class TM(Frame):
+    mcfc = "00000000"
+    vcfc = "00000000"
+    ocf = "0"
+    shf = "0"
+    sync = "0"
+    pof = "0"
+    slid = "00"
+    fhp = "00000000000"
     def __init__(self):
+        self.version = "00"
         self.vc_id = "000"        #  3 bit virtual channel id
-        self.sc_id = "0011111111" # 10 bit spacecraft id (255)
-        self.frame_body_hex = "00000000000000000000000000001111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111100000000000000000000000000000000"
-        self.frame_header_hex = "4ff000000000"
+        self.sc_id = "0000101100" # 10 bit spacecraft id (44)
+        self.frame_body_hex = "0000000000000000000000000000111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111100000000000000000000000000000000"
+        self.frame_header_hex = "02C000000000"
         self.default_frame_hex = "{}{}".format(self.frame_header_hex, self.frame_body_hex)
 
     def to_hex(self):
@@ -173,14 +183,13 @@ class TM(Frame):
         elif not self.override:
             return self.default_frame_hex
         else:
-            frame_header_bin = ""
+            frame_header_bin = "{}{}{}{}{}{}{}{}{}{}{}".format(self.version, self.sc_id, self.vc_id, self.ocf, self.mcfc, self.vcfc, self.shf, self.sync, self.pof, self.slid, self.fhp)
             frame_header_hex = format(int(frame_header_bin, 2), 'x')
             frame_hex = "{}{}".format(frame_header_hex, self.frame_body_hex)
             return frame_hex
 
 
 class AOS(Frame):
-    version = "01"
     vcfc = "000000"
     replay_flag = "0"
     vcfc_flag = "0"
@@ -188,10 +197,11 @@ class AOS(Frame):
     vcc_cycle = "0000"
 
     def __init__(self):
+        self.version = "01"
         self.vc_id = "000000"   #  6 bit virtual channel id
-        self.sc_id = "111111111" # 8 bit spacecraft id (255)
-        self.frame_body_hex = "00000000000000000000000000001111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111100000000000000000000000000000000"
-        self.frame_header_hex = "7fc000000000"
+        self.sc_id = "00101100" # 8 bit spacecraft id (44)
+        self.frame_body_hex = "0000000000000000000000000000111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111100000000000000000000000000000000"
+        self.frame_header_hex = "4b0000000000"
         self.default_frame_hex = "{}{}".format(self.frame_header_hex, self.frame_body_hex)
 
     def to_hex(self):
@@ -200,7 +210,7 @@ class AOS(Frame):
         elif not self.override:
             return self.default_frame_hex
         else:
-            frame_header_bin = ""
+            frame_header_bin = "{}{}{}{}{}{}{}{}".format(self.version, self.sc_id, self.vc_id, self.vcfc, self.replay_flag, self.vcfc_flag, self.spare, self.vcc_cycle)
             frame_header_hex = format(int(frame_header_bin, 2), 'x')
             frame_hex = "{}{}".format(frame_header_hex, self.frame_body_hex)
             return frame_hex
@@ -341,7 +351,7 @@ if __name__ == "__main__":
     try:
         main()
     except ArgumentException as ae:
-        print("Command Line Argument Error: ", ae)            
+        print("Command Line Argument Error: ", ae)
     except Exception as e:
         print("Encountered an unexpected error: ", e)
     finally:
