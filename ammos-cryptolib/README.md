@@ -1,7 +1,6 @@
 # AMMOS-CryptoLib
 
 # CryptoLib
-
 Provide a software-only solution using the CCSDS Space Data Link Security Protocol - Extended Procedures (SDLS-EP) to secure communications between a spacecraft running the core Flight System (cFS) and a ground station.
 
 In order to build crypto the following must be installed assuming Ubuntu 18.04 LTS:
@@ -19,8 +18,8 @@ pip3.8 install --user invoke cffi
 
 ## Checkout and Build the AMMOS-CryptoLib and Nasa CryptoLib libraries
 ```
-git clone git@github.jpl.nasa.gov:ASEC/AMMOS-CryptoLib.git
-cd AMMOS-CryptoLib
+git clone git@github.com:NASA-AMMOS/DCS
+cd ammos-cryptoLib
 git submodule init
 git submodule update
 cmake .

@@ -19,10 +19,10 @@ AMMOS DCS provides cryptographic capabilities, which include encryption/decrypti
 DCS requires several software dependenices in order to build and execute unit tests.  Required software can be installed with OS Vendor packages, pulled directly from public repositories, or any other method.  Make sure the required tool is available in the build environment appropriately for that particular tool (PATH for executables, LD\_LIBRARY\_PATH for shared libraries, PYTHONPATH for python modules, etc.). Tool versions listed are minimum versions, square brackets are used to denote the tool/version used for the official KMC build and testing.
 
 Required Build Dependencies:
-* C Compiler [gcc 11.4.1]
-* Java Development Kit 17.x [OpenJDK 17.0.12]
+* C Compiler [gcc 11.5.0]
+* Java Development Kit 17.x [OpenJDK 17.0.18]
 * cmake [3.26.5]
-* swig [4.0.2]
+* swig [4.1.1]
 * MariaDB Connector/C [3.2.6]
 * cffi (Python module) [1.14.5]
 * invoke (Python module) [2.2.0]
@@ -55,5 +55,5 @@ Building KMC Service Containers:
 
 See the individual KMC Service Container READMEs in kmc-resources/packaging/container/{crypto-service,sdls-service/sa-mgmt} for details on how to configure & launch the KMC Service Containers.
 
-Copyright (c) 2023-2025 California Institute of Technology (“Caltech”). U.S. Government sponsorship acknowledged.  See LICENSE for additional information.
+Copyright (c) 2023-2026 California Institute of Technology (“Caltech”). U.S. Government sponsorship acknowledged.  See LICENSE for additional information.
 

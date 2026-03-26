@@ -8,21 +8,3 @@ KMC SDLS supports the following functionality:
 
 Interface specifications are available in the `CCSDS Blue Books <https://public.ccsds.org/publications/BlueBooks.aspx>`__
 
-Getting Started
----------------
-
-TBD
-
-Join the Community
-------------------
-
-TBD
-
-Contributing
-------------
-
-TBD
-
---------------
-
-TBD-resource links
