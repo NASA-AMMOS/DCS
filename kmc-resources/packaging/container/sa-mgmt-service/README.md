@@ -36,6 +36,12 @@ Some of the configuration options are "sensitive" data -- TLS keys, keystores, p
 In the list of parameters below, [REQUIRED] denotes configuration parameters that are required for DCS Security Association Management Service container deployment.  Many parameters may be provided via multiple configuration paths -- [SECRET] denotes a hosting platform secret (docker/podman secrets, AWS Secrets Manager, etc.), [ENV] denotes an Environment variable passed to the container.  Options that are *not required* for operation have a default if a reasonable value is available -- default values are noted in the Default: field.
 
 ### TLS Configuration Options
+- Disable MTLS Flag
+  Boolean (1/0) option whether to disable mutual TLS authentication for the Crypto Service.
+  Default: 0 (mTLS enabled by default)
+  Configuration Paths:
+    [ENV]    - DISABLE_MTLS
+
 - TLS Host Certificate [REQUIRED] [SENSITIVE]
   X.509 PEM-formatted Certificate.  
   Required for TLS operation to identify the server host.
@@ -98,7 +104,7 @@ In the list of parameters below, [REQUIRED] denotes configuration parameters tha
     [ENV]    - TLS_TRUSTSTORE  (*MUST be base64 encoded*)
 
 - MTLS Truststore Passphrase [SENSITIVE]
-  String containing the passphrase for the MTLS Java Truststore.
+  String containing the passphrase for the MTLS Java Truststore. Not necessary if DISABLE_MTLS is true (1).
   Default: changeit
   Configuration Paths:
     [SECRET] - tls_mtls_truststore_pass
@@ -106,7 +112,7 @@ In the list of parameters below, [REQUIRED] denotes configuration parameters tha
 
 - MTLS Truststore [REQUIRED] [SENSITIVE]
   Java Key Store (JKS) formatted truststore containing the certificates to be 
-  allowed to access the DCS Security Association Management Service via mutual TLS authentication.
+  allowed to access the DCS Security Association Management Service via mutual TLS authentication. Not required if DISABLE_MTLS is true (1).
   Configuration Paths:
     [SECRET] - tls_mtls_truststore
     [ENV]    - TLS_MTLS_TRUSTSTOR (*MUST be base64 encoded*)E

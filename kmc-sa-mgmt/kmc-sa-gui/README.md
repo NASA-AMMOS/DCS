@@ -1,6 +1,6 @@
 # DCS SA Management GUI
 
-Author: [JP Pan (393C)](mailto:panjames@jpl.nasa.gov?subject=DCS SA Management GUI)
+Provides a Web GUI for managing the Security Association Database (SADB) for command and telemetry encryption/authentication cpaabilities provided by DCS.
 
 - Spring Boot web service
 - React frontend (CRA)
