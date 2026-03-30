@@ -23,7 +23,7 @@ description = "KmcSdlsClient provides the necessary python interfaces to the KMC
 
 # Get the long description from the README file
 here = path.abspath(path.dirname(__file__))
-with io.open(path.join(here, 'README.rst'), encoding='utf-8') as f:
+with io.open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
@@ -31,12 +31,12 @@ setup(
     version = '0.2.0',
     description  = description,
     long_description = long_description,
-    long_description_content_type = 'text/x-rst',
-    url = 'https://github.jpl.nasa.gov/ASEC/AMMOS-CryptoLib',
+    long_description_content_type = 'text/markdown',
+    url = 'https://github.com/NASA-AMMOS/DCS',
     packages = find_packages(where='src', include=['gov*'],exclude=['tests']),
     package_dir={"": "src"},
     data_files = [],
-    author = 'KMC Development Team',
+    author = 'DCS Development Team',
     author_email='no-reply@jpl.nasa.gov',
 
     install_requires = [],
