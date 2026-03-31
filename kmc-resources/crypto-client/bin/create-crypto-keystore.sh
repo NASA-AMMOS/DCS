@@ -10,7 +10,7 @@
 #   kmc/test/hmac1 HmacSHA256 9779d9120642797f1747025d5b22b7ac607cab08e1758f2f3a46c8be1e25c53b8c6a8f58ffefa176
 #
 
-CP=__LIBPATH__/bc-fips-__BCFIPS_VER__.jar
+CP=__LIBPATH__/bc-fips-__BCFIPS_VER__.jar:__LIBPATH__/kmc-key-client.jar
 if [ "$CLASSPATH" ]; then
   CP=$CP:$CLASSPATH
 fi
