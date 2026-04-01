@@ -11,34 +11,39 @@
     "test": "vitest"
   },
   "dependencies": {
-    "@emotion/react": "^11.14.0",
-    "@emotion/styled": "^11.14.0",
-    "@fontsource/roboto": "^5.2.5",
-    "@fontsource/roboto-mono": "^5.2.5",
-    "@mui/icons-material": "^6.4.8",
-    "@mui/material": "^6.4.8",
-    "axios": "^1.12.0",
-    "form-data": "^4.0.4",
-    "formik": "^2.4.6",
-    "notistack": "^3.0.2",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "react-table": "^7.8.0",
-    "yup": "^1.6.1"
+    "@emotion/react": "11.14.0",
+    "@emotion/styled": "11.14.0",
+    "@fontsource/roboto": "5.2.5",
+    "@fontsource/roboto-mono": "5.2.5",
+    "@mui/icons-material": "6.4.8",
+    "@mui/material": "6.4.8",
+    "axios": "1.13.5",
+    "form-data": "4.0.4",
+    "formik": "2.4.6",
+    "notistack": "3.0.2",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "react-table": "7.8.0",
+    "yup": "1.6.1"
+  },
+  "overrides": {
+    "lodash": "4.17.23",
+    "minimatch": "3.1.4",
+    "rollup": "4.59.0"
   },
   "devDependencies": {
-    "@eslint/js": "^9.21.0",
-    "@types/react": "^19.0.10",
-    "@types/react-dom": "^19.0.4",
-    "@vitejs/plugin-react": "^4.3.4",
-    "eslint": "^9.39.1",
-    "eslint-plugin-react-hooks": "^5.1.0",
-    "eslint-plugin-react-refresh": "^0.4.19",
-    "globals": "^15.15.0",
-    "vite": "^7.2.2",
-    "vitest": "^4.0.7"
+    "@eslint/js": "9.21.0",
+    "@types/react": "19.0.10",
+    "@types/react-dom": "19.0.4",
+    "@vitejs/plugin-react": "4.3.4",
+    "eslint": "9.39.1",
+    "eslint-plugin-react-hooks": "5.1.0",
+    "eslint-plugin-react-refresh": "0.4.19",
+    "globals": "15.15.0",
+    "vite": "7.2.2",
+    "vitest": "4.0.7"
   },
   "resolutions": {
-    "js-yaml": "^4.1.1"
+    "js-yaml": "4.1.1"
   }
 }
