@@ -4,7 +4,6 @@
 
 - Java
 - Maven
-- CAE Artifactory?
 
 This module depends on it's two sister modules, `kmc-sa-db-api` and `kmc-sa-db-lib`.
 

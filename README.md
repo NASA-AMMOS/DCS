@@ -1,6 +1,6 @@
 # AMMOS Data Cryptography Services (DCS)
 
-AMMOS DCS provides cryptographic capabilities, which include encryption/decryption of files and creation/verification of integrity check values (ICVs) for files.  KMC also includes command encryption capabilities via application of the Consultative Committee for Space Data Systems (CCSDS) “Blue Book” Space Data Link Security (SDLS) specification.
+AMMOS DCS provides cryptographic capabilities, which include encryption/decryption of files and creation/verification of integrity check values (ICVs) for files.  DCS also includes command and telemetry encryption/authentication capabilities via application of the Consultative Committee for Space Data Systems (CCSDS) “Blue Book” Space Data Link Security (SDLS) specification.
 
 **NOTE** AMMOS DCS was formerly known as AMMOS Key Management & Cryptography (KMC), and the name change is ongoing.  The references to KMC in the code and documentation will be updated to DCS in future releases.
 
@@ -11,7 +11,7 @@ AMMOS DCS provides cryptographic capabilities, which include encryption/decrypti
 ```cd KMC```
 1. Initialize/Update Git submodules (NASA Cryptolib):
 ```git submodule init; git submodule update```
-1. (Optional) Edit kmc-resources/scripts/setenv.sh as needed to tailor configuration.  See Section XXXX in the Product Guide and/or the comments in kmc-resources/scripts/setenv.sh for details.
+1. (Optional) Edit kmc-resources/scripts/setenv.sh as needed to tailor configuration.  See the Product Guide and/or the comments in kmc-resources/scripts/setenv.sh for details.
 1. Run Build Script.  This step performs the full build and unit test suite.
 ```kmc-resources/scripts/build.sh```
 
@@ -19,10 +19,10 @@ AMMOS DCS provides cryptographic capabilities, which include encryption/decrypti
 DCS requires several software dependenices in order to build and execute unit tests.  Required software can be installed with OS Vendor packages, pulled directly from public repositories, or any other method.  Make sure the required tool is available in the build environment appropriately for that particular tool (PATH for executables, LD\_LIBRARY\_PATH for shared libraries, PYTHONPATH for python modules, etc.). Tool versions listed are minimum versions, square brackets are used to denote the tool/version used for the official KMC build and testing.
 
 Required Build Dependencies:
-* C Compiler [gcc 11.4.1]
-* Java Development Kit 17.x [OpenJDK 17.0.12]
+* C Compiler [gcc 11.5.0]
+* Java Development Kit 17.x [OpenJDK 17.0.18]
 * cmake [3.26.5]
-* swig [4.0.2]
+* swig [4.1.1]
 * MariaDB Connector/C [3.2.6]
 * cffi (Python module) [1.14.5]
 * invoke (Python module) [2.2.0]
@@ -55,5 +55,5 @@ Building KMC Service Containers:
 
 See the individual KMC Service Container READMEs in kmc-resources/packaging/container/{crypto-service,sdls-service/sa-mgmt} for details on how to configure & launch the KMC Service Containers.
 
-Copyright (c) 2023-2025 California Institute of Technology (“Caltech”). U.S. Government sponsorship acknowledged.  See LICENSE for additional information.
+Copyright (c) 2023-2026 California Institute of Technology (“Caltech”). U.S. Government sponsorship acknowledged.  See LICENSE for additional information.
 

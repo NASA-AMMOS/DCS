@@ -11,18 +11,12 @@ secrets:
     external: true
   tls_ca_bundle:
     external: true
-  crypto_keystore:
-    external: true
-  crypto_keystore_pass:
-    external: true
-  #kmc_crypto_cfg:
-  #  external: true
 
 services:
   cryptosvc:
-    image: kmc-crypto-service:4.0.0
+    image: kmc-sdls-service:4.0.0
     ports:
-      - "8443:8443"
+      - "8447:8447"
     restart: always
     secrets:
       - tls_host_cert
@@ -30,7 +24,5 @@ services:
       - tls_mtls_truststore
       - tls_mtls_truststore_pass
       - tls_ca_bundle
-      - crypto_keystore
-      - crypto_keystore_pass
-      #- kmc_crypto_cfg
-
+    environment:
+      SADB_FQDN: "sadb.example.com"

@@ -1,0 +1,49 @@
+version: '3.5'
+
+secrets:
+  tls_host_cert:
+    external: true
+  tls_host_key:
+    external: true
+  tls_mtls_truststore:
+    external: true
+  tls_mtls_truststore_pass:
+    external: true
+  tls_ca_bundle:
+    external: true
+
+services:
+  cryptosvc:
+    image: kmc-sdls-service:4.0.0
+    ports:
+      - "8445:8445"
+    restart: always
+    secrets:
+      - tls_host_cert
+      - tls_host_key
+      - tls_mtls_truststore
+      - tls_mtls_truststore_pass
+      - tls_ca_bundle
+    environment:
+      CRYPTO_FQDN: "crypto.example.com"
+      SADB_FQDN:   "sadb.example.com"
+      MANAGED_PARAMS: |
+        # For TEST spacecraft ID 44
+        #  cryptolib.tc.<scid>.<vcid>.<tfvn>.<property>
+        cryptolib.tc.44.0.0.has_segmentation_header=false
+        cryptolib.tc.44.0.0.has_pus_header=false
+        cryptolib.tc.44.0.0.has_ecf=true
+        cryptolib.tc.44.0.0.max_frame_length=1024
+        cryptolib.tc.44.1.0.has_segmentation_header=false
+        cryptolib.tc.44.1.0.has_pus_header=false
+        cryptolib.tc.44.1.0.has_ecf=true
+        cryptolib.tc.44.1.0.max_frame_length=1024
+        cryptolib.tc.44.2.0.has_segmentation_header=false
+        cryptolib.tc.44.2.0.has_pus_header=false
+        cryptolib.tc.44.2.0.has_ecf=true
+        cryptolib.tc.44.2.0.max_frame_length=1024
+        cryptolib.tc.44.3.0.has_segmentation_header=false
+        cryptolib.tc.44.3.0.has_pus_header=false
+        cryptolib.tc.44.3.0.has_ecf=true
+        cryptolib.tc.44.3.0.max_frame_length=1024
+

@@ -1,13 +1,13 @@
 # DCS SA Management GUI
 
-Author: [JP Pan (393C)](mailto:panjames@jpl.nasa.gov?subject=DCS SA Management GUI)
+Provides a Web GUI for managing the Security Association Database (SADB) for command and telemetry encryption/authentication cpaabilities provided by DCS.
 
 - Spring Boot web service
 - React frontend (CRA)
 
 ## Requirements
 
-- Java 11
+- Java 17
 
 ## Deployment
 
@@ -18,8 +18,8 @@ Deploy on preferred servlet container, eg Apache Tomcat.
 The following configuration files are expected to be present and configured on the host:
 
 ```
-/ammos/kmc-crypto-service/etc/kmc-sa-mgmt-server.properties
-/ammos/kmc-crypto-service/etc/kmc-sa-mgmt-server-log4j2.xml
+/opt/ammos/kmc/services/crypto-service/etc/kmc-sa-mgmt-server.properties
+/opt/ammos/kmc/services/crypto-service/etc/kmc-sa-mgmt-server-log4j2.xml
 ```
 
 ## Build
@@ -70,6 +70,4 @@ yarn install
 yarn run start
 ```
 
-The development server will start by default on `localhost:3001`, and the backend will likely be
-running on `localhost:8080`. To properly route backend calls to `localhost:3001/api` to `localhost:8080/api`,
-a development proxy is configured in `frontend/src/setupProxy.js`.
+The development server will start by default on `localhost:3001`, and the backend will likely be running on `localhost:8080`. To properly route backend calls to `localhost:3001/api` to `localhost:8080/api`, a development proxy is configured in `frontend/src/setupProxy.js`.

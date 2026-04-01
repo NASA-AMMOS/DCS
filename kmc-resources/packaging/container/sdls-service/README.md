@@ -1,6 +1,6 @@
-# DCS Crypto Service Container
+# DCS SDLS Service Container
 
-The DCS Crypto Service Container provides a self-contained DCS Crypto Service offering data-level cryptography.  DCS, including the Crypto Service Container is available under the Apache 2.0 software license, but this container is based on the Red Hat Enterprise Linux (RHEL) 9 Universal Basic Image (UBI), which is subject to their licensing terms.  See https://www.redhat.com/en/about/red-hat-end-user-license-agreements#UBI for specifics about the RHEL 9 UBI licensing.
+The DCS SDLS Service Container provides a self-contained DCS SDLS Service offering REST APIs for performing CCSDS Blue Book Command Encryption.  DCS, including the SDLS Service Container is available under the Apache 2.0 software license, but this container is based on the Red Hat Enterprise Linux (RHEL) 9 Universal Basic Image (UBI), which is subject to their licensing terms.  See https://www.redhat.com/en/about/red-hat-end-user-license-agreements#UBI for specifics about the RHEL 9 UBI licensing.
 
 ## Building the Container
 
@@ -20,20 +20,20 @@ $ podman image ls
 REPOSITORY                                  TAG         IMAGE ID      CREATED            SIZE
 localhost/kmc-sa-mgmt-service               4.0.0       aebf0191473b  About an hour ago  890 MB
 localhost/kmc-sdls-service                  4.0.0       cfb068d65d92  About an hour ago  890 MB
-localhost/kmc-crypto-service                4.0.0       2e1285394471  About an hour ago  890 MB
+localhost/kmc-sdls-service                4.0.0       2e1285394471  About an hour ago  890 MB
 ```
 
 The image can be saved to transferrable image files with the following commands:
 ```
-$ podman image save -o kmc-crypto-service-4.0.0.tar kmc-crypto-service:4.0.0
+$ podman image save -o kmc-sdls-service-4.0.0.tar kmc-sdls-service:4.0.0
 ```
 
-## Crypto Service Container Configuration Options
-There are a large number of configurable options that control the behavior and operation of the DCS Crypto Service Container.  The full list is documented here.
+## SDLS Service Container Configuration Options
+There are a large number of configurable options that control the behavior and operation of the DCS SDLS Service Container.  The full list is documented here.
 
 Some of the configuration options are "sensitive" data -- TLS keys, keystores, passwords, etc.  Sensitive configuration options are flagged with the [SENSITIVE] flag.  It is *STRONGLY RECOMMENDED* that secure methods be used to provide these configuration items to the container.  Podman/docker secrets, Amazon Secrets Manager, and similar systems can and should be used for any configuration options marked "Sensitive."  If multiple DCS services are being deployed on the same host system, they can share the secrets defined.
 
-In the list of parameters below, [REQUIRED] denotes configuration parameters that are required for DCS Crypto Service container deployment.  Many parameters may be provided via multiple configuration paths -- [SECRET] denotes a hosting platform secret (docker/podman secrets, AWS Secrets Manager, etc.), [ENV] denotes an Environment variable passed to the container.  Options that are *not required* for operation have a default if a reasonable value is available -- default values are noted in the Default: field.
+In the list of parameters below, [REQUIRED] denotes configuration parameters that are required for DCS SDLS Service container deployment.  Many parameters may be provided via multiple configuration paths -- [SECRET] denotes a hosting platform secret (docker/podman secrets, AWS Secrets Manager, etc.), [ENV] denotes an Environment variable passed to the container.  Options that are *not required* for operation have a default if a reasonable value is available -- default values are noted in the Default: field.
 
 ### TLS Configuration Options
 - Disable MTLS Flag
@@ -104,7 +104,7 @@ In the list of parameters below, [REQUIRED] denotes configuration parameters tha
     [ENV]    - TLS_TRUSTSTORE  (*MUST be base64 encoded*)
 
 - MTLS Truststore Passphrase [SENSITIVE]
-  String containing the passphrase for the MTLS Java Truststore.  Not necessary if DISABLE_MTLS is set to true (1).
+  String containing the passphrase for the MTLS Java Truststore.  Not necessary if DISABLE_MTLS is true (1).
   Default: changeit
   Configuration Paths:
     [SECRET] - tls_mtls_truststore_pass
@@ -112,41 +112,62 @@ In the list of parameters below, [REQUIRED] denotes configuration parameters tha
 
 - MTLS Truststore [REQUIRED] [SENSITIVE]
   Java Key Store (JKS) formatted truststore containing the certificates to be 
-  allowed to access the DCS Crypto Service via mutual TLS authentication.  Not required if DISABLE_MTLS is set to true (1).
+  allowed to access the DCS SDLS Service via mutual TLS authentication.  Not required if DISABLE_MTLS is true (1).
   Configuration Paths:
     [SECRET] - tls_mtls_truststore
     [ENV]    - TLS_MTLS_TRUSTSTOR (*MUST be base64 encoded*)E
 
-### Crypto Service Configuration Options
-- Custom KMC Crypto Configuration (Advanced Configuration)
-  Complete replacement for the KMC Crypto Config (kmc/services/crypto-service/etc/kmc-crypto.cfg) for advanced configuration.
+### SDLS Configuration Parameters
+- Crypto Service Fully-Qualified Domain Name [REQUIRED]
+  String containing the fully-qualified domain name of the host where the DCS 
+  Crypto Service is running (port tcp/8443)
   Configuration Paths:
-    [SECRET] - kmc_crypto_cfg
-    [ENV]    - CUSTOM_CRYPTO_CFG
+    [ENV]    - CRYPTO_FQDN
 
-- Crypto Keystore [REQUIRED] [SENSITIVE]
-  KEYSTORE_FORMAT formatted keystore that contains cryptographic keys for the 
-  Crypto Service to use in encryption/decryption.
+- Security Association Database Fully-Qualified Domain Name [REQUIRED]
+  String containing the fully-qualified domain name of the host where the DCS 
+  SADB is running (port tcp/3306)
   Configuration Paths:
-    [SECRET] - crypto_keystore
-    [ENV]    - CRYPTO_KEYSTORE (*MUST be base64 encoded*)
+    [ENV]    - SADB_FQDN
 
-- Crypto Keystore Passphrase [REQUIRED] [SENSITIVE]
-  String containing passphrase for the Crypto Keystore.
+- Create Error Correction Field (ECF) Flag (during encryption)
+  Boolean option (true/false) whether to add ECF field to the security header
+  Default: true
   Configuration Paths:
-    [SECRET] - crypto_keystore_pass
-    [ENV]    - CRYPTO_KEYSTORE_PASS (*MUST be base64 encoded*)
+    [ENV]    - CREATE_ECF
 
-- Crypto Key Passphrase [SENSITIVE]
-  String containing the *key* passphrase for keys within the Crypto Keystore -- 
-  *only provide this if the key passphrase is different from the crypto keystore
-  passphrase.*
-  Default: Crypto Keystore Passphrase
+- Check Error Correction Field (ECF) Flag (during decryption)
+  Boolean option (true/false) whether to check the ECF during decryption
+  Default: false
   Configuration Paths:
-    [SECRET] - crypto_key_pass
-    [ENV]    - CRYPTO_KEY_PASS (*MUST be base64 encoded*)
+    [ENV]    - CHECK_FECF
 
-### Java Configuration Options
+- Virtual Channel ID Bitmask
+  String containing the VCID Bitmask for SDLS
+  Default: 0x3f
+  Configuration Paths:
+    [ENV]    - VCID_BITMASK
+
+- Ignore Anti-Replay Flag
+  Boolean option whether to ignore Anti-Replay protection in SDLS processing.
+  Default: true
+  Configuration Paths:
+    [ENV]    - IGNORE_ANTIREPLAY
+
+- Ignore SA State Flag
+  Boolean option whether to ignore the state field of Security Associations for 
+  testing.
+  Default: true
+  Configuration Paths:
+    [ENV]    - IGNORE_SA_STATE
+
+- Process PDUs Flag
+  Boolean option whether to process the PDUs when performing SDLS operations.
+  Default: false
+  Configuration Paths:
+    [ENV]    - PROCESS_PDUS
+
+
 - Java Maximum Memory Heap Size
   String containing Java Maximum Memory Heap allocated to the Java Virtual 
   Machine
@@ -154,6 +175,17 @@ In the list of parameters below, [REQUIRED] denotes configuration parameters tha
   Configuration Paths
     [ENV]    - JAVA_MAX_HEAP
 
+- SDLS Managed Parameters [REQUIRED]
+  A string containing the relevant SDLS Managed parameters for the intended
+  configuration.  See the CCSDS 232.0-B-3 blue book for more information about 
+  each of these fields for telecommand transfer frames.  The easiest method 
+  to provide these fields to the SDLS Service is to write them all into a text 
+  file, which can be read into an environment variable when creating the 
+  container.  See the example for manual container setup below for details.
+  Configuration Paths:
+    [ENV] MANAGED_PARAMS
+
+### Java Configuration Options
 - Java Minimum Memory Heap Size
   String containing Java Minimum Memory Heap allocated to the Java Virtual 
   Machine
@@ -168,11 +200,11 @@ In the list of parameters below, [REQUIRED] denotes configuration parameters tha
   Configuraton Paths:
     [ENV]    - DEBUG
 
-## Deploying the Crypto Service Container
+## Deploying the SDLS Service Container
 
-The DCS Crypto Service Container can be deployed via a wide variety of tools and processes.  Examples are provided for running the bare container with podman and using podman-compose.  Releases of the Crypto Service Container are also tested in the Amazon Elastic Container Service (ECS), and can be run there.  The DCS Crypto Service Container should be deployable on any container virtualization system that supports OCI-compliant images and processes.
+The DCS SDLS Service Container can be deployed via a wide variety of tools and processes.  Examples are provided for running the bare container with podman and using podman-compose.  Releases of the SDLS Service Container are also tested in the Amazon Elastic Container Service (ECS), and can be run there.  The DCS SDLS Service Container should be deployable on any container virtualization system that supports OCI-compliant images and processes.
 
-There are a large number of configurable options that control the behavior and operation of the DCS Crypto Service Container.  For the full list, see "Crypto Service Container Configuration Options" above. These examples are minimalist configurations that utilize the default settings as much as possible.  
+There are a large number of configurable options that control the behavior and operation of the DCS SDLS Service Container.  For the full list, see "SDLS Service Container Configuration Options" above. These examples are minimalist configurations that utilize the default settings as much as possible.  
 
 Both examples below use podman secrets for sensitive configuration information, as well as for a simple method to provide some non-sensitive options (like the TLS CA Certificate Bundle).
 
@@ -180,7 +212,7 @@ Both examples below use podman secrets for sensitive configuration information, 
 
 1. Import the Image (optional, if image is available in a configured repository)
 ```bash
-$ podman image load -i kmc-crypto-service-4.0.0.tar.gz
+$ podman image load -i kmc-sdls-service-4.0.0.tar.gz
 ```
 
 1. Configure Secrets
@@ -188,48 +220,47 @@ $ podman image load -i kmc-crypto-service-4.0.0.tar.gz
 $ podman secret create tls_host_key /etc/pki/tls/private/ammos-server-key.pem
 $ podman secret create tls_host_cert /etc/pki/tls/certs/ammos-server-cert.pem
 $ podman secret create tls_ca_bundle /etc/pki/tls/certs/ammos-ca-bundle.crt
-$ podman secret create crypto_keystore /msn_data/crypto/crypto_keystore.bcfks
 $ podman secret create tls_mtls_truststore /etc/pki/tls/private/ammos-mtls-truststore.jks
 $ echo "changeit" | podman secret create tls_mtls_truststore_pass -
-$ echo "s00p3rs3cr3tp@ssph4se" | podman secret create crypto_keystore_pass -
 ```
 
-1. Create DCS Crypto Service Container
+1. Create DCS SDLS Service Container
 ```bash
-podman container create -p 8443:8443 --name kmc-crypto-service \
+podman container create -p 8445:8445 --name kmc-sdls-service \
   --secret tls_host_key --secret tls_host_cert --secret tls_ca_bundle \
-  --secret crypto_keystore --secret crypto_keystore_pass \
-  --secret crypto_key_pass --secret tls_mtls_truststore \
-  kmc-crypto-service:4.0.0
+  --secret tls_mtls_truststore --secret tls_admin_key \
+  -e MANAGED_PARAMS="`cat /opt/ammos/kmc/sdls_managed_params.txt`" \
+  -e CRYPTO_FQDN=crypto.example.com \
+  -e SADB_FQDN=sadb.example.com -e kmc-sdls-service:4.0.0
 ```
 
 1. Create SystemD Unit file for container (if desired)
 ```bash
-podman generate systemd -n -f --container-prefix='' kmc-crypto-service
-sudo mv kmc-crypto-service.service /lib/systemd/system/
-sudo chown root:root /lib/systemd/system/kmc-crypto-service.service
-sudo chmod 0644 /lib/systemd/system/kmc-crypto-service.service
+podman generate systemd -n -f --container-prefix='' kmc-sdls-service
+sudo mv kmc-sdls-service.service /lib/systemd/system/
+sudo chown root:root /lib/systemd/system/kmc-sdls-service.service
+sudo chmod 0644 /lib/systemd/system/kmc-sdls-service.service
 sudo systemctl daemon-reload
 ```
 
 1. Start the container
 Either:
 ```bash
-sudo systemctl start kmc-crypto-service
+sudo systemctl start kmc-sdls-service
 ```
 
 *OR*
 
 ```bash
-podman start kmc-crypto-service
+podman start kmc-sdls-service
 ```
 
 ### Deploying with podman-compose
-Podman-compose uses YAML-formatted files to configure one or more services.  An example podman-compose file for the DCS Crypto Service Container can be found in kmc-resources/packaging/container/crypto-service/podman-compose-example.yml.  This example compose file uses podman secrets like the previous example to manage sensitive inputs.
+Podman-compose uses YAML-formatted files to configure one or more services.  An example podman-compose file for the DCS SDLS Service Container can be found in kmc-resources/packaging/container/sdls-service/podman-compose-example.yml.  This example compose file uses podman secrets like the previous example to manage sensitive inputs.
 
 1. Import the Image (optional, if image is available in a configured repository)
 ```bash
-$ podman image load -i kmc-crypto-service-4.0.0.tar.gz
+$ podman image load -i kmc-sdls-service-4.0.0.tar.gz
 ```
 
 1. Configure Secrets
@@ -239,12 +270,10 @@ $ podman secret create tls_host_cert /etc/pki/tls/certs/ammos-server-cert.pem
 $ podman secret create tls_ca_bundle /etc/pki/tls/certs/ammos-ca-bundle.crt
 $ podman secret create tls_mtls_truststore /etc/pki/tls/private/ammos-mtls-truststore.jks
 $ echo "changeit" | podman secret create tls_mtls_truststore_pass -
-$ podman secret create crypto_keystore /msn_data/crypto/crypto_keystore.bcfks
-$ echo "s00p3rs3cr3tp@ssph4se" | podman secret create crypto_keystore_pass -
 ```
 
 1. Edit podman-compose-example.yml as needed for desired configuration.  
-See the Crypto Service Container Configuration Options section above for details.
+See the SDLS Service Container Configuration Options section above for details.
 
 1. Use podman-compose to bring up the container:
 ```bash
