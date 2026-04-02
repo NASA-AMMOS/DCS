@@ -37,7 +37,7 @@
         <jackson.version>2.21.1</jackson.version>
         <jackson.annotations.version>2.21</jackson.annotations.version>
         <picocli.version>4.7.6</picocli.version>
-        <spring.boot.version>3.5.7</spring.boot.version>
+        <spring.boot.version>3.5.13</spring.boot.version>
     </properties>
 
     <modules>
