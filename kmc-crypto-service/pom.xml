@@ -16,7 +16,7 @@
   </parent>
 
   <properties>
-    <spring.boot.version>3.5.7</spring.boot.version>
+    <spring.boot.version>3.5.13</spring.boot.version>
     <final.name>crypto-service</final.name>
     <app.profiles>mTLS</app.profiles>
     <spring.profiles.active>${app.profiles}</spring.profiles.active>
@@ -176,7 +176,7 @@
         <artifactId>maven-project-info-reports-plugin</artifactId>
         <version>3.1.1</version>
         <configuration>
-          <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
+<!--          <dependencyLocationsEnabled>false</dependencyLocationsEnabled>-->
         </configuration>
       </plugin>
     </plugins>

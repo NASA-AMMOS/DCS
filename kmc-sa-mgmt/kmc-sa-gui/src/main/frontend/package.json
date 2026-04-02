@@ -27,9 +27,13 @@
     "yup": "1.6.1"
   },
   "overrides": {
+    "flatted": "3.4.2",
     "lodash": "4.17.23",
+    "lodash-es": "4.17.23",
     "minimatch": "3.1.4",
-    "rollup": "4.59.0"
+    "picomatch": "4.0.4",
+    "rollup": "4.59.0",
+    "yaml": "1.10.3"
   },
   "devDependencies": {
     "@eslint/js": "9.21.0",
