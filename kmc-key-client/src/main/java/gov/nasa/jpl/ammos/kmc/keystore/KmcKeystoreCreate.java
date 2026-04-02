@@ -93,8 +93,8 @@ public final class KmcKeystoreCreate {
             System.exit(3);
         }
         if (keystoreFile.exists()) {
-            try {
-                keystore.load(new FileInputStream(keystoreFile), keystorePassword.toCharArray());
+            try (FileInputStream fis = new FileInputStream(keystoreFile)) {
+                keystore.load(fis, keystorePassword.toCharArray());
             } catch (Exception e) {
                 System.err.println("Failed to load keystore " + keystoreFilename + ", exception: " + e);
                 if (e.getMessage().contains("Integrity check failed")) {
@@ -103,23 +103,23 @@ public final class KmcKeystoreCreate {
                 System.exit(1);
             }
         } else {
-            try {
+            try (FileOutputStream fos = new FileOutputStream(keystoreFile)) {
                 keystore.load(null, null); // a new keystore
-                keystore.store(new FileOutputStream(keystoreFile), keystorePassword.toCharArray());
+                keystore.store(fos, keystorePassword.toCharArray());
             } catch (Exception e) {
                 System.err.println("Failed to create keystore " + keystoreFilename + ", exception: " + e);
                 System.exit(1);
             }
         }
 
-        try {
+        try (FileOutputStream fos = new FileOutputStream(keystoreFilename)) {
             KeyStore.ProtectionParameter pp = new PasswordProtection(keyPassword.toCharArray());
 
             SecretKeySpec secretKey = new SecretKeySpec(keyMaterial, keyAlgorithm);
             KeyStore.SecretKeyEntry entry = new KeyStore.SecretKeyEntry(secretKey);
             keystore.setEntry(keyName, entry, pp);
 
-            keystore.store(new FileOutputStream(keystoreFilename), keystorePassword.toCharArray());
+            keystore.store(fos, keystorePassword.toCharArray());
             System.out.println("Added key " + keyName + ", " + keyAlgorithm + ", " + keyMaterialHex);
         } catch (KeyStoreException e) {
             System.err.println("Failed to store key entry to keystore: " + e);
