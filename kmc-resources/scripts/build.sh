@@ -80,6 +80,18 @@ else
   cp -r target/classes $SRC_KMC/build-output-for-sonar/kmip-client/
 fi
 echo "----------------------------------------"
+echo "DCS Key Client Library"
+echo "----------------------------------------"
+cd $SRC_KMC/kmc-key-client ; $MVN install -DDEFAULT_PREFIX="${PREFIX}" -DDEFAULT_BINPATH="${BINPATH}" -DDEFAULT_LIBPATH="${LIBPATH}" -DDEFAULT_CFGPATH="${CFGPATH}" -DDEFAULT_LOGPATH="${LOGPATH}"
+if [ $? -ne 0 ]; then
+  echo "ERROR: Failed to build DCS Key Client Library"
+  BUILD_FAILURES+=("DCS Key Client Library")
+  BUILD_FLAG=1
+else
+  mkdir -p $SRC_KMC/build-output-for-sonar/kmc-key-client
+  cp -r target/classes $SRC_KMC/build-output-for-sonar/kmc-key-client/
+fi
+echo "----------------------------------------"
 echo "DCS Crypto Interface"
 echo "----------------------------------------"
 cd $SRC_KMC/kmc-crypto ; $MVN install -DDEFAULT_PREFIX="${PREFIX}" -DDEFAULT_BINPATH="${BINPATH}" -DDEFAULT_LIBPATH="${LIBPATH}" -DDEFAULT_CFGPATH="${CFGPATH}" -DDEFAULT_LOGPATH="${LOGPATH}"
