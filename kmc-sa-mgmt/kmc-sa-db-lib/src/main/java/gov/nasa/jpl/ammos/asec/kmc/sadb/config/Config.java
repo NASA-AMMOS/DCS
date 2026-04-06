@@ -288,12 +288,12 @@ public class Config extends CompositeConfiguration {
         this.truststore = getString(DB_TRUSTSTORE);
         if (envProvider.getEnv(ENV_DB_TRUSTSTORE) != null) {
             LOG.info(ENV_VAR_FOUND_OVERRIDING, ENV_DB_TRUSTSTORE, DB_TRUSTSTORE);
-            this.keystore = envProvider.getEnv(ENV_DB_TRUSTSTORE);
+            this.truststore = envProvider.getEnv(ENV_DB_TRUSTSTORE);
         }
         this.truststorePass = getString(DB_TRUSTSTORE_PASS);
         if (envProvider.getEnv(ENV_DB_TRUSTSTORE_PASS) != null) {
             LOG.info(ENV_VAR_FOUND_OVERRIDING, ENV_DB_TRUSTSTORE_PASS, DB_TRUSTSTORE_PASS);
-            this.keystore = envProvider.getEnv(ENV_DB_TRUSTSTORE_PASS);
+            this.truststorePass = envProvider.getEnv(ENV_DB_TRUSTSTORE_PASS);
         }
         this.useTls = getBoolean(DB_TLS);
         if (envProvider.getEnv(ENV_DB_TLS) != null) {

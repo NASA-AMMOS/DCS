@@ -41,4 +41,25 @@
     <module>kmip-client</module>
   </modules>
 
+  <dependencyManagement>
+    <dependencies>
+      <!-- dependency overrides to address CVEs. review when updating dependency versions -->
+      <dependency>
+        <groupId>org.assertj</groupId>
+        <artifactId>assertj-core</artifactId>
+        <version>3.27.7</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.tomcat.embed</groupId>
+        <artifactId>tomcat-embed-core</artifactId>
+        <version>10.1.52</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-webmvc</artifactId>
+        <version>6.2.17</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
 </project>
