@@ -580,6 +580,10 @@ for FILE in `/bin/ls -1 "${INST_TESTPATH}/sql/"`; do
   echo "${INST_TESTPATH}/sql/${FILE}" >> "${INST_CFGPATH}/install_manifest.txt"
 done
 
+# Deploy KMC Key Client
+/bin/install -m 0644 -g "${INST_ROOTGRP}" -o "${INST_ROOTUSR}" "${DIST}/kmc-key-client/target/kmc-key-client-${VERSION}.jar" "${INST_LIBPATH}/kmc-key-client.jar"
+echo "${INST_LIBPATH}/kmc-key-client.jar" >> "${INST_CFGPATH}/install_manifest.txt"
+
 # Deploy KMIP Client
 /bin/install -m 0644 -g "${INST_ROOTGRP}" -o "${INST_ROOTUSR}" "${DIST}/kmip-client/target/kmip-client-${VERSION}.jar" "${INST_LIBPATH}/kmip-client.jar"
 echo "${INST_LIBPATH}/kmip-client.jar" >> "${INST_CFGPATH}/install_manifest.txt"

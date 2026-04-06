@@ -35,7 +35,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <hibernate.version>6.6.5.Final</hibernate.version>
         <jackson.version>2.19.2</jackson.version>
-        <log4j.version>2.24.3</log4j.version>
+        <log4j.version>2.25.3</log4j.version>
         <picocli.version>4.7.6</picocli.version>
         <spring.boot.version>3.5.7</spring.boot.version>
     </properties>
