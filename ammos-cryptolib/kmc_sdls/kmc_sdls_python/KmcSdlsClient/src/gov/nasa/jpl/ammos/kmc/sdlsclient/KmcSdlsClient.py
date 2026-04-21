@@ -16,6 +16,7 @@
 import distutils.util
 import os.path
 import re
+import struct
 from typing import NamedTuple
 
 import kmc_python_c_sdls_interface
@@ -823,6 +824,38 @@ class TC_FramePrimaryHeader(NamedTuple):
     fl: int  # Frame Length
     fsn: int  # Frame Sequence Number
 
+    def hex(self):
+        """Convert TC frame primary header to hex string.
+
+        Header structure (40 bits / 5 bytes):
+        tfvn(2) | bypass(1) | cc(1) | spare(2) | scid(10) |
+        vcid(6) | fl(10) | fsn(8)
+
+        Returns:
+            Hex string representation of the header.
+        """
+        # Validation
+        assert 0 <= self.tfvn <= 3, f"tfvn must be 2 bits (0-3), got {self.tfvn}"
+        assert 0 <= self.bypass <= 1, f"bypass must be 1 bit (0-1), got {self.bypass}"
+        assert 0 <= self.cc <= 1, f"cc must be 1 bit (0-1), got {self.cc}"
+        assert 0 <= self.spare <= 3, f"spare must be 2 bits (0-3), got {self.spare}"
+        assert 0 <= self.scid <= 1023, f"scid must be 10 bits (0-1023), got {self.scid}"
+        assert 0 <= self.vcid <= 63, f"vcid must be 6 bits (0-63), got {self.vcid}"
+        assert 0 <= self.fl <= 1023, f"fl must be 10 bits (0-1023), got {self.fl}"
+        assert 0 <= self.fsn <= 255, f"fsn must be 8 bits (0-255), got {self.fsn}"
+
+        # Build 40-bit header using bit accumulation
+        val = ((self.tfvn & 0x3) << 38 |
+               (self.bypass & 0x1) << 37 |
+               (self.cc & 0x1) << 36 |
+               (self.spare & 0x3) << 34 |
+               (self.scid & 0x3FF) << 24 |
+               (self.vcid & 0x3F) << 18 |
+               (self.fl & 0x3FF) << 8 |
+               (self.fsn & 0xFF))
+
+        return val.to_bytes(5, 'big').hex()
+
 
 class AOS_FramePrimaryHeader(NamedTuple):
     tfvn: int  # Transfer Frame Version Number
@@ -836,61 +869,60 @@ class AOS_FramePrimaryHeader(NamedTuple):
     fhec: int  # Frame Header Error Control
     iz: bytearray
 
-    def hex(self):
-        has_fhec = frame_global_config[f"aos.{self.scid}.{self.vcid}.{self.tfvn}"]["has_fhec"]
-        has_iz = frame_global_config[f"aos.{self.scid}.{self.vcid}.{self.tfvn}"]["has_iz"]
+    def hex(self, config=None):
+        """Convert AOS frame primary header to hex string.
 
-        from bitstring import Bits, BitArray
-        tfvn_b = Bits(uint=self.tfvn, length=2)
-        l = 2
-        scid_b = Bits(uint=self.scid, length=8)
-        l += 8
-        vcid_b = Bits(uint=self.vcid, length=6)
-        l += 6
-        vcfc_b = Bits(uint=self.vcfc, length=24)
-        l += 24
-        replay_b = Bits(uint=self.replay, length=1)
-        l += 1
-        vcflag_b = Bits(uint=self.vcflag, length=1)
-        l += 1
-        spare_b = Bits(uint=self.spare, length=2)
-        l += 2
-        vcfcc_b = Bits(uint=self.vcfcc, length=4)
-        l += 4
+        Header structure: tfvn(2) | scid(8) | vcid(6) | vcfc(24) |
+                         replay(1) | vcflag(1) | spare(2) | vcfcc(4)
+        Optional: fhec(16), insert_zone(variable)
+
+        Args:
+            config: Optional dict with 'has_fhec' and 'has_iz' keys.
+                   If not provided, looks up from frame_global_config.
+
+        Returns:
+            Hex string representation of the header.
+        """
+        # Validation
+        assert 0 <= self.tfvn <= 3, f"tfvn must be 2 bits (0-3), got {self.tfvn}"
+        assert 0 <= self.scid <= 255, f"scid must be 8 bits (0-255), got {self.scid}"
+        assert 0 <= self.vcid <= 63, f"vcid must be 6 bits (0-63), got {self.vcid}"
+        assert 0 <= self.vcfc <= 16777215, f"vcfc must be 24 bits (0-16777215), got {self.vcfc}"
+        assert 0 <= self.replay <= 1, f"replay must be 1 bit (0-1), got {self.replay}"
+        assert 0 <= self.vcflag <= 1, f"vcflag must be 1 bit (0-1), got {self.vcflag}"
+        assert 0 <= self.spare <= 3, f"spare must be 2 bits (0-3), got {self.spare}"
+        assert 0 <= self.vcfcc <= 15, f"vcfcc must be 4 bits (0-15), got {self.vcfcc}"
+        assert 0 <= self.fhec <= 65535, f"fhec must be 16 bits (0-65535), got {self.fhec}"
+
+        # Single config lookup with defaults
+        if config is None:
+            key = f"aos.{self.scid}.{self.vcid}.{self.tfvn}"
+            config = frame_global_config.get(key, {"has_fhec": False, "has_iz": False})
+
+        has_fhec = config.get("has_fhec", False)
+        has_iz = config.get("has_iz", False)
+
+        # Build 48-bit base header using bit accumulation
+        val = ((self.tfvn & 0x3) << 46 |
+               (self.scid & 0xFF) << 38 |
+               (self.vcid & 0x3F) << 32 |
+               (self.vcfc & 0xFFFFFF) << 8 |
+               (self.replay & 0x1) << 7 |
+               (self.vcflag & 0x1) << 6 |
+               (self.spare & 0x3) << 4 |
+               (self.vcfcc & 0xF))
+
+        res = bytearray(val.to_bytes(6, 'big'))
+
+        # Optional: fhec(16 bits)
         if has_fhec:
-            l += 16
+            res.extend(struct.pack('>H', self.fhec))
 
+        # Optional: insert zone
         if has_iz:
-            l += len(self.iz)
+            res.extend(self.iz)
 
-        header = BitArray(length=l)
-        pos = 0
-        header.overwrite(tfvn_b, pos)
-        pos += 2
-        header.overwrite(scid_b, pos)
-        pos += 8
-        header.overwrite(vcid_b, pos)
-        pos += 6
-        header.overwrite(vcfc_b, pos)
-        pos += 24
-        header.overwrite(replay_b, pos)
-        pos += 1
-        header.overwrite(vcflag_b, pos)
-        pos += 1
-        header.overwrite(spare_b, pos)
-        pos += 2
-        header.overwrite(vcfcc_b, pos)
-        pos += 4
-        if has_fhec:
-            fhec_b = Bits(uint=self.fhec, length=16)
-            header.overwrite(fhec_b, pos)
-            pos += 16
-
-        if has_iz:
-            iz_b = Bits(self.iz)
-            header.overwrite(iz_b, pos)
-
-        return header.h
+        return res.hex()
 
 
 class TM_FramePrimaryHeader(NamedTuple):
@@ -907,31 +939,42 @@ class TM_FramePrimaryHeader(NamedTuple):
     fhp: int  # First Header Pointer
 
     def hex(self):
-        from bitstring import Bits, BitArray
-        tfvn_b = Bits(uint=self.tfvn, length=2)
-        scid_b = Bits(uint=self.scid, length=10)
-        vcid_b = Bits(uint=self.vcid, length=3)
-        ocf_f_b = Bits(uint=self.ocf, length=1)
-        mcfc_b = Bits(uint=self.mcfc, length=8)
-        vcfc_b = Bits(uint=self.vcfc, length=8)
-        shf_f_b = Bits(uint=self.shf, length=1)
-        sync_f_b = Bits(uint=self.sf, length=1)
-        po_f_b = Bits(uint=self.pof, length=1)
-        slid_b = Bits(uint=self.slid, length=2)
-        fhp_b = Bits(uint=self.fhp, length=11)
-        header = BitArray(length=48)
-        header.overwrite(tfvn_b, 0)
-        header.overwrite(scid_b, 2)  # 0 + 2
-        header.overwrite(vcid_b, 12)  # 2 + 10
-        header.overwrite(ocf_f_b, 15)  # 12 + 3
-        header.overwrite(mcfc_b, 16)  # 15 + 1
-        header.overwrite(vcfc_b, 24)  # 16 + 8
-        header.overwrite(shf_f_b, 32)  # 24 + 8
-        header.overwrite(sync_f_b, 33)  # 32 + 1
-        header.overwrite(po_f_b, 34)  # 33 + 1
-        header.overwrite(slid_b, 35)  # 34 + 1
-        header.overwrite(fhp_b, 37)  # 35 + 2
-        return header.h
+        """Convert TM frame primary header to hex string.
+
+        Header structure (48 bits / 6 bytes):
+        tfvn(2) | scid(10) | vcid(3) | ocf(1) | mcfc(8) | vcfc(8) |
+        shf(1) | sf(1) | pof(1) | slid(2) | fhp(11)
+
+        Returns:
+            Hex string representation of the header.
+        """
+        # Validation
+        assert 0 <= self.tfvn <= 3, f"tfvn must be 2 bits (0-3), got {self.tfvn}"
+        assert 0 <= self.scid <= 1023, f"scid must be 10 bits (0-1023), got {self.scid}"
+        assert 0 <= self.vcid <= 7, f"vcid must be 3 bits (0-7), got {self.vcid}"
+        assert 0 <= self.ocf <= 1, f"ocf must be 1 bit (0-1), got {self.ocf}"
+        assert 0 <= self.mcfc <= 255, f"mcfc must be 8 bits (0-255), got {self.mcfc}"
+        assert 0 <= self.vcfc <= 255, f"vcfc must be 8 bits (0-255), got {self.vcfc}"
+        assert 0 <= self.shf <= 1, f"shf must be 1 bit (0-1), got {self.shf}"
+        assert 0 <= self.sf <= 1, f"sf must be 1 bit (0-1), got {self.sf}"
+        assert 0 <= self.pof <= 1, f"pof must be 1 bit (0-1), got {self.pof}"
+        assert 0 <= self.slid <= 3, f"slid must be 2 bits (0-3), got {self.slid}"
+        assert 0 <= self.fhp <= 2047, f"fhp must be 11 bits (0-2047), got {self.fhp}"
+
+        # Build 48-bit header using bit accumulation
+        val = ((self.tfvn & 0x3) << 46 |
+               (self.scid & 0x3FF) << 36 |
+               (self.vcid & 0x7) << 33 |
+               (self.ocf & 0x1) << 32 |
+               (self.mcfc & 0xFF) << 24 |
+               (self.vcfc & 0xFF) << 16 |
+               (self.shf & 0x1) << 15 |
+               (self.sf & 0x1) << 14 |
+               (self.pof & 0x1) << 13 |
+               (self.slid & 0x3) << 11 |
+               (self.fhp & 0x7FF))
+
+        return val.to_bytes(6, 'big').hex()
 
 
 class FrameSecurityHeader(NamedTuple):
@@ -945,29 +988,23 @@ class FrameSecurityHeader(NamedTuple):
     pad_field_len: int
 
     def hex(self):
-        from bitstring import Bits, BitArray
-        length = 16 + (self.iv_field_len * 8) + (self.sn_field_len * 8) + (self.pad_field_len * 8)
-        spi_b = Bits(uint=self.spi, length=16)
-        iv_b = Bits(self.iv)
-        sn_b = Bits(self.sn)
-        pad_b = Bits(self.pad)
-        idx = 0
-        header = BitArray(length=length)
-        header.overwrite(spi_b, idx)
-        idx += 16
+        """Convert frame security header to hex string.
+
+        Returns:
+            Hex string representation of the security header.
+        """
+        # Validation
+        assert 0 <= self.spi <= 65535, f"spi must be 16 bits (0-65535), got {self.spi}"
+
+        res = bytearray()
+        res.extend(struct.pack('>H', self.spi))
         if self.iv_field_len > 0:
-            header.overwrite(iv_b, idx)
-            idx += (self.iv_field_len * 8)
-
+            res.extend(self.iv)
         if self.sn_field_len > 0:
-            header.overwrite(sn_b, idx)
-            idx += (self.sn_field_len * 8)
-
+            res.extend(self.sn)
         if self.pad_field_len > 0:
-            header.overwrite(pad_b, idx)
-            idx += (self.pad_field_len * 8)
-
-        return header.h
+            res.extend(self.pad)
+        return res.hex()
 
 
 class FrameSecurityTrailer(NamedTuple):
@@ -978,24 +1015,21 @@ class FrameSecurityTrailer(NamedTuple):
     fecf: int  # Frame Error Control Field
 
     def hex(self):
-        from bitstring import Bits, BitArray
-        mac_b = Bits(self.mac)
-        ocf_b = Bits(self.ocf)
-        fecf_b = Bits(uint=self.fecf, length=16)
+        """Convert frame security trailer to hex string.
 
-        length = 16 + (self.mac_field_len * 8) + (self.ocf_field_len * 8)
-        idx = 0
-        header = BitArray(length=length)
+        Returns:
+            Hex string representation of the security trailer.
+        """
+        # Validation
+        assert 0 <= self.fecf <= 65535, f"fecf must be 16 bits (0-65535), got {self.fecf}"
+
+        res = bytearray()
         if self.mac_field_len > 0:
-            header.overwrite(mac_b, idx)
-            idx += (self.mac_field_len * 8)
-
+            res.extend(self.mac)
         if self.ocf_field_len > 0:
-            header.overwrite(ocf_b, idx)
-            idx += (self.ocf_field_len * 8)
-
-        header.overwrite(fecf_b, idx)
-        return header.h
+            res.extend(self.ocf)
+        res.extend(struct.pack('>H', self.fecf))
+        return res.hex()
 
 
 class TC(NamedTuple):
