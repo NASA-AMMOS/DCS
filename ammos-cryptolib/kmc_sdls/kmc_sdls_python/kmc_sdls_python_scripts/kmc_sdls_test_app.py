@@ -358,7 +358,7 @@ if __name__ == "__main__":
         main()
     except ArgumentException as ae:
         print("Command Line Argument Error: ", ae)
+        sys.exit(1)
     except Exception as e:
         print("Encountered an unexpected error: ", e)
-    finally:
         sys.exit(1)
