@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright 2021, by the California Institute of Technology.
+# Copyright 2026, by the California Institute of Technology.
 # ALL RIGHTS RESERVED. United States Government Sponsorship acknowledged.
 # Any commercial use must be negotiated with the Office of Technology
 # Transfer at the California Institute of Technology.
@@ -19,7 +19,7 @@ import sys
 from abc import abstractmethod, ABC
 from dataclasses import dataclass, field
 
-# Import the KMC SDLS Client
+# Import the DCS SDLS Client
 from gov.nasa.jpl.ammos.kmc.sdlsclient import KmcSdlsClient
 
 
@@ -30,7 +30,7 @@ class ArgumentException(Exception):
 
 def build_options_parser():
     arg_parser = argparse.ArgumentParser(
-        description='Simple KMC SDLS Python Test Application that will Apply and Process Security on a given frame')
+        description='Simple DCS SDLS Python Test Application that will Apply and Process Security on a given frame')
     arg_parser.add_argument("-f", "--frame",
                             dest="frame",
                             help="Hex frame string representation of telecommand transfer-frame to apply & process SDLS layering on.")
