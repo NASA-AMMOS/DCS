@@ -550,4 +550,137 @@ public class SaUpdateTest extends BaseCommandLineTest {
         assertNotEquals(0, exitCode);
     }
 
+    @Test
+    public void testUpdateMapid() throws KmcException {
+        testUpdateMapid(FrameType.TC);
+        testUpdateMapid(FrameType.TM);
+        testUpdateMapid(FrameType.AOS);
+    }
+
+    public void testUpdateMapid(FrameType type) throws KmcException {
+        CommandLine cmd = getCmd(new SaUpdate(), true, null, null);
+        SpiScid     id  = new SpiScid(1, (short) 46);
+        ISecAssn    sa  = dao.getSa(id, type);
+        assertEquals(0, (byte) sa.getMapid());
+        int exitCode = cmd.execute(SCID_46, SPI_1, "--mapid=5", String.format(TYPE_FMT, type.name()));
+        assertEquals(0, exitCode);
+        sa = dao.getSa(id, type);
+        assertEquals(5, (byte) sa.getMapid());
+    }
+
+    @Test
+    public void testUpdateTfvn() throws KmcException {
+        testUpdateTfvn(FrameType.TC);
+        testUpdateTfvn(FrameType.TM);
+        testUpdateTfvn(FrameType.AOS);
+    }
+
+    public void testUpdateTfvn(FrameType type) throws KmcException {
+        CommandLine cmd = getCmd(new SaUpdate(), true, null, null);
+        SpiScid     id  = new SpiScid(1, (short) 46);
+        ISecAssn    sa  = dao.getSa(id, type);
+        assertEquals(0, (byte) sa.getTfvn());
+        int exitCode = cmd.execute(SCID_46, SPI_1, "--tfvn=1", String.format(TYPE_FMT, type.name()));
+        assertEquals(0, exitCode);
+        sa = dao.getSa(id, type);
+        assertEquals(1, (byte) sa.getTfvn());
+    }
+
+    @Test
+    public void testUpdateVcid() throws KmcException {
+        testUpdateVcid(FrameType.TC);
+        testUpdateVcid(FrameType.TM);
+        testUpdateVcid(FrameType.AOS);
+    }
+
+    public void testUpdateVcid(FrameType type) throws KmcException {
+        CommandLine cmd = getCmd(new SaUpdate(), true, null, null);
+        SpiScid     id  = new SpiScid(1, (short) 46);
+        ISecAssn    sa  = dao.getSa(id, type);
+        assertEquals(0, (byte) sa.getVcid());
+        int exitCode = cmd.execute(SCID_46, SPI_1, "--vcid=3", String.format(TYPE_FMT, type.name()));
+        assertEquals(0, exitCode);
+        sa = dao.getSa(id, type);
+        assertEquals(3, (byte) sa.getVcid());
+    }
+
+    @Test
+    public void testUpdateMapidTfvnVcid() throws KmcException {
+        testUpdateMapidTfvnVcid(FrameType.TC);
+        testUpdateMapidTfvnVcid(FrameType.TM);
+        testUpdateMapidTfvnVcid(FrameType.AOS);
+    }
+
+    public void testUpdateMapidTfvnVcid(FrameType type) throws KmcException {
+        CommandLine cmd = getCmd(new SaUpdate(), true, null, null);
+        SpiScid     id  = new SpiScid(1, (short) 46);
+        ISecAssn    sa  = dao.getSa(id, type);
+        assertEquals(0, (byte) sa.getMapid());
+        assertEquals(0, (byte) sa.getTfvn());
+        assertEquals(0, (byte) sa.getVcid());
+        int exitCode = cmd.execute(SCID_46, SPI_1, "--mapid=7", "--tfvn=2", "--vcid=4", String.format(TYPE_FMT, type.name()));
+        assertEquals(0, exitCode);
+        sa = dao.getSa(id, type);
+        assertEquals(7, (byte) sa.getMapid());
+        assertEquals(2, (byte) sa.getTfvn());
+        assertEquals(4, (byte) sa.getVcid());
+    }
+
+    @Test
+    public void testUpdateTfvnPartial() throws KmcException {
+        testUpdateTfvnPartial(FrameType.TC);
+        testUpdateTfvnPartial(FrameType.TM);
+        testUpdateTfvnPartial(FrameType.AOS);
+    }
+
+    public void testUpdateTfvnPartial(FrameType type) throws KmcException {
+        CommandLine cmd = getCmd(new SaUpdate(), true, null, null);
+        SpiScid     id  = new SpiScid(1, (short) 46);
+
+        // First, set all three fields to non-zero values
+        int exitCode = cmd.execute(SCID_46, SPI_1, "--mapid=5", "--tfvn=1", "--vcid=3", String.format(TYPE_FMT, type.name()));
+        assertEquals(0, exitCode);
+        ISecAssn sa = dao.getSa(id, type);
+        assertEquals(5, (byte) sa.getMapid());
+        assertEquals(1, (byte) sa.getTfvn());
+        assertEquals(3, (byte) sa.getVcid());
+
+        // Now update only tfvn, verify other fields remain unchanged
+        cmd = getCmd(new SaUpdate(), true, null, null);
+        exitCode = cmd.execute(SCID_46, SPI_1, "--tfvn=2", String.format(TYPE_FMT, type.name()));
+        assertEquals(0, exitCode);
+        sa = dao.getSa(id, type);
+        assertEquals(5, (byte) sa.getMapid());  // unchanged
+        assertEquals(2, (byte) sa.getTfvn());   // updated
+        assertEquals(3, (byte) sa.getVcid());   // unchanged
+    }
+
+    @Test
+    public void testUpdateNothingSpecified() throws KmcException {
+        testUpdateNothingSpecified(FrameType.TC);
+        testUpdateNothingSpecified(FrameType.TM);
+        testUpdateNothingSpecified(FrameType.AOS);
+    }
+
+    public void testUpdateNothingSpecified(FrameType type) throws KmcException {
+        CommandLine cmd = getCmd(new SaUpdate(), true, null, null);
+        SpiScid     id  = new SpiScid(1, (short) 46);
+        ISecAssn    sa  = dao.getSa(id, type);
+
+        // Store initial values
+        byte initialMapid = sa.getMapid();
+        byte initialTfvn = sa.getTfvn();
+        byte initialVcid = sa.getVcid();
+
+        // Execute update with no optional parameters (should trigger "nothing to update" warning)
+        int exitCode = cmd.execute(SCID_46, SPI_1, String.format(TYPE_FMT, type.name()));
+        assertEquals(0, exitCode);
+
+        // Verify values remain unchanged
+        sa = dao.getSa(id, type);
+        assertEquals(initialMapid, (byte) sa.getMapid());
+        assertEquals(initialTfvn, (byte) sa.getTfvn());
+        assertEquals(initialVcid, (byte) sa.getVcid());
+    }
+
 }

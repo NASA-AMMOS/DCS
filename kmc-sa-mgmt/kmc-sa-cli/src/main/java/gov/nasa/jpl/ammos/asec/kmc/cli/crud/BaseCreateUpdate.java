@@ -281,6 +281,21 @@ public abstract class BaseCreateUpdate extends BaseCliApp {
             mutableSa.setStmacfLen(stmacfLen);
             needsUpdate = true;
         }
+        if (tfvn != null) {
+            console(getUpdateMessage(user, "TFVN", frameType, mutableSa.getId()));
+            mutableSa.setTfvn(tfvn);
+            needsUpdate = true;
+        }
+        if (vcid != null) {
+            console(getUpdateMessage(user, "VCID", frameType, mutableSa.getId()));
+            mutableSa.setVcid(vcid);
+            needsUpdate = true;
+        }
+        if (mapId != null) {
+            console(getUpdateMessage(user, "MAPID", frameType, mutableSa.getId()));
+            mutableSa.setMapid(mapId);
+            needsUpdate = true;
+        }
         if (needsUpdate) {
             dao.updateSa(session, mutableSa);
             session.flush();

@@ -59,15 +59,6 @@ public class SaUpdate extends BaseCreateUpdate {
             }
             console(String.format("%s updating %s SA", user, frameType));
 
-            if (tfvn != null) {
-                sa.setTfvn(tfvn);
-            }
-            if (vcid != null) {
-                sa.setVcid(vcid);
-            }
-            if (mapId != null) {
-                sa.setMapid(mapId);
-            }
             try (IDbSession session = dao.newSession()) {
                 session.beginTransaction();
                 try {
