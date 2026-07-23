@@ -107,10 +107,10 @@ public class SaCreateTest extends BaseCommandLineTest {
         int expectedSize = 0;
         switch (type) {
             case AOS:
-                expectedSize = 85;
+                expectedSize = 88;
                 break;
             case TM:
-                expectedSize = 85;
+                expectedSize = 88;
                 break;
             case TC:
             default:
