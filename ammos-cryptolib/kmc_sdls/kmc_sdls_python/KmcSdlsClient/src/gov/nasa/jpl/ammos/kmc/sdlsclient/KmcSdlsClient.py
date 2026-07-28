@@ -45,12 +45,26 @@ def get_max_frame_size(type, input_byte_array) -> int:
     max_frame_size : int
         The maximum frame size.
     '''
-    # Extract GVCID from TM frame header to look up max frame size
-    # TM Primary Header format (CCSDS 132.0-B-3):
-    # Bits 0-1: TFVN, Bits 2-11: SCID (10 bits), Bits 12-14: VCID (3 bits)
-    tfvn = (input_byte_array[0] & 0xC0) >> 6
-    scid = ((input_byte_array[0] & 0x3F) << 4) | ((input_byte_array[1] & 0xF0) >> 4)
-    vcid = (input_byte_array[1] & 0x0E) >> 1
+    if type == 'tm':
+        # Extract GVCID from TM frame header to look up max frame size
+        # TM Primary Header format (CCSDS 132.0-B-3):
+        # Bits 0-1: TFVN
+        # Bits 2-11: SCID (10 bits)
+        # Bits 12-14: VCID (3 bits)
+        tfvn = (input_byte_array[0] & 0xC0) >> 6
+        scid = ((input_byte_array[0] & 0x3F) << 4) | ((input_byte_array[1] & 0xF0) >> 4)
+        vcid = (input_byte_array[1] & 0x0E) >> 1
+    elif type == 'aos':
+        # Extract GVCID from AOS frame header to look up max frame size
+        # AOS Primary Header format (CCSDS 732.0-B):
+        # Bits 0-1: TFVN (2 bits, binary '01')
+        # Bits 2-9: SCID (8 bits)
+        # Bits 10-15: VCID (6 bits)
+        tfvn = (input_byte_array[0] & 0xC0) >> 6
+        scid = ((input_byte_array[0] & 0x3F) << 2) | ((input_byte_array[1] & 0xC0) >> 6)
+        vcid = input_byte_array[1] & 0x3F
+    else:
+        raise SdlsClientException(SdlsClientException.SDLS_INITIALIZATION_ERROR, f"{type} frame type is invalid")
 
     # Build frame key to look up managed parameters
     frame_key = f"{type}.{scid}.{vcid}.{tfvn}"
