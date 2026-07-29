@@ -31,6 +31,56 @@ This module defines a pythonic library for interfacing with the kmc_python_c_sdl
 frame_global_config = {}
 
 
+def get_max_frame_size(type, input_byte_array) -> int:
+    '''
+    Get the maximum frame size for the given input byte array.
+
+    Args:
+    ----------
+    input_byte_array : bytearray
+        The input byte array to get the maximum frame size for.
+
+    Returns
+    -------
+    max_frame_size : int
+        The maximum frame size.
+    '''
+    if type == 'tm':
+        # Extract GVCID from TM frame header to look up max frame size
+        # TM Primary Header format (CCSDS 132.0-B-3):
+        # Bits 0-1: TFVN
+        # Bits 2-11: SCID (10 bits)
+        # Bits 12-14: VCID (3 bits)
+        tfvn = (input_byte_array[0] & 0xC0) >> 6
+        scid = ((input_byte_array[0] & 0x3F) << 4) | ((input_byte_array[1] & 0xF0) >> 4)
+        vcid = (input_byte_array[1] & 0x0E) >> 1
+    elif type == 'aos':
+        # Extract GVCID from AOS frame header to look up max frame size
+        # AOS Primary Header format (CCSDS 732.0-B):
+        # Bits 0-1: TFVN (2 bits, binary '01')
+        # Bits 2-9: SCID (8 bits)
+        # Bits 10-15: VCID (6 bits)
+        tfvn = (input_byte_array[0] & 0xC0) >> 6
+        scid = ((input_byte_array[0] & 0x3F) << 2) | ((input_byte_array[1] & 0xC0) >> 6)
+        vcid = input_byte_array[1] & 0x3F
+    else:
+        raise SdlsClientException(SdlsClientException.SDLS_INITIALIZATION_ERROR, f"{type} frame type is invalid")
+
+    # Build frame key to look up managed parameters
+    frame_key = f"{type}.{scid}.{vcid}.{tfvn}"
+
+    # Get max frame size from config, or use conservative fallback
+    if frame_key in frame_global_config and "max_frame_length" in frame_global_config[frame_key]:
+        max_frame_size = frame_global_config[frame_key]["max_frame_length"]
+    else:
+        raise SdlsClientException(SdlsClientException.SDLS_INITIALIZATION_ERROR, f"max_frame_length must be configured for {type}.{tfvn}.{scid}.{vcid}")
+
+    if len(input_byte_array) > max_frame_size:
+        raise SdlsClientException(SdlsClientException.PROCESS_SECURITY_EXCEPTION, f"Input frame size is {len(input_byte_array)} bytes, which is larger than configured maximum {max_frame_size} bytes for {type}.{tfvn}.{scid}.{vcid}")
+
+    return max_frame_size
+
+
 class KmcSdlsClient:
     ffi = None
     global_dict = dict()
@@ -388,6 +438,7 @@ class KmcSdlsClient:
                 frame_global_config[frame_key] = {}
                 config_key = "cryptolib." + frame_key
                 managed_parameter_max_frame_length = int(config_dict.get(config_key + ".max_frame_length", 1024))
+                frame_global_config[frame_key]["max_frame_length"] = managed_parameter_max_frame_length
                 managed_parameter_has_ecf_enum = managed_parameter_has_ecf
                 if frame_type == 'tc':
                     if managed_parameter_has_ecf:
@@ -596,10 +647,15 @@ class KmcSdlsClient:
                                       "Input Transfer Frame is not a bytearray, actual type: %s" % type(
                                           input_byte_array).__name__)
 
-        in_copy = bytearray(input_byte_array)
+        max_frame_size = get_max_frame_size("aos", input_byte_array)
+
+        # Allocate buffer with max frame size, then copy input data into it
+        in_copy = bytearray(max_frame_size)
+        in_copy[:len(input_byte_array)] = input_byte_array
+
         aos_char_in_frame = self.ffi.from_buffer(in_copy, require_writable=True)
         aos_char_star_in = aos_char_in_frame
-        aos_len_in = self.cast_uint16_t(len(aos_char_in_frame))
+        aos_len_in = self.cast_uint16_t(len(input_byte_array))
         apply_security_result = kmc_python_c_sdls_interface.lib.apply_security_aos(aos_char_star_in, aos_len_in)
         if apply_security_result != SUCCESS:
             raise SdlsClientException(SdlsClientException.APPLY_SECURITY_EXCEPTION,
@@ -622,8 +678,11 @@ class KmcSdlsClient:
             raise SdlsClientException(SdlsClientException.BAD_DATA_FORMAT,
                                       "Input Transfer Frame is not a bytearray, actual type: %s" % type(
                                           input_byte_array).__name__)
+        max_frame_size = get_max_frame_size("aos", input_byte_array)
 
-        in_copy = bytearray(input_byte_array)
+        # Allocate buffer with max frame size, then copy input data into it
+        in_copy = bytearray(max_frame_size)
+        in_copy[:len(input_byte_array)] = input_byte_array
         aos_char = self.ffi.from_buffer(in_copy, require_writable=True)
         aos_len = self.ffi.new("int *")
         aos_len[0] = len(aos_char)
@@ -698,15 +757,20 @@ class KmcSdlsClient:
                                       "Input Transfer Frame is not a bytearray, actual type: %s" % type(
                                           input_byte_array).__name__)
 
-        in_copy = bytearray(input_byte_array)
+        max_frame_size = get_max_frame_size("tm", input_byte_array)
+
+        # Allocate buffer with max frame size, then copy input data into it
+        in_copy = bytearray(max_frame_size)
+        in_copy[:len(input_byte_array)] = input_byte_array
+
         tm_char_in_frame = self.ffi.from_buffer(in_copy, require_writable=True)
         tm_char_star_in = tm_char_in_frame
-        tm_len_in = self.cast_uint16_t(len(tm_char_in_frame))
+        tm_len_in = self.cast_uint16_t(len(input_byte_array))
         apply_security_result = kmc_python_c_sdls_interface.lib.apply_security_tm(tm_char_star_in, tm_len_in)
         if apply_security_result != SUCCESS:
             raise SdlsClientException(SdlsClientException.APPLY_SECURITY_EXCEPTION,
                                       "KMC CryptoLib Apply Security Exception.", apply_security_result)
-        buf = self.ffi.buffer(tm_char_star_in, int(tm_len_in))
+        buf = self.ffi.buffer(tm_char_star_in, int(max_frame_size))
         return bytearray(buf)
 
     def process_security_tm(self, input_byte_array):
@@ -724,8 +788,11 @@ class KmcSdlsClient:
             raise SdlsClientException(SdlsClientException.BAD_DATA_FORMAT,
                                       "Input Transfer Frame is not a bytearray, actual type: %s" % type(
                                           input_byte_array).__name__)
+        max_frame_size = get_max_frame_size("tm", input_byte_array)
 
-        in_copy = bytearray(input_byte_array)
+        # Allocate buffer with max frame size, then copy input data into it
+        in_copy = bytearray(max_frame_size)
+        in_copy[:len(input_byte_array)] = input_byte_array
         tm_char = self.ffi.from_buffer(in_copy, require_writable=True)
         tm_len = self.ffi.new("int *")
         tm_len[0] = len(tm_char)
@@ -1003,7 +1070,8 @@ class FrameSecurityHeader(NamedTuple):
         if self.sn_field_len > 0:
             res.extend(self.sn)
         if self.pad_field_len > 0:
-            res.extend(self.pad)
+            # res.extend(self.pad.to_bytes(2, byteorder='big'))
+            res.extend(struct.pack('>H', self.pad))
         return res.hex()
 
 
