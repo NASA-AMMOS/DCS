@@ -76,7 +76,7 @@ def get_max_frame_size(type, input_byte_array) -> int:
         raise SdlsClientException(SdlsClientException.SDLS_INITIALIZATION_ERROR, f"max_frame_length must be configured for {type}.{tfvn}.{scid}.{vcid}")
 
     if len(input_byte_array) > max_frame_size:
-        raise SdlsClientException(SdlsClientException.PROCESS_SECURITY_EXCEPTION, f"Input frame size is {len(input_byte_array)} bytes, which is larger than configured maximum {max_frame_size} bytes for {type}.{tfvn}.{scid}.{vcid}")
+        raise SdlsClientException(SdlsClientException.PROCESS_SECURITY_EXCEPTION, f"AssertionError: 'Input frame exceeds max frame size. {len(input_byte_array)} bytes is larger than configured maximum {max_frame_size} bytes for {type}.{tfvn}.{scid}.{vcid}'")
 
     return max_frame_size
 
