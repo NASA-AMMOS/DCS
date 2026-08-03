@@ -67,7 +67,7 @@ KMC_SAMGMT_SERVICE_PORT=8447
   CFGUSR_NAME="mgsscm"
   CFGUSR_UID=59105
   CFGUSR_HOME="${PREFIX}"
-  CFGUSR_SHELL="/sbin/nologin"
+  CFGUSR_SHELL="/bin/bash"
   CFGUSR_COMMENT="KMC Configuration User"
 
   # Users Group - for CLI logging
