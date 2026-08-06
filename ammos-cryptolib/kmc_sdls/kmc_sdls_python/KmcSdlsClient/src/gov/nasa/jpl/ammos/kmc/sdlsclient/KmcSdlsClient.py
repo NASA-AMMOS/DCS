@@ -484,7 +484,7 @@ class KmcSdlsClient:
                     managed_parameter_has_ocf = int(
                         distutils.util.strtobool(config_dict.get(config_key + ".has_ocf", "false"))) + 3
 
-                    if config_dict.get(config_key + ".has_fhec", "false"):
+                    if distutils.util.strtobool(config_dict.get(config_key + ".has_fhec", "false")):
                         managed_parameter_has_fhec = kmc_python_c_sdls_interface.lib.AOS_HAS_FHEC
                         frame_global_config[frame_key]["has_fhec"] = True
                     else:
