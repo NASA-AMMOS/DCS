@@ -73,10 +73,10 @@ def get_max_frame_size(type, input_byte_array) -> int:
     if frame_key in frame_global_config and "max_frame_length" in frame_global_config[frame_key]:
         max_frame_size = frame_global_config[frame_key]["max_frame_length"]
     else:
-        raise SdlsClientException(SdlsClientException.SDLS_INITIALIZATION_ERROR, f"max_frame_length must be configured for {type}.{tfvn}.{scid}.{vcid}")
+        raise SdlsClientException(SdlsClientException.SDLS_INITIALIZATION_ERROR, f"max_frame_length must be configured for {frame_key}")
 
     if len(input_byte_array) > max_frame_size:
-        raise SdlsClientException(SdlsClientException.PROCESS_SECURITY_EXCEPTION, f"AssertionError: 'Input frame exceeds max frame size. {len(input_byte_array)} bytes is larger than configured maximum {max_frame_size} bytes for {type}.{tfvn}.{scid}.{vcid}'")
+        raise SdlsClientException(SdlsClientException.PROCESS_SECURITY_EXCEPTION, f"AssertionError: 'Input frame exceeds max frame size. {len(input_byte_array)} bytes is larger than configured maximum {max_frame_size} bytes for {frame_key}'")
 
     return max_frame_size
 
@@ -484,7 +484,7 @@ class KmcSdlsClient:
                     managed_parameter_has_ocf = int(
                         distutils.util.strtobool(config_dict.get(config_key + ".has_ocf", "false"))) + 3
 
-                    if config_dict.get(config_key + ".has_fhec", "false"):
+                    if distutils.util.strtobool(config_dict.get(config_key + ".has_fhec", "false")):
                         managed_parameter_has_fhec = kmc_python_c_sdls_interface.lib.AOS_HAS_FHEC
                         frame_global_config[frame_key]["has_fhec"] = True
                     else:
