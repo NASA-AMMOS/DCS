@@ -80,6 +80,7 @@ export default function SaTable(props) {
 
     useEffect(() => {
         (refreshTable)()
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional mount-only fetch
     }, [])
 
     /**
@@ -450,7 +451,7 @@ function SelectColumnFilter({
         >
             <MenuItem value={100}>All</MenuItem>
             {options.map((option, i) => {
-                let itemValue = null
+                let itemValue
                 switch (id) {
                     case 'saState':
                         itemValue = stateLookupInt(option)
