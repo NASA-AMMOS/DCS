@@ -42,11 +42,11 @@ test('test enc cipher hex lookup', () => {
     expect(utilities.hexEncLookup('')).toBe('')
     expect(utilities.hexEncLookup('0x00').name).toBe('None')
     expect(utilities.hexEncLookup('0x01').name).toBe('AES256-GCM')
-    expect(utilities.hexEncLookup('0x02')).toBe('0x02')
+    expect(utilities.hexEncLookup('0x02').name).toBe('AES256-CBC')
     expect(utilities.hexEncLookup('0x')).toBe('0x')
     expect(utilities.hexEncLookup('0x00').name).toBe('None')
     expect(utilities.hexEncLookup('0x01').name).toBe('AES256-GCM')
-    expect(utilities.hexEncLookup('0x02')).toBe('0x02')
+    expect(utilities.hexEncLookup('0x02').name).toBe('AES256-CBC')
     expect(utilities.hexAuthLookup('hi there')).toBe('')
 })
 

@@ -139,23 +139,23 @@ export default function SaTableAppBar({
         refreshTable()
     }
 
-    let tmChecked = true
-    let tcChecked = true
-    let aosChecked = true
+    const [tmChecked, setTmChecked] = useState(true)
+    const [tcChecked, setTcChecked] = useState(true)
+    const [aosChecked, setAosChecked] = useState(true)
 
     /**
      * Upload CSV file
      */
     const uploadCsv = () => {
-        type = []
+        const frameTypes = []
         if (tmChecked) {
-            type.push('TM')
+            frameTypes.push('TM')
         }
         if (tcChecked) {
-            type.push('TC')
+            frameTypes.push('TC')
         }
         if (aosChecked) {
-            type.push('AOS')
+            frameTypes.push('AOS')
         }
         const formData = new FormData()
         formData.append("file",
@@ -163,7 +163,7 @@ export default function SaTableAppBar({
             selectedFile.name)
         formData.append("force",
             replaceExisting)
-        bulkCreate(type,
+        bulkCreate(frameTypes,
             formData,
             setProgress,
             uploadRespCallback,
@@ -193,17 +193,17 @@ export default function SaTableAppBar({
         switch (value) {
             case "TM": {
                 console.log(`changing tm to ${checked}`)
-                tmChecked = checked
+                setTmChecked(checked)
                 break
             }
             case "AOS": {
                 console.log(`changing aos to ${checked}`)
-                aosChecked = checked
+                setAosChecked(checked)
                 break
             }
             case "TC": {
                 console.log(`changing tc to ${checked}`)
-                tcChecked = checked
+                setTcChecked(checked)
                 break
             }
         }
@@ -332,11 +332,11 @@ export default function SaTableAppBar({
                                 <Container>
                                     <Typography variant={'h6'} sx={{textAlign: 'center'}}>Frame Types</Typography>
                                     <FormGroup sx={{position: 'flex', flexDirection: 'row', justifyContent: 'center'}}>
-                                        <FormControlLabel control={<Checkbox defaultChecked/>} value={"TC"} label={"TC"}
+                                        <FormControlLabel control={<Checkbox checked={tcChecked}/>} value={"TC"} label={"TC"}
                                                           onChange={handleFrameTypeCheckbox}/>
-                                        <FormControlLabel control={<Checkbox defaultChecked/>} value={"TM"} label={"TM"}
+                                        <FormControlLabel control={<Checkbox checked={tmChecked}/>} value={"TM"} label={"TM"}
                                                           onChange={handleFrameTypeCheckbox}/>
-                                        <FormControlLabel control={<Checkbox defaultChecked/>} value={"AOS"}
+                                        <FormControlLabel control={<Checkbox checked={aosChecked}/>} value={"AOS"}
                                                           label={"AOS"}
                                                           onChange={handleFrameTypeCheckbox}/>
                                     </FormGroup>
