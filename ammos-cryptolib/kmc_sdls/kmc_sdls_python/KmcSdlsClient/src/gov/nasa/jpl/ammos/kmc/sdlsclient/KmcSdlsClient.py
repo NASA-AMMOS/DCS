@@ -13,6 +13,8 @@
 #
 
 
+import ctypes
+import ctypes.util
 import distutils.util
 import os.path
 import re
@@ -22,6 +24,42 @@ from typing import NamedTuple
 import kmc_python_c_sdls_interface
 
 SUCCESS = 0
+
+# CryptoLib's in-place AOS/TM ApplySecurity functions validate the caller-supplied
+# buffer's true capacity via malloc_usable_size()/malloc_size(), which only returns
+# a correct value for pointers returned directly by the system allocator. A CPython
+# bytearray's backing storage is served out of pymalloc's small-object pools for
+# sizes below ~512 bytes and is therefore NOT such a pointer, which causes that
+# capacity check to read unrelated allocator metadata and intermittently fail for
+# small frames. To satisfy that contract, the working buffer handed across the FFI
+# boundary must be allocated with a genuine top-level libc malloc() call.
+_libc = ctypes.CDLL(ctypes.util.find_library("c"))
+_libc.malloc.restype = ctypes.c_void_p
+_libc.malloc.argtypes = [ctypes.c_size_t]
+_libc.free.argtypes = [ctypes.c_void_p]
+
+
+def _malloc_native_buffer(input_byte_array, capacity):
+    '''
+    Allocate a zero-filled, native malloc()'d buffer of the given capacity and
+    copy input_byte_array into the front of it. Returns the raw address (int).
+    Caller is responsible for freeing the buffer with _free_native_buffer().
+    '''
+    if len(input_byte_array) > capacity:
+        raise SdlsClientException(
+            SdlsClientException.BAD_DATA_FORMAT,
+            "Input Transfer Frame length (%d) exceeds max frame size (%d)" % (len(input_byte_array), capacity))
+    address = _libc.malloc(capacity)
+    if not address:
+        raise MemoryError("Failed to allocate native buffer of size %d" % capacity)
+    ctypes.memset(address, 0, capacity)
+    if len(input_byte_array) > 0:
+        ctypes.memmove(address, bytes(input_byte_array), len(input_byte_array))
+    return address
+
+
+def _free_native_buffer(address):
+    _libc.free(address)
 
 """
 This module defines a pythonic library for interfacing with the kmc_python_c_sdls_interface
@@ -649,19 +687,21 @@ class KmcSdlsClient:
 
         max_frame_size = get_max_frame_size("aos", input_byte_array)
 
-        # Allocate buffer with max frame size, then copy input data into it
-        in_copy = bytearray(max_frame_size)
-        in_copy[:len(input_byte_array)] = input_byte_array
-
-        aos_char_in_frame = self.ffi.from_buffer(in_copy, require_writable=True)
-        aos_char_star_in = aos_char_in_frame
-        aos_len_in = self.cast_uint16_t(len(input_byte_array))
-        apply_security_result = kmc_python_c_sdls_interface.lib.apply_security_aos(aos_char_star_in, aos_len_in)
-        if apply_security_result != SUCCESS:
-            raise SdlsClientException(SdlsClientException.APPLY_SECURITY_EXCEPTION,
-                                      "KMC CryptoLib Apply Security Exception.", apply_security_result)
-        buf = self.ffi.buffer(aos_char_star_in, int(aos_len_in))
-        return bytearray(buf)
+        # Allocate a native malloc()'d buffer with max frame size, then copy input data into it.
+        # See _malloc_native_buffer for why this must be a real malloc() allocation rather than
+        # a Python bytearray.
+        raw_address = _malloc_native_buffer(input_byte_array, max_frame_size)
+        try:
+            aos_char_star_in = self.ffi.cast("uint8_t *", raw_address)
+            aos_len_in = self.cast_uint16_t(len(input_byte_array))
+            apply_security_result = kmc_python_c_sdls_interface.lib.apply_security_aos(aos_char_star_in, aos_len_in)
+            if apply_security_result != SUCCESS:
+                raise SdlsClientException(SdlsClientException.APPLY_SECURITY_EXCEPTION,
+                                          "KMC CryptoLib Apply Security Exception.", apply_security_result)
+            buf = self.ffi.buffer(aos_char_star_in, int(aos_len_in))
+            return bytearray(buf)
+        finally:
+            _free_native_buffer(raw_address)
 
     def process_security_aos(self, input_byte_array):
         '''
@@ -759,19 +799,21 @@ class KmcSdlsClient:
 
         max_frame_size = get_max_frame_size("tm", input_byte_array)
 
-        # Allocate buffer with max frame size, then copy input data into it
-        in_copy = bytearray(max_frame_size)
-        in_copy[:len(input_byte_array)] = input_byte_array
-
-        tm_char_in_frame = self.ffi.from_buffer(in_copy, require_writable=True)
-        tm_char_star_in = tm_char_in_frame
-        tm_len_in = self.cast_uint16_t(len(input_byte_array))
-        apply_security_result = kmc_python_c_sdls_interface.lib.apply_security_tm(tm_char_star_in, tm_len_in)
-        if apply_security_result != SUCCESS:
-            raise SdlsClientException(SdlsClientException.APPLY_SECURITY_EXCEPTION,
-                                      "KMC CryptoLib Apply Security Exception.", apply_security_result)
-        buf = self.ffi.buffer(tm_char_star_in, int(max_frame_size))
-        return bytearray(buf)
+        # Allocate a native malloc()'d buffer with max frame size, then copy input data into it.
+        # See _malloc_native_buffer for why this must be a real malloc() allocation rather than
+        # a Python bytearray.
+        raw_address = _malloc_native_buffer(input_byte_array, max_frame_size)
+        try:
+            tm_char_star_in = self.ffi.cast("uint8_t *", raw_address)
+            tm_len_in = self.cast_uint16_t(len(input_byte_array))
+            apply_security_result = kmc_python_c_sdls_interface.lib.apply_security_tm(tm_char_star_in, tm_len_in)
+            if apply_security_result != SUCCESS:
+                raise SdlsClientException(SdlsClientException.APPLY_SECURITY_EXCEPTION,
+                                          "KMC CryptoLib Apply Security Exception.", apply_security_result)
+            buf = self.ffi.buffer(tm_char_star_in, int(max_frame_size))
+            return bytearray(buf)
+        finally:
+            _free_native_buffer(raw_address)
 
     def process_security_tm(self, input_byte_array):
         '''
