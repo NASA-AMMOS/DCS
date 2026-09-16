@@ -28,3 +28,4 @@ jobs:
         with:
           fail-on-severity: moderate
           comment-summary-in-pr: always
+          allow-dependencies-licenses: 'pkg:githubactions/actions/checkout, pkg:githubactions/actions/setup-java'
