@@ -115,7 +115,19 @@ In the list of parameters below, [REQUIRED] denotes configuration parameters tha
   allowed to access the DCS SDLS Service via mutual TLS authentication.  Not required if DISABLE_MTLS is true (1).
   Configuration Paths:
     [SECRET] - tls_mtls_truststore
-    [ENV]    - TLS_MTLS_TRUSTSTOR (*MUST be base64 encoded*)E
+    [ENV]    - TLS_MTLS_TRUSTSTORE (*MUST be base64 encoded*)
+
+- MTLS Client Cert [REQUIRED] [SENSITIVE]
+  X.509-formatted file containing a certificate listed in the MTLS Truststore.  Required for the SDLS service to connect to the Crypto Service when MTLS is enabled.  Not required if DISABLE_MTLS is true (1).
+  Configuration Paths:
+    [SECRET] = tls_mtls_cert
+    [ENV]    - TLS_MTLS_CERT
+
+- MTLS Client Key [REQUIRED] [SENSITIVE]
+  X.509-formatted file containing the key for the MTLS Client Cert certificate listed in the MTLS Truststore.  Required for the SDLS service to connect to the Crypto Service when MTLS is enabled.  Not required if DISABLE_MTLS is true (1).
+  Configuration Paths:
+    [SECRET] = tls_mtls_key
+    [ENV]    - TLS_MTLS_KEY
 
 ### SDLS Configuration Parameters
 - Crypto Service Fully-Qualified Domain Name [REQUIRED]

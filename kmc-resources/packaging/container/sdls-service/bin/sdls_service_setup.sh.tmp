@@ -200,6 +200,47 @@ if [ $DISABLE_SRV_MTLS -eq 0 ]; then
     /bin/chmod 440 /etc/pki/tls/private/ammos-mtls-truststore.jks
   fi
 
+  # mtls-cert.pem - needed for MTLS operation with the Crypto Service
+  if [ ! -r "/etc/pki/tls/private/mtls-cert.pem" ]; then
+    if [ -r /run/secrets/tls_mtls_cert ]; then
+      echo "Using mtls-cert.pem provided as tls_mtls_cert secret." >&2
+      /bin/cp /run/secrets/tls_mtls_cert /etc/pki/tls/private/mtls-cert.pem
+    elif [ -n "${TLS_MTLS_CERT}" ]; then
+      echo "Using mtls-cert.pem provided as TLS_MTLS_CERT env variable." >&2
+      echo "${TLS_MTLS_CERT}" > /etc/pki/tls/private/mtls-cert.pem
+    else
+      echo "ERROR: tls_mtls_cert or TLS_MTLS_CERT not provided - required for operation." >&2
+      if [ -n "${DEBUG}" ]; then
+        debug
+      else
+        exit 1
+      fi
+    fi
+    /bin/chown root:crypto /etc/pki/tls/private/mtls-cert.pem
+    /bin/chmod 440 /etc/pki/tls/private/mtls-cert.pem
+  fi
+
+  # mtls-key.pem - needed for MTLS operation with the Crypto Service
+  if [ ! -r "/etc/pki/tls/private/mtls-key.pem" ]; then
+    if [ -r /run/secrets/tls_mtls_key ]; then
+      echo "Using mtls-key.pem provided as tls_mtls_key secret." >&2
+      /bin/cp /run/secrets/tls_mtls_key /etc/pki/tls/private/mtls-key.pem
+    elif [ -n "${TLS_MTLS_KEY}" ]; then
+      echo "Using mtls-key.pem provided as TLS_MTLS_KEY env variable." >&2
+      echo "${TLS_MTLS_KEY}" > /etc/pki/tls/private/mtls-key.pem
+    else
+      echo "ERROR: tls_mtls_key or TLS_MTLS_KEY not provided - required for operation." >&2
+      if [ -n "${DEBUG}" ]; then
+        debug
+      else
+        exit 1
+      fi
+    fi
+    /bin/chown root:crypto /etc/pki/tls/private/mtls-key.pem
+    /bin/chmod 440 /etc/pki/tls/private/mtls-key.pem
+  fi
+
+
 fi
 
 echo '-------------------------------'
@@ -235,7 +276,9 @@ if [ ! -r "${SVC_CFG_DIR}/.props.configured" ]; then
   fi
 
   /bin/sed -i -e "s|^#cryptolib.sadb.mariadb.fqdn=.*|cryptolib.sadb.mariadb.fqdn=${SADB_FQDN}|" "${SVC_PROPS}"
-  /bin/sed -i -e "s|^#cryptolib.crypto.kmccryptoservice.fqdn=localhost|cryptolib.crypto.kmccryptoservice.fqdn=${CRYPTO_FQDN}|" "${SVC_PROPS}"
+  /bin/sed -i -e "s|^#cryptolib.crypto.kmccryptoservice.fqdn=crypto123.example.com|cryptolib.crypto.kmccryptoservice.fqdn=${CRYPTO_FQDN}|" "${SVC_PROPS}"
+  /bin/sed -i -e 's|^#cryptolib.crypto.kmccryptoservice.mtls.clientcert=.*$|cryptolib.crypto.kmccryptoservice.mtls.clientcert=/etc/pki/tls/private/mtls-cert.pem|' "${SVC_PROPS}"
+  /bin/sed -i -e 's|^#cryptolib.crypto.kmccryptoservice.mtls.clientkey=.*$|cryptolib.crypto.kmccryptoservice.mtls.clientkey=/etc/pki/tls/private/mtls-key.pem|' "${SVC_PROPS}"
 
   if [ "${KEYSTORE_FORMAT}" == "PKCS12" ]; then
     /bin/sed -i -e "s|^#server.ssl.key-store=.*|server.ssl.key-store=/etc/pki/tls/private/ammos-server-keystore.${KEYSTORE_FILE_EXT}|" "${SVC_PROPS}"
@@ -249,6 +292,8 @@ if [ ! -r "${SVC_CFG_DIR}/.props.configured" ]; then
     echo "Disabling mTLS in SDLS Service Tomcat & using ammos-truststore.jks"
     /bin/sed -i -e "s|^#server.ssl.client-auth=.*|server.ssl.client-auth=NONE|" "$SVC_PROPS}"
     /bin/sed -i -e "s|^#server.ssl.trust-store=.*|server.ssl.trust-store=/etc/pki/tls/certs/ammos-truststore.jks|" "$SVC_PROPS}"
+  /bin/sed -i -e 's|^cryptolib.crypto.kmccryptoservice.mtls.clientcert=|#cryptolib.crypto.kmccryptoservice.mtls.clientcert=|' "${SVC_PROPS}"
+  /bin/sed -i -e 's|^cryptolib.crypto.kmccryptoservice.mtls.clientkey=|#cryptolib.crypto.kmccryptoservice.mtls.clientkey=|' "${SVC_PROPS}"
   fi
 
   if [ -z "${CREATE_ECF}" ]; then
