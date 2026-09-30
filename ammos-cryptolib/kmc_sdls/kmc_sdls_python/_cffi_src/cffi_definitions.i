@@ -24,12 +24,14 @@ typedef struct
     uint8_t stmacf_len : 8;
     uint8_t ecs;
     uint8_t ecs_len : 8;
+    uint8_t null_iv : 1;
     uint8_t iv[16];
     uint8_t iv_len;
     uint8_t acs_len : 8;
     uint8_t acs;
     uint16_t abm_len : 16;
     uint8_t abm[1786];
+    uint8_t null_arsn : 1;
     uint8_t arsn_len : 8;
     uint8_t arsn[20];
     uint8_t arsnw_len : 8;
@@ -544,6 +546,18 @@ typedef enum
     CRYPTO_CIPHER_AES256_CCM,
     CRYPTO_CIPHER_AES256_GCM_SIV
 } EncCipherSuite;
+
+typedef enum
+{
+    IV_NULL_FALSE = 0,
+    IV_NULL_TRUE
+} SaNullIv;
+
+typedef enum
+{
+    ARSN_NULL_FALSE = 0,
+    ARSN_NULL_TRUE
+} SaNullArsn;
 
 typedef struct
 {
