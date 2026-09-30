@@ -296,7 +296,7 @@ if [ ! -r "${SVC_CFG_DIR}/.props.configured" ]; then
   /bin/sed -i -e 's|^cryptolib.crypto.kmccryptoservice.mtls.clientkey=|#cryptolib.crypto.kmccryptoservice.mtls.clientkey=|' "${SVC_PROPS}"
   fi
 
-  if [ -z "${CREATE_ECF}" ]; then
+  if [ -z "${CREATE_ECF}" -o "${CREATE_ECF},," == "true" ]; then
     CREATE_ECF='true'
   fi
   /bin/sed -i -e "s|^#cryptolib.apply_tc.create_ecf=.*|cryptolib.apply_tc.create_ecf=${CREATE_ECF}|" "${SVC_PROPS}"
@@ -306,25 +306,25 @@ if [ ! -r "${SVC_CFG_DIR}/.props.configured" ]; then
   fi
   /bin/sed -i -e "s|^#cryptolib.tc.vcid_bitmask=.*|cryptolib.tc.vcid_bitmask=${VCID_BITMASK}|" "${SVC_PROPS}"
 
-  if [ -z "${IGNORE_ANTIREPLAY}" ]; then
-    IGNORE_ANTIREPLAY='true'
+  if [ -z "${IGNORE_ANTIREPLAY}" -o "${IGNORE_ANTIREPLAY,,}" == "false" ]; then
+    IGNORE_ANTIREPLAY='false'
   fi
-  /bin/sed -i -e "s|^#cryptolib.process_tc.ignore_antireplay=.*|cryptolib.process_tc.ignore_antireplay=${IGNORE_ANTIREPLAY}|" "${SVC_PROPS}"
+  /bin/sed -i -e "s|^#cryptolib.tc.ignore_antireplay=.*|cryptolib.tc.ignore_antireplay=${IGNORE_ANTIREPLAY}|" "${SVC_PROPS}"
 
-  if [ -z "${IGNORE_SA_STATE}" ]; then
-    IGNORE_SA_STATE='true'
+  if [ -z "${IGNORE_SA_STATE}" -o "${IGNORE_SA_STATE,,}" == "false" ]; then
+    IGNORE_SA_STATE='false'
   fi
-  /bin/sed -i -e "s|^#cryptolib.process_tc.ignore_sa_state=.*|cryptolib.process_tc.ignore_sa_state=${IGNORE_SA_STATE}|" "${SVC_PROPS}"
+  /bin/sed -i -e "s|^#cryptolib.tc.ignore_sa_state=.*|cryptolib.tc.ignore_sa_state=${IGNORE_SA_STATE}|" "${SVC_PROPS}"
 
-  if [ -z "${PROCESS_PDUS}" ]; then
+  if [ -z "${PROCESS_PDUS}" -o "${PROCESS_PDUS,,}" == "false" ]; then
     PROCESS_PDUS='false'
   fi
-  /bin/sed -i -e "s|^#cryptolib.process_tc.process_pdus=.*|cryptolib.process_tc.process_pdus=${PROCESS_PDUS}|" "${SVC_PROPS}"
+  /bin/sed -i -e "s|^#cryptolib.tc.process_pdus=.*|cryptolib.tc.process_pdus=${PROCESS_PDUS}|" "${SVC_PROPS}"
 
-  if [ -z "${CHECK_FECF}" ]; then
+  if [ -z "${CHECK_FECF}" -o "${CHECK_FECF,,}" == "false" ]; then
     CHECK_FECF='false'
   fi
-  /bin/sed -i -e "s|^#cryptolib.process_tc.check_fecf=.*|cryptolib.process_tc.check_fecf=${CHECK_FECF}|" "${SVC_PROPS}"
+  /bin/sed -i -e "s|^#cryptolib.tc.check_fecf=.*|cryptolib.tc.check_fecf=${CHECK_FECF}|" "${SVC_PROPS}"
 
   if [ -n "${MANAGED_PARAMS}" ]; then
     /bin/echo "" >> "${SVC_PROPS}"
