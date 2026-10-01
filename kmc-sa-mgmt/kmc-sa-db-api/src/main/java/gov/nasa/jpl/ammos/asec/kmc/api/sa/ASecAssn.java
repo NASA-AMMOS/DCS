@@ -62,6 +62,7 @@ abstract class ASecAssn implements ISecAssn {
     // encryption cipher suite (algorithm / mode id)
     @JsonSerialize(using = ByteArraySerializer.class)
     @JsonDeserialize(using = ByteArrayDeserializer.class)
+    @Column(name = "ecs", nullable = false)
     private              byte[]       ecs       = ECSTYPE.AES_GCM.getValue();
     // initialization vector len
     @Column(name = "iv_len")
@@ -78,6 +79,7 @@ abstract class ASecAssn implements ISecAssn {
     // authentication cipher suite (algorithm / mode id)
     @JsonSerialize(using = ByteArraySerializer.class)
     @JsonDeserialize(using = ByteArrayDeserializer.class)
+    @Column(name = "acs", nullable = false)
     private              byte[]       acs       = new byte[]{0x00};
     // authentication bit mask len
     @Column(name = "abm_len")
@@ -85,7 +87,7 @@ abstract class ASecAssn implements ISecAssn {
     // authentication bit mask (primary header through security header)
     @JsonSerialize(using = ByteArraySerializer.class)
     @JsonDeserialize(using = ByteArrayDeserializer.class)
-    @Column(name = "abm")
+    @Column(name = "abm", nullable = false)
     private              byte[]       abm       = new byte[]{0x00,
             0x00,
             (byte) 0xFC,
@@ -111,6 +113,7 @@ abstract class ASecAssn implements ISecAssn {
     // anti replay counter
     @JsonSerialize(using = ByteArraySerializer.class)
     @JsonDeserialize(using = ByteArrayDeserializer.class)
+    @Column(name = "arsn", nullable = false)
     private              byte[]       arsn      = new byte[]{0x00,
             0x00,
             0x00,

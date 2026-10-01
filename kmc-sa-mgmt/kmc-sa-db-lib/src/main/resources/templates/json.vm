@@ -1,6 +1,6 @@
 ## @vtlvariable name="Utilities" type="gov.nasa.jpl.ammos.asec.kmc.format.Utilities" ##
 ## @vtlvariable name="saList" type="java.util.ArrayList<gov.nasa.jpl.ammos.asec.kmc.api.sa.SecAssn>" ##
-{
+[
 #foreach($sa in $saList)
     {
         "spi": $!sa.getSpi(),
@@ -27,8 +27,8 @@
         "arsn_len": $!sa.getArsnLen(),
         "arsn": "$Utilities.getHex($!sa.getArsn())",
         "arsnw": $!sa.getArsnw(),
-        "type": $!sa.getType().name()
-    }
-}
+        "type": "$!sa.getType().name()"
+    }#if($foreach.hasNext),#end
+
 #end
-}
+]

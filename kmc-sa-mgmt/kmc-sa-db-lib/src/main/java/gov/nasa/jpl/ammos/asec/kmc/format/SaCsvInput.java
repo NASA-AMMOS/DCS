@@ -99,9 +99,9 @@ public class SaCsvInput {
             sa.setShsnfLen(parseShort(rec.get("shsnf_len")));
             sa.setShplfLen(parseShort(rec.get("shplf_len")));
             sa.setStmacfLen(parseShort(rec.get("stmacf_len")));
-            Short  ecsLen = (short) 1;
             String ecsStr = rec.get("ecs");
             byte[] ecs    = checkNullValue(ecsStr) ? null : parseHex(ecsStr);
+            Short  ecsLen = getLen(rec, "ecs_len", ecs, (short) 1);
             sa.setEcs(ecsLen, ecs);
             String ekid = rec.get("ekid");
             sa.setEkid(checkNullValue(ekid) ? null : ekid);
@@ -111,7 +111,7 @@ public class SaCsvInput {
             sa.setIv(ivLen, iv);
             String acsStr   = rec.get("acs");
             byte[] acsBytes = checkNullValue(acsStr) ? null : parseHex(acsStr);
-            Short  acsLen   = (short) 1;
+            Short  acsLen   = getLen(rec, "acs_len", acsBytes, (short) 1);
             sa.setAcs(acsLen, acsBytes);
             String akid = rec.get("akid");
             sa.setAkid(checkNullValue(akid) ? null : akid);
@@ -129,6 +129,16 @@ public class SaCsvInput {
             LOG.error("Error parsing a number value on line {}, skipping", rec.getRecordNumber() + 1);
             return null;
         }
+    }
+
+    private Short getLen(CSVRecord rec, String column, byte[] bytes, Short defaultValue) {
+        if (rec.isMapped(column)) {
+            Short len = parseShort(rec.get(column));
+            if (len != null) {
+                return len;
+            }
+        }
+        return bytes != null ? (short) bytes.length : defaultValue;
     }
 
     private ServiceType getServiceType(CSVRecord rec) throws KmcException {

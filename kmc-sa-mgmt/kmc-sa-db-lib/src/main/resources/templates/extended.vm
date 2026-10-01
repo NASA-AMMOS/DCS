@@ -1,6 +1,6 @@
 ## @vtlvariable name="Utilities" type="gov.nasa.jpl.ammos.asec.kmc.format.Utilities" ##
 ## @vtlvariable name="saList" type="java.util.ArrayList<gov.nasa.jpl.ammos.asec.kmc.api.sa.SecAssn>" ##
-"spi","scid","vcid","tfvn","mapid","sa_state","st","shivf_len","shsnf_len","shplf_len","stmacf_len","ecs","ekid","iv_len","iv","acs","akid","abm_len","abm","arsn_len","arsn","arsnw","type"
+"spi","scid","vcid","tfvn","mapid","sa_state","st","shivf_len","shsnf_len","shplf_len","stmacf_len","ecs_len","ecs","ekid","iv_len","iv","acs_len","acs","akid","abm_len","abm","arsn_len","arsn","arsnw","type"
 #foreach($sa in $saList)
-"$!sa.getSpi()","$!sa.getScid()","$!sa.getVcid()","$!sa.getTfvn()","$!sa.getMapid()","$!sa.getSaState()","$!sa.getServiceType()","$!sa.getShivfLen()","$!sa.getShsnfLen()","$!sa.getShplfLen()","$!sa.getStmacfLen()","$Utilities.getHex($!sa.getEcs())","$!sa.getEkid()","$!sa.getIvLen()","$Utilities.getHex($!sa.getIv())","$Utilities.getHex($!sa.getAcs())","$!sa.getAkid()","$!sa.getAbmLen()","$Utilities.getHex($!sa.getAbm())","$!sa.getArsnLen()","$Utilities.getHex($!sa.getArsn())","$!sa.getArsnw()","$!sa.getType().name()"
+"$!sa.getSpi()","$!sa.getScid()","$!sa.getVcid()","$!sa.getTfvn()","$!sa.getMapid()","$!sa.getSaState()","$!sa.getServiceType()","$!sa.getShivfLen()","$!sa.getShsnfLen()","$!sa.getShplfLen()","$!sa.getStmacfLen()","$!sa.getEcsLen()","$Utilities.getHex($!sa.getEcs())","$!sa.getEkid()","$!sa.getIvLen()","$Utilities.getHex($!sa.getIv())","$!sa.getAcsLen()","$Utilities.getHex($!sa.getAcs())","$!sa.getAkid()","$!sa.getAbmLen()","$Utilities.getHex($!sa.getAbm())","$!sa.getArsnLen()","$Utilities.getHex($!sa.getArsn())","$!sa.getArsnw()","$!sa.getType().name()"
 #end

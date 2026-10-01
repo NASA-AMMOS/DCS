@@ -1,9 +1,9 @@
 # DCS SA Management GUI
 
-Provides a Web GUI for managing the Security Association Database (SADB) for command and telemetry encryption/authentication cpaabilities provided by DCS.
+Provides a Web GUI for managing the Security Association Database (SADB) for command and telemetry encryption/authentication capabilities provided by DCS.
 
 - Spring Boot web service
-- React frontend (CRA)
+- React frontend (Vite)
 
 ## Requirements
 
@@ -67,7 +67,7 @@ yarn install
 #### Run
 
 ```
-yarn run start
+yarn run dev
 ```
 
-The development server will start by default on `localhost:3001`, and the backend will likely be running on `localhost:8080`. To properly route backend calls to `localhost:3001/api` to `localhost:8080/api`, a development proxy is configured in `frontend/src/setupProxy.js`.
+The development server will start by default on `localhost:3001`, and the backend will likely be running on `localhost:8447`. Calls to `localhost:3001/api` are proxied to `localhost:8447/sa-mgmt/api` via the `server.proxy` config in `vite.config.js`.

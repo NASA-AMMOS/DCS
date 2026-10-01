@@ -1,5 +1,0 @@
-## @vtlvariable name="saList" type="java.util.ArrayList<gov.nasa.jpl.ammos.asec.kmc.api.sa.SecAssn>" ##
-"spi","scid","vcid","tfvn","mapid","sa_state","ekid","est","akid","ast","type"
-#foreach($sa in $saList)
-"$!sa.getSpi()","$!sa.getScid()","$!sa.getVcid()","$!sa.getTfvn()","$!sa.getMapid()","$!sa.getSaState()","$!sa.getEkid()","$!sa.getEst()","$!sa.getAkid()","$!sa.getAst()","$!sa.getType().name()"
-#end

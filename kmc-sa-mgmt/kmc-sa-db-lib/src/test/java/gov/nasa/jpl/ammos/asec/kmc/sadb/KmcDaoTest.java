@@ -9,8 +9,10 @@ import gov.nasa.jpl.ammos.asec.kmc.api.sa.SecAssnAos;
 import gov.nasa.jpl.ammos.asec.kmc.api.sa.SecAssnTm;
 import gov.nasa.jpl.ammos.asec.kmc.api.sa.SpiScid;
 import gov.nasa.jpl.ammos.asec.kmc.api.sadb.IDbSession;
+import gov.nasa.jpl.ammos.asec.kmc.format.SaCsvInput;
 import org.junit.Test;
 
+import java.io.StringReader;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -492,5 +494,29 @@ public class KmcDaoTest extends BaseH2Test {
     @Test
     public void testRollbackUpdateTm() throws KmcException {
         rollbackUpdate(FrameType.TM);
+    }
+
+    @Test
+    public void testImportCsvBlankArsnDoesNotViolateNotNullConstraint() throws KmcException {
+        String header =
+                "spi,scid,vcid,tfvn,mapid,sa_state,st,shivf_len,shsnf_len,shplf_len,stmacf_len,ecs,ekid,iv_len,iv," +
+                        "acs,akid,abm_len,abm,arsn_len,arsn,arsnw,type";
+        // test blank/'0x' ARSN with arsn_len=0
+        String csv = header + "\n"
+                + "50,99,0,0,0,3,3,12,0,0,16,0x01,kmc/test/KEY130,12,0x000000000000000000000001,0x00,,19,"
+                + "0x00000000000000000000000000000000000000,0,0x,5,tc";
+
+        List<ISecAssn> parsed = new SaCsvInput().parseCsv(new StringReader(csv), FrameType.ALL);
+        assertEquals(1, parsed.size());
+        ISecAssn sa = parsed.get(0);
+        assertNotNull("parsed ARSN must not be null before persisting", sa.getArsn());
+
+        dao.createSa(sa);
+
+        ISecAssn persisted = dao.getSa(new SpiScid(50, (short) 99), FrameType.TC);
+        assertNotNull(persisted);
+        assertNotNull(persisted.getArsn());
+        assertArrayEquals(new byte[]{}, persisted.getArsn());
+        assertEquals((short) 0, (short) persisted.getArsnLen());
     }
 }
