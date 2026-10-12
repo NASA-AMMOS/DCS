@@ -325,32 +325,32 @@ def print_tc(frame):
 
 def print_aos(frame):
     print("header: ", frame.aos_header.hex())
-    print("header len: ", len(frame.aos_header.hex()) / 2)
+    print("header len: ", len(frame.aos_header.hex()) // 2)
     print("sec header: ", frame.aos_security_header.hex())
-    print("sec header len: ", len(frame.aos_security_header.hex()) / 2)
+    print("sec header len: ", len(frame.aos_security_header.hex()) // 2)
     print("PDU: ", frame.aos_pdu.hex())
-    print("PDU len: ", len(frame.aos_pdu.hex()) / 2)
+    print("PDU len: ", len(frame.aos_pdu.hex()) // 2)
     print("sec trailer: ", frame.aos_security_trailer.hex())
-    print("sec trailer len: ", len(frame.aos_security_trailer.hex()) / 2)
+    print("sec trailer len: ", len(frame.aos_security_trailer.hex()) // 2)
     print("MAC: ", frame.aos_security_trailer.mac.hex())
     print("FECF: ", hex(frame.aos_security_trailer.fecf))
     print("frame: ", frame.hex())
-    print("frame len: ", len(frame.hex()) / 2)
+    print("frame len: ", len(frame.hex()) // 2)
 
 
 def print_tm(frame):
     print("header: ", frame.tm_header.hex())
-    print("header len: ", len(frame.tm_header.hex()) / 2)
+    print("header len: ", len(frame.tm_header.hex()) // 2)
     print("sec header: ", frame.tm_security_header.hex())
-    print("sec header len: ", len(frame.tm_security_header.hex()) / 2)
+    print("sec header len: ", len(frame.tm_security_header.hex()) // 2)
     print("PDU: ", frame.tm_pdu.hex())
-    print("PDU len: ", len(frame.tm_pdu.hex()) / 2)
+    print("PDU len: ", len(frame.tm_pdu.hex()) // 2)
     print("sec trailer: ", frame.tm_security_trailer.hex())
-    print("sec trailer len: ", len(frame.tm_security_trailer.hex()) / 2)
+    print("sec trailer len: ", len(frame.tm_security_trailer.hex()) // 2)
     print("MAC: ", frame.tm_security_trailer.mac.hex())
     print("FECF: ", hex(frame.tm_security_trailer.fecf))
     print("frame: ", frame.hex())
-    print("frame len: ", len(frame.hex()) / 2)
+    print("frame len: ", len(frame.hex()) // 2)
 
 
 if __name__ == "__main__":
