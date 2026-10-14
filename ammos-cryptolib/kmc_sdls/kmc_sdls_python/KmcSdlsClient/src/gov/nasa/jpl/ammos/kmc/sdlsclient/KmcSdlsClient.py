@@ -391,7 +391,7 @@ class KmcSdlsClient:
 
         # Add some cert file existence sanity checks
         if (
-                cryptolib_crypto_type == 2):  # KMC Crypto Service -- verify mTLS certs! (mtls is only supported KMC Crypto Connection type as of now)
+                cryptolib_crypto_type == 2 and kmc_crypto_protocol.lower() != "http"):  # KMC Crypto Service -- verify mTLS certs! (mtls is only supported KMC Crypto Connection type as of now)
             kmc_crypto_mtls_ca_bundle = config_dict.get(kmc_crypto_mtls_cacert_property_key,
                                                         "/etc/pki/tls/certs/ammos-ca-bundle.crt")
             kmc_crypto_mtls_ca_bundle_ffi = self._ffi_null_or_char(kmc_crypto_mtls_ca_bundle)
