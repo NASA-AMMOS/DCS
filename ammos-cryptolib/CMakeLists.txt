@@ -53,35 +53,20 @@ set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib")
 set(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR}/install) #install to root project dir
 
 
-# 2025-04-16 - aruty 
+# 2025-04-16 - aruty
 # Override crypto_config.h defaults here
 #
 # We encountered a memory corruption issue due to buffer overflow and identified MAC_SIZE definition as the root cause
 # CryptoLib defines MAC_SIZE to 16 bytes by default and we wanted to override it to 64 bytes
 #
-# ==============
-# Specify the path to the crypto_config.h file
-set(CRYPTO_CONFIG_FILE "${PROJECT_SOURCE_DIR}/CryptoLib/include/crypto_config.h")
-MESSAGE(STATUS "CRYPTO_CONFIG_FILE set to ${CRYPTO_CONFIG_FILE}")
-
-# Ensure write permissions for the file (optional, depending on your setup)
-add_custom_command(
-    OUTPUT CryptoConfigPermissions
-    COMMAND chmod +w ${CRYPTO_CONFIG_FILE}
-    COMMENT "Ensuring write permissions for ${CRYPTO_CONFIG_FILE}"
-)
-
-# Modify the MAC_SIZE value in crypto_config.h
-add_custom_command(
-    OUTPUT ModifyCryptoConfig
-    COMMAND /bin/bash -c "sed -i 's/#define MAC_SIZE [0-9]*/#define MAC_SIZE 64/' ${CRYPTO_CONFIG_FILE}"
-    COMMENT "Updating MAC_SIZE in ${CRYPTO_CONFIG_FILE}"
-    DEPENDS CryptoConfigPermissions
-)
-
-# Create a custom target to ensure the modification happens before the build
-add_custom_target(UpdateCryptoConfig ALL DEPENDS ModifyCryptoConfig)
-# ==============
+# CryptoLib/CMakeLists.txt exposes this as a build option (option(MAC_SIZE ...)), but its add_compile_definitions()
+# only applies inside the CryptoLib directory. TC_t/TM_t/AOS_t embed `uint8_t mac[MAC_SIZE]` in packed structs, so
+# kmc_sdls, the JNI wrapper and the Python extension must be compiled with the same value as libcryptolib or they
+# read fields after the MAC (e.g. tc_sec_trailer.fecf) at the wrong offset. Define it for every directory below.
+# (This replaces an in-place `sed -i` on the vendored crypto_config.h, a GNU-sed-only construct that fails on
+# macOS's BSD sed and left a permanently-dirty file in the CryptoLib submodule.)
+set(MAC_SIZE 64)
+add_compile_definitions(MAC_SIZE=${MAC_SIZE})
 
 IF(SYSTEM_INSTALL)
     set(CMAKE_INSTALL_PREFIX /usr/local)

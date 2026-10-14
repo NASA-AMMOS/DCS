@@ -53,6 +53,7 @@ def build_kmc_python_c_interface(c):
                    #include "kmc_sdls.h"
                    """
                    ,libraries=['kmc_sdls']
+                   ,define_macros=[("MAC_SIZE", "64")]
                    ,library_dirs=[(curdir / "../../../build/lib").as_posix()]
                    ,extra_link_args=["-Wl,-rpath,%s" % rpath]
                    ,include_dirs=[(curdir / "../../public_inc").as_posix(),
