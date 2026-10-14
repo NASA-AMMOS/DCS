@@ -15,8 +15,12 @@ include_directories(public_inc)
 
 aux_source_directory(src LIB_SRC_FILES)
 
-set(CMAKE_EXE_LINKER_FLAGS    "-Wl,--as-needed ${CMAKE_EXE_LINKER_FLAGS}")
-set(CMAKE_SHARED_LINKER_FLAGS "-Wl,--as-needed ${CMAKE_SHARED_LINKER_FLAGS}")
+# --as-needed is a GNU ld option; Apple's linker doesn't support it and errors on it ("unknown options:
+# --as-needed").
+if(NOT APPLE)
+    set(CMAKE_EXE_LINKER_FLAGS    "-Wl,--as-needed ${CMAKE_EXE_LINKER_FLAGS}")
+    set(CMAKE_SHARED_LINKER_FLAGS "-Wl,--as-needed ${CMAKE_SHARED_LINKER_FLAGS}")
+endif()
 
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     include(CTest)
@@ -36,8 +40,8 @@ target_link_libraries(kmc_sdls PUBLIC crypto)
 set_target_properties(kmc_sdls PROPERTIES PUBLIC_HEADER "public_inc/kmc_sdls.h")
 
 add_custom_command(TARGET kmc_sdls POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:kmc_sdls> ${PROJECT_BINARY_DIR}/lib/libkmc_sdls.so
-        COMMENT "Created ${PROJECT_BINARY_DIR}/lib/libkmc_sdls.so"
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:kmc_sdls> ${PROJECT_BINARY_DIR}/lib/libkmc_sdls${CMAKE_SHARED_LIBRARY_SUFFIX}
+        COMMENT "Created ${PROJECT_BINARY_DIR}/lib/libkmc_sdls${CMAKE_SHARED_LIBRARY_SUFFIX}"
         )
 
 install(TARGETS kmc_sdls

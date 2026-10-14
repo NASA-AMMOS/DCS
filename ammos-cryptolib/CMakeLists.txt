@@ -15,6 +15,18 @@
 #   ivv-itc@lists.nasa.gov
 
 cmake_minimum_required(VERSION 3.14.0)
+
+# On macOS the default compiler is AppleClang, which CryptoLib doesn't build with (see the GCC check below).
+# Pick Homebrew's newest GCC unless the caller already chose a compiler (-DCMAKE_C_COMPILER=... or CC=...).
+# This must run before project(), and only takes effect on a fresh build directory (the compiler is cached).
+if(APPLE AND NOT CMAKE_C_COMPILER AND NOT DEFINED ENV{CC})
+    find_program(KMC_HOMEBREW_GCC NAMES gcc-20 gcc-19 gcc-18 gcc-17 gcc-16 gcc-15 gcc-14 gcc-13 gcc-12 gcc-11
+                 PATHS /opt/homebrew/bin /usr/local/bin)
+    if(KMC_HOMEBREW_GCC)
+        set(CMAKE_C_COMPILER ${KMC_HOMEBREW_GCC} CACHE FILEPATH "C compiler")
+    endif()
+endif()
+
 project(CRYPTO C)
 
 #Build Options:
@@ -49,7 +61,11 @@ MESSAGE(STATUS "Build Java: ${BUILD_JAVA}")
 OPTION(BUILD_PYTHON "Build Python Library" ON) #Enabled by default, disable with: -DBUILD_PYTHON=OFF
 MESSAGE(STATUS "Build Python: ${BUILD_PYTHON}")
 
-set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib")
+if(APPLE)
+    set(CMAKE_INSTALL_RPATH "@loader_path/../lib")
+else()
+    set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib")
+endif()
 set(CMAKE_INSTALL_PREFIX ${PROJECT_SOURCE_DIR}/install) #install to root project dir
 
 
@@ -89,6 +105,61 @@ endif()
 #include(GNUInstallDirs)
 
 set(PROJECT_BINARY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/build)
+
+# CryptoLib/src/CMakeLists.txt links these by bare name (target_link_libraries(crypto gcrypt) /
+# target_link_libraries(crypto curl)) and relies on them being on the linker's default search path. That's
+# true on Linux (Homebrew there installs to /usr) but not on Apple Silicon macOS, where Homebrew installs to
+# /opt/homebrew, which isn't part of the default search path. Resolving the packages here and adding their
+# include/lib dirs via include_directories()/link_directories() -- which are inherited by the CryptoLib
+# submodule's directory scope via add_subdirectory() below -- fixes this without touching the submodule.
+if(CRYPTO_LIBGCRYPT)
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(LIBGCRYPT REQUIRED libgcrypt)
+    include_directories(${LIBGCRYPT_INCLUDE_DIRS})
+    link_directories(${LIBGCRYPT_LIBRARY_DIRS})
+endif()
+
+if(CRYPTO_KMC)
+    find_package(CURL REQUIRED)
+    include_directories(${CURL_INCLUDE_DIRS})
+    get_filename_component(CURL_LIBRARY_DIR "${CURL_LIBRARIES}" DIRECTORY)
+    link_directories(${CURL_LIBRARY_DIR})
+endif()
+
+if(SA_MARIADB AND APPLE)
+    # `mysql_config --libs` (used by CryptoLib/src/CMakeLists.txt for SA_MARIADB) pulls in -lssl -lcrypto,
+    # since Homebrew's mariadb links against Homebrew's OpenSSL. OpenSSL is keg-only on Homebrew (not
+    # symlinked into /opt/homebrew/lib) specifically to avoid clashing with macOS's own libssl, so those
+    # libs aren't on the default linker search path. Adding the lib dir here (inherited by CryptoLib's
+    # directory scope) fixes the resulting "library 'ssl' not found" link error without touching the
+    # submodule.
+    find_package(OpenSSL REQUIRED)
+    get_filename_component(OPENSSL_LIBRARY_DIR "${OPENSSL_SSL_LIBRARY}" DIRECTORY)
+    link_directories(${OPENSSL_LIBRARY_DIR})
+endif()
+
+# The CryptoLib submodule is only built and tested with GCC: AppleClang rejects crypto.c's deliberate self-assigns
+# under -Werror (-Wself-assign) and utest.h's clang `__auto_type` path cannot take bit-fields (ut_sa_save.c).
+# On macOS, install GCC (`brew install gcc`) and configure with e.g. -DCMAKE_C_COMPILER=gcc-15 on a fresh build dir.
+if(APPLE AND NOT CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    message(FATAL_ERROR "macOS builds require GCC (found ${CMAKE_C_COMPILER_ID}: ${CMAKE_C_COMPILER}). "
+                        "Run `brew install gcc`, then reconfigure a fresh build directory with "
+                        "-DCMAKE_C_COMPILER=gcc-<version>.")
+endif()
+
+if(APPLE)
+    # Homebrew GCC emits warnings from the macOS SDK's own headers (-Wexpansion-to-defined,
+    # -Wunused-variable, -Wpacked-not-aligned, ...), which CryptoLib/CMakeLists.txt's -Wall -Wextra -Werror would
+    # turn into hard errors. Directory-level compile options come after CMAKE_C_FLAGS, so this overrides -Werror.
+    add_compile_options(-Wno-error)
+endif()
+
+# CryptoLib/src/CMakeLists.txt runs `mysql_config` at configure time and mishandles its whitespace-separated
+# output; the shim in scripts/macos reformats it into a CMake list (see the comment in that script).
+if(APPLE AND SA_MARIADB)
+    set(ENV{PATH} "${CMAKE_CURRENT_SOURCE_DIR}/scripts/macos:$ENV{PATH}")
+endif()
+
 
 add_subdirectory(CryptoLib)
 add_subdirectory(kmc_sdls)
