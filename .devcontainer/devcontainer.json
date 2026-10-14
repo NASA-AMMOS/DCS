@@ -1,0 +1,7 @@
+{
+  "name": "ammos-cryptolib",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "cryptolib-build",
+  "workspaceFolder": "/workspace",
+  "shutdownAction": "none"
+}

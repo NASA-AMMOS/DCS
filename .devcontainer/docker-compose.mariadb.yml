@@ -1,0 +1,8 @@
+services:
+  cryptolib-build:
+    networks:
+      - kmcdb_default
+
+networks:
+  kmcdb_default:
+    external: true

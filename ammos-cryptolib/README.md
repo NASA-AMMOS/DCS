@@ -191,4 +191,24 @@ kmc_sdls.process_security_tc(tc)
   The build tree works as is; the install tree only imports the Python bindings with
   `DYLD_LIBRARY_PATH=build-native/CryptoLib/src`.
 * Python bindings were tested natively with 3.12, 3.13 and 3.14 only.
-* Running `kmc-sdls-service` natively against the JNI library is unverified.
+* Running `kmc-sdls-service` natively against the JNI library is unverified. The Linux container below can run it.
+
+## Linux container build
+
+`.devcontainer/` at the repository root defines an Ubuntu 24.04 container with the Linux prerequisites above:
+
+* `docker-compose.yml`: service `cryptolib-build`. It bind-mounts the repository at `/workspace` and the host's `~/.m2` at
+  `/root/.m2`, so `make kmc_sdls_java_m2_install` publishes straight to the host's `~/.m2`. It exposes 8445
+  (kmc-sdls-service) and 5005 (JDWP).
+* `docker-compose.mariadb.yml`: optional overlay that joins the external `kmcdb_default` network, for SA lookups
+  against a MariaDB container reachable as `mariadb`.
+* `devcontainer.json`: lets VS Code or JetBrains Gateway attach to the same service with `/workspace` as the project
+  root. In CLion, load `ammos-cryptolib/CMakeLists.txt` as the CMake project; don't set `workspaceFolder` to a
+  subdirectory, as that mounts the repository twice.
+
+```bash
+docker compose -f .devcontainer/docker-compose.yml up -d --build   # add -f .devcontainer/docker-compose.mariadb.yml for MariaDB
+docker compose -f .devcontainer/docker-compose.yml exec cryptolib-build bash
+cd /workspace/ammos-cryptolib                                       # then build as in "Linux (in-source)" above
+export PYTHONPATH=/workspace/ammos-cryptolib/build/lib/python3.12/site-packages
+```
