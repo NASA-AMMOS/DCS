@@ -56,6 +56,8 @@ ammos-cryptolib/kmc_sdls/kmc_sdls_python/kmc_python_tests/sa_save_file.bin
 ammos-cryptolib/build-native/
 ammos-cryptolib/kmc_sdls/kmc_sdls_python/KmcSdlsClient/build/
 ammos-cryptolib/kmc_sdls/kmc_sdls_python/KmcSdlsClient/src/*.egg-info/
+ammos-cryptolib/kmc_sdls/kmc_sdls_tests/sa_save_file.bin
+ammos-cryptolib/kmc_sdls/kmc_sdls_tests/log.txt
 
 
 # IDE / Editor files

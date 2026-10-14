@@ -164,6 +164,22 @@ endif()
 add_subdirectory(CryptoLib)
 add_subdirectory(kmc_sdls)
 
+# `make clean` resets every product directory so repeated builds can't accumulate stale output: build/ (libs, jar,
+# CLI tools and the pip-installed Python trees, none of which CMake tracks individually), install/ (`make install`
+# only ever copies files in, and deploy.sh ships install/lib wholesale), install_manifest.txt and test state files.
+# (Attached to a target: a directory-level ADDITIONAL_CLEAN_FILES has no effect in this directory, which defines no targets.)
+# install/ is only removed when it is the default in-tree prefix, never for -DSYSTEM_INSTALL=ON (/usr/local).
+set_property(TARGET kmc_sdls APPEND PROPERTY ADDITIONAL_CLEAN_FILES
+        ${PROJECT_BINARY_DIR}
+        ${CMAKE_BINARY_DIR}/install_manifest.txt
+        ${CMAKE_CURRENT_SOURCE_DIR}/kmc_sdls/kmc_sdls_java/src/test/resources/sa_save_file.bin
+        ${CMAKE_CURRENT_SOURCE_DIR}/kmc_sdls/kmc_sdls_python/kmc_python_tests/sa_save_file.bin
+        ${CMAKE_CURRENT_SOURCE_DIR}/kmc_sdls/kmc_sdls_tests/sa_save_file.bin
+        ${CMAKE_CURRENT_SOURCE_DIR}/kmc_sdls/kmc_sdls_tests/log.txt)
+if(CMAKE_INSTALL_PREFIX STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}/install")
+    set_property(TARGET kmc_sdls APPEND PROPERTY ADDITIONAL_CLEAN_FILES ${CMAKE_INSTALL_PREFIX})
+endif()
+
 
 #Useful Commands:
 #ctest --tests-regex 'Kmc.*'
