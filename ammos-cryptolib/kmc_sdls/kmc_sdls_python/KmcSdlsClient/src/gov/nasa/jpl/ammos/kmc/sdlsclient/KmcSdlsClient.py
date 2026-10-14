@@ -262,8 +262,20 @@ class KmcSdlsClient:
             config_dict.get("cryptolib.tm.on_rollover_increment_nontransmitted_counter", "true"))
         cryptolib_aos_on_rollover_increment_nontransmitted_counter = _strtobool(
             config_dict.get("cryptolib.aos.on_rollover_increment_nontransmitted_counter", "true"))
-        kmc_python_c_sdls_interface.lib.sdls_config_cryptolib(self.cast_uint8_t(cryptolib_sadb_type),
-                                                              self.cast_uint8_t(cryptolib_crypto_type))
+        key_type_map = {"custom": 1, "internal": 2, "kmc": 3}
+        cryptolib_key_type = key_type_map.get(config_dict.get("cryptolib.key.type", "kmc"), 3)
+        if cryptolib_key_type == 3:
+            kmc_python_c_sdls_interface.lib.sdls_config_cryptolib(self.cast_uint8_t(cryptolib_sadb_type),
+                                                                  self.cast_uint8_t(cryptolib_crypto_type))
+        else:
+            key_cfg_status = kmc_python_c_sdls_interface.lib.sdls_config_cryptolib_ex(
+                self.cast_uint8_t(cryptolib_sadb_type), self.cast_uint8_t(cryptolib_crypto_type),
+                self.cast_uint8_t(cryptolib_key_type))
+            if key_cfg_status != SUCCESS:
+                raise SdlsClientException(SdlsClientException.INVALID_CONFIGURATION,
+                                          "cryptolib.key.type=%s is not available in this build (internal keys need "
+                                          "a build with -DKEY_INTERNAL=ON)" % config_dict.get("cryptolib.key.type"))
+        self._sadb_inmemory = cryptolib_sadb_type == 2
         kmc_python_c_sdls_interface.lib.sdls_config_cryptolib_tc(
             self.cast_uint8_t(cryptolib_apply_create_ecf_tc_enum),
             self.cast_uint8_t(cryptolib_process_tc_process_pdus),
@@ -912,6 +924,17 @@ class KmcSdlsClient:
         # Returning Python objects instead of the CFFI objects is somewhat inefficient. If performance becomes a problem, consider removing this nicety.
         return tm_sdls_object
 
+    def get_sa(self, spi):
+        """
+        Return a live handle to the in-memory Security Association with the given SPI so tests can read and modify it
+        (mirrors what CryptoLib's C unit tests do). Scalar fields (est, ast, ecs, iv_len, shivf_len, scid, ...) are
+        plain ints; iv, arsn and abm are bytes. Only valid with cryptolib.sadb.type=inmemory.
+        """
+        if not self._sadb_inmemory:
+            raise SdlsClientException(SdlsClientException.INVALID_CONFIGURATION,
+                                      "get_sa() is only supported with cryptolib.sadb.type=inmemory")
+        return SecurityAssociationHandle(kmc_python_c_sdls_interface, spi)
+
     def shutdown(self):
         return kmc_python_c_sdls_interface.lib.sdls_shutdown()
 
@@ -1217,6 +1240,49 @@ class TM(NamedTuple):
         cfg = _frame_config("tm", self.tm_header)
         return (self.tm_header.hex() + self.tm_security_header.hex() + self.tm_pdu.hex()
                 + self.tm_security_trailer.hex(cfg.get("has_ecf", True)))
+
+
+class SecurityAssociationHandle:
+    """Attribute-style access to one in-memory SA through the kmc_sdls accessor functions."""
+    _SCALARS = ("sa_state", "tfvn", "scid", "vcid", "mapid", "lpid", "est", "ast", "shivf_len", "shsnf_len",
+                "shplf_len", "stmacf_len", "ecs_len", "ecs", "iv_len", "acs_len", "acs", "abm_len", "arsn_len",
+                "arsnw", "ekid", "akid", "null_iv", "null_arsn")
+    _BYTES = {"iv": 16, "arsn": 20, "abm": 1786}
+
+    def __init__(self, c_interface, spi):
+        object.__setattr__(self, "_c", c_interface)
+        object.__setattr__(self, "spi", spi)
+
+    def _check(self, status, what):
+        if status != SUCCESS:
+            raise SdlsClientException(SdlsClientException.INVALID_CONFIGURATION_VALUE,
+                                      "SA %d: unable to access %s" % (self.spi, what), status)
+
+    def __getattr__(self, name):
+        c = self._c
+        if name in self._SCALARS:
+            out = c.ffi.new("uint32_t *")
+            self._check(c.lib.sdls_sa_get_scalar(self.spi, getattr(c.lib, "SDLS_SA_" + name.upper()), out), name)
+            return out[0]
+        if name in self._BYTES:
+            buf = c.ffi.new("uint8_t[]", self._BYTES[name])
+            length = c.ffi.new("uint16_t *")
+            self._check(c.lib.sdls_sa_get_bytes(self.spi, getattr(c.lib, "SDLS_SA_BYTES_" + name.upper()), buf,
+                                                self._BYTES[name], length), name)
+            return bytes(c.ffi.buffer(buf, length[0]))
+        raise AttributeError(name)
+
+    def __setattr__(self, name, value):
+        c = self._c
+        if name in self._SCALARS:
+            self._check(c.lib.sdls_sa_set_scalar(self.spi, getattr(c.lib, "SDLS_SA_" + name.upper()), int(value)),
+                        name)
+        elif name in self._BYTES:
+            value = bytes(value)
+            self._check(c.lib.sdls_sa_set_bytes(self.spi, getattr(c.lib, "SDLS_SA_BYTES_" + name.upper()), value,
+                                                len(value)), name)
+        else:
+            raise AttributeError(name)
 
 
 class SdlsClientException(Exception):
