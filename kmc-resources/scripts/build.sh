@@ -52,6 +52,14 @@ if [ -x /usr/bin/cmake ]; then
         BUILD_FAILURES+=("AMMOS CryptoLib make install")
         BUILD_FLAG=1
       fi
+      if [ "$1" != "skip-test" ]; then
+        make kmc_sdls_java_test >> make.out 2>&1
+        if [ $? -ne 0 ]; then
+          echo "ERROR: Failed KmcSdlsJNI tests in $SRC_CRYPTO_LIB"
+          BUILD_FAILURES+=("AMMOS CryptoLib KmcSdlsJNI tests")
+          BUILD_FLAG=1
+        fi
+      fi
     fi
   fi
 else
@@ -133,14 +141,11 @@ echo "DCS SDLS Service"
 echo "----------------------------------------"
 cd $SRC_KMC/kmc-sdls-service
 export LD_LIBRARY_PATH=${SRC_CRYPTO_LIB}/build/lib
-rm -fr local-maven-repo
-rm -fr ~/.m2/repository/gov/nasa/jpl/ammos/asec/kmc/KmcSdlsJNI
-mvn $MVN_COMMON_ARGS deploy:deploy-file -DgroupId=gov.nasa.jpl.ammos.asec.kmc -DartifactId=KmcSdlsJNI \
-  -Dversion=$VERSION -Durl=file:./local-maven-repo/ -DrepositoryId=local-maven-repo \
-  -DupdateReleaseInfo=true -Dfile=${SRC_CRYPTO_LIB}/build/lib/KmcSdlsJNI.jar
+rm -fr local-maven-repo   # remove leftovers from the old bridge
+(cd "$SRC_CRYPTO_LIB" && make kmc_sdls_java_m2_install >> make.out 2>&1)
 if [ $? -ne 0 ]; then
-  echo "ERROR: Failed mvn deploy:deploy-file for DCS SDLS Service"
-  BUILD_FAILURES+=("DCS SDLS Service deploy:deploy-file")
+  echo "ERROR: Failed to install KmcSdlsJNI to local Maven repo"
+  BUILD_FAILURES+=("KmcSdlsJNI m2 install")
   BUILD_FLAG=1
 fi
 mvn $MVN_COMMON_ARGS eclipse:eclipse
