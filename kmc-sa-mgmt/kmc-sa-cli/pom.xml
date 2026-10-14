@@ -42,19 +42,16 @@
         <dependency>
             <groupId>gov.nasa.jpl.ammos.kmc</groupId>
             <artifactId>kmc-sa-db-api</artifactId>
-            <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>gov.nasa.jpl.ammos.kmc</groupId>
             <artifactId>kmc-sa-db-lib</artifactId>
-            <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>gov.nasa.jpl.ammos.kmc</groupId>
             <artifactId>kmc-sa-db-lib</artifactId>
-            <version>${project.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>
@@ -128,7 +125,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.4.2</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

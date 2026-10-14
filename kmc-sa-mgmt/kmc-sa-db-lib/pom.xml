@@ -101,7 +101,6 @@
         <dependency>
             <groupId>gov.nasa.jpl.ammos.kmc</groupId>
             <artifactId>kmc-sa-db-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.mariadb.jdbc</groupId>

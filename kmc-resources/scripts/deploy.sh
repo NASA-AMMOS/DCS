@@ -131,7 +131,7 @@ while [ : ]; do
   esac
 done
 
-BCFIPS_VER=$(/bin/grep bcfips.version "${DIST}/pom.xml" | /bin/cut -f2 -d'>' | /bin/cut -f1 -d'<')
+BCFIPS_VER=$(/bin/grep "<bcfips.version>" "${DIST}/pom.xml" | /bin/cut -f2 -d'>' | /bin/cut -f1 -d'<')
 
 echo '-------------------------------'
 echo 'KMC Deployment'
