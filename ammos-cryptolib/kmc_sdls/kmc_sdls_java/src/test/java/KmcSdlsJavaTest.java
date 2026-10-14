@@ -39,7 +39,7 @@ public class KmcSdlsJavaTest
             throw e;
         }
 
-        assertEquals("2003001700000001000080D2C70008197F0B00310000BB80",result);
+        assertEquals("200300230000000100000000000000000000000080D2C70008197F0B00310000B1FEFE0F",result);
     }
 
     @Test
@@ -55,7 +55,7 @@ public class KmcSdlsJavaTest
             throw e;
         }
         kmcEngine.shutdown();
-        assertEquals("2003001700000001000080D2C70008197F0B00310000BB80",result);
+        assertEquals("200300230000000100000000000000000000000080D2C70008197F0B00310000B1FEFE0F",result);
     }
 
     @Test
@@ -63,12 +63,12 @@ public class KmcSdlsJavaTest
     {
         KmcSdlsEngine kmcEngine = setupKmcSdlsEngineForUnitTestInmemoryLibgcrypt();
         try{
-            SDLS_TC_TransferFrame sdlsTcFrame = kmcEngine.processSecurity("2003001700000001000080D2C70008197F0B00310000BB80");
+            SDLS_TC_TransferFrame sdlsTcFrame = kmcEngine.processSecurity("200300230000000100000000000000000000000080D2C70008197F0B00310000B1FEFE0F");
             sdlsTcFrame.printSdlsTransferFrame();
-            assertEquals("80D2C70008197F0B00310000",sdlsTcFrame.tc_pdu);
-            assertEquals(12,sdlsTcFrame.tc_pdu_len);
+            assertEquals("80D2C70008197F0B00310000B1FE",sdlsTcFrame.tc_pdu);
+            assertEquals(14,sdlsTcFrame.tc_pdu_len);
             assertEquals(1,sdlsTcFrame.spi);
-            assertEquals(0xBB80,sdlsTcFrame.fecf);
+            assertEquals(0xFE0F,sdlsTcFrame.fecf);
         } catch (Exception e){
             e.printStackTrace();
             kmcEngine.shutdown();
