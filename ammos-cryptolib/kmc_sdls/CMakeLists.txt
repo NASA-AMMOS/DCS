@@ -31,6 +31,11 @@ endif()
 # Create the app module
 set(APPTYPE "SHARED")
 add_library(kmc_sdls ${APPTYPE} ${LIB_SRC_FILES})
+if(KEY_INTERNAL)
+    # Lets sdls_config_cryptolib_ex() accept KEY_TYPE_INTERNAL (CryptoLib's built-in test key ring).
+    # Off in shipping builds; enable with -DKEY_INTERNAL=ON for the hermetic pytest suite.
+    target_compile_definitions(kmc_sdls PRIVATE KMC_SDLS_KEY_INTERNAL)
+endif()
 
 # Add cryptolib
 #target_link_options(kmc_sdls INTERFACE)

@@ -77,6 +77,7 @@ Pass these to CMake as `-D<NAME>=<value>`.
 | `CODECOV` | `OFF` | Build with code coverage instrumentation. |
 | `DEBUG` | `OFF` | Debug symbols and debug print output. |
 | `DEBUG_SYMBOLS` | `OFF` | `-g -O0` for the C libraries and the Python extension without DEBUG's print output; on macOS also writes `.dSYM` bundles. |
+| `KEY_INTERNAL` | `OFF` | CryptoLib's built-in test key ring; also lets `sdls_config_cryptolib_ex()` select it. Test builds only, never for shipping. |
 | `BUILD_JAVA` | `ON` | Build `KmcSdlsJNI.jar` and `libkmc_sdls_java` (needs `mvn`). |
 | `BUILD_PYTHON` | `ON` | Build the Python bindings for every usable interpreter. |
 | `SYSTEM_INSTALL` | `OFF` | Install to `/usr/local` instead of `ammos-cryptolib/install`. |

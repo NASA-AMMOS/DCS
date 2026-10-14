@@ -14,6 +14,7 @@
 
 #include "kmc_sdls.h"
 #include <crypto.h>
+#include <string.h>
 
 extern CryptoConfigGlobal_t crypto_config_global;
 
@@ -70,6 +71,140 @@ int32_t process_security_tm(uint8_t *ptBuffer, uint16_t length, TM_t *p_enc_fram
 
 int32_t sdls_config_cryptolib(uint8_t sadb_type, uint8_t cryptography_type) {
     return Crypto_Config_CryptoLib(KEY_TYPE_KMC, MC_TYPE_DISABLED, sadb_type, cryptography_type, IV_INTERNAL);
+}
+
+int32_t sdls_config_cryptolib_ex(uint8_t sadb_type, uint8_t cryptography_type, uint8_t key_type) {
+#ifndef KMC_SDLS_KEY_INTERNAL
+    if (key_type == KEY_TYPE_INTERNAL) {
+        return CRYPTO_LIB_ERROR;
+    }
+#endif
+    return Crypto_Config_CryptoLib(key_type, MC_TYPE_DISABLED, sadb_type, cryptography_type, IV_INTERNAL);
+}
+
+static int32_t sdls_sa_lookup(uint16_t spi, SecurityAssociation_t **sa_out) {
+    if (sa_if == NULL || sa_out == NULL) {
+        return CRYPTO_LIB_ERROR;
+    }
+    *sa_out = NULL;
+    int32_t status = sa_if->sa_get_from_spi(spi, sa_out);
+    /* The in-memory SADB hands back the pointer before validating the SA contents. A default or half-edited SA can
+     * legitimately fail validation, so only report an error when no SA was returned. */
+    return (*sa_out != NULL) ? CRYPTO_LIB_SUCCESS : status;
+}
+
+int32_t sdls_sa_set_scalar(uint16_t spi, int32_t field, uint32_t value) {
+    SecurityAssociation_t *sa;
+    int32_t status = sdls_sa_lookup(spi, &sa);
+    if (status != CRYPTO_LIB_SUCCESS) {
+        return status;
+    }
+    switch (field) {
+        case SDLS_SA_SA_STATE: sa->sa_state = value; break;
+        case SDLS_SA_TFVN: sa->gvcid_blk.tfvn = value; break;
+        case SDLS_SA_SCID: sa->gvcid_blk.scid = value; break;
+        case SDLS_SA_VCID: sa->gvcid_blk.vcid = value; break;
+        case SDLS_SA_MAPID: sa->gvcid_blk.mapid = value; break;
+        case SDLS_SA_LPID: sa->lpid = value; break;
+        case SDLS_SA_EST: sa->est = value; break;
+        case SDLS_SA_AST: sa->ast = value; break;
+        case SDLS_SA_SHIVF_LEN: sa->shivf_len = value; break;
+        case SDLS_SA_SHSNF_LEN: sa->shsnf_len = value; break;
+        case SDLS_SA_SHPLF_LEN: sa->shplf_len = value; break;
+        case SDLS_SA_STMACF_LEN: sa->stmacf_len = value; break;
+        case SDLS_SA_ECS_LEN: sa->ecs_len = value; break;
+        case SDLS_SA_ECS: sa->ecs = value; break;
+        case SDLS_SA_IV_LEN: sa->iv_len = value; break;
+        case SDLS_SA_ACS_LEN: sa->acs_len = value; break;
+        case SDLS_SA_ACS: sa->acs = value; break;
+        case SDLS_SA_ABM_LEN: sa->abm_len = value; break;
+        case SDLS_SA_ARSN_LEN: sa->arsn_len = value; break;
+        case SDLS_SA_ARSNW: sa->arsnw = value; break;
+        case SDLS_SA_EKID: sa->ekid = value; break;
+        case SDLS_SA_AKID: sa->akid = value; break;
+        case SDLS_SA_NULL_IV: sa->null_iv = value; break;
+        case SDLS_SA_NULL_ARSN: sa->null_arsn = value; break;
+        default: return CRYPTO_LIB_ERROR;
+    }
+    return CRYPTO_LIB_SUCCESS;
+}
+
+int32_t sdls_sa_get_scalar(uint16_t spi, int32_t field, uint32_t *value) {
+    SecurityAssociation_t *sa;
+    int32_t status = sdls_sa_lookup(spi, &sa);
+    if (status != CRYPTO_LIB_SUCCESS || value == NULL) {
+        return status != CRYPTO_LIB_SUCCESS ? status : CRYPTO_LIB_ERROR;
+    }
+    switch (field) {
+        case SDLS_SA_SA_STATE: *value = sa->sa_state; break;
+        case SDLS_SA_TFVN: *value = sa->gvcid_blk.tfvn; break;
+        case SDLS_SA_SCID: *value = sa->gvcid_blk.scid; break;
+        case SDLS_SA_VCID: *value = sa->gvcid_blk.vcid; break;
+        case SDLS_SA_MAPID: *value = sa->gvcid_blk.mapid; break;
+        case SDLS_SA_LPID: *value = sa->lpid; break;
+        case SDLS_SA_EST: *value = sa->est; break;
+        case SDLS_SA_AST: *value = sa->ast; break;
+        case SDLS_SA_SHIVF_LEN: *value = sa->shivf_len; break;
+        case SDLS_SA_SHSNF_LEN: *value = sa->shsnf_len; break;
+        case SDLS_SA_SHPLF_LEN: *value = sa->shplf_len; break;
+        case SDLS_SA_STMACF_LEN: *value = sa->stmacf_len; break;
+        case SDLS_SA_ECS_LEN: *value = sa->ecs_len; break;
+        case SDLS_SA_ECS: *value = sa->ecs; break;
+        case SDLS_SA_IV_LEN: *value = sa->iv_len; break;
+        case SDLS_SA_ACS_LEN: *value = sa->acs_len; break;
+        case SDLS_SA_ACS: *value = sa->acs; break;
+        case SDLS_SA_ABM_LEN: *value = sa->abm_len; break;
+        case SDLS_SA_ARSN_LEN: *value = sa->arsn_len; break;
+        case SDLS_SA_ARSNW: *value = sa->arsnw; break;
+        case SDLS_SA_EKID: *value = sa->ekid; break;
+        case SDLS_SA_AKID: *value = sa->akid; break;
+        case SDLS_SA_NULL_IV: *value = sa->null_iv; break;
+        case SDLS_SA_NULL_ARSN: *value = sa->null_arsn; break;
+        default: return CRYPTO_LIB_ERROR;
+    }
+    return CRYPTO_LIB_SUCCESS;
+}
+
+static int32_t sdls_sa_byte_field(SecurityAssociation_t *sa, int32_t field, uint8_t **buf, uint16_t *cap) {
+    switch (field) {
+        case SDLS_SA_BYTES_IV: *buf = sa->iv; *cap = sizeof(sa->iv); break;
+        case SDLS_SA_BYTES_ARSN: *buf = sa->arsn; *cap = sizeof(sa->arsn); break;
+        case SDLS_SA_BYTES_ABM: *buf = sa->abm; *cap = sizeof(sa->abm); break;
+        default: return CRYPTO_LIB_ERROR;
+    }
+    return CRYPTO_LIB_SUCCESS;
+}
+
+int32_t sdls_sa_set_bytes(uint16_t spi, int32_t field, const uint8_t *data, uint16_t len) {
+    SecurityAssociation_t *sa;
+    uint8_t *buf;
+    uint16_t cap;
+    int32_t status = sdls_sa_lookup(spi, &sa);
+    if (status != CRYPTO_LIB_SUCCESS) {
+        return status;
+    }
+    if (sdls_sa_byte_field(sa, field, &buf, &cap) != CRYPTO_LIB_SUCCESS || data == NULL || len > cap) {
+        return CRYPTO_LIB_ERROR;
+    }
+    memset(buf, 0, cap);
+    memcpy(buf, data, len);
+    return CRYPTO_LIB_SUCCESS;
+}
+
+int32_t sdls_sa_get_bytes(uint16_t spi, int32_t field, uint8_t *data, uint16_t max_len, uint16_t *len) {
+    SecurityAssociation_t *sa;
+    uint8_t *buf;
+    uint16_t cap;
+    int32_t status = sdls_sa_lookup(spi, &sa);
+    if (status != CRYPTO_LIB_SUCCESS) {
+        return status;
+    }
+    if (sdls_sa_byte_field(sa, field, &buf, &cap) != CRYPTO_LIB_SUCCESS || data == NULL || len == NULL) {
+        return CRYPTO_LIB_ERROR;
+    }
+    *len = cap < max_len ? cap : max_len;
+    memcpy(data, buf, *len);
+    return CRYPTO_LIB_SUCCESS;
 }
 
 int32_t sdls_config_cryptolib_tc(uint8_t crypto_create_fecf, uint8_t process_sdls_pdus, uint8_t has_pus_hdr,
