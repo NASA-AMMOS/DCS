@@ -15,7 +15,7 @@
 
 <Configuration>
     <Properties>
-        <Property name="rootPath">@DEFAULT_LOGPATH@</Property>
+        <Property name="rootPath">${sys:kmc.log.dir:-@DEFAULT_LOGPATH@}</Property>
     </Properties>
     <Appenders>
         <Console name="Console" target="SYSTEM_OUT">
