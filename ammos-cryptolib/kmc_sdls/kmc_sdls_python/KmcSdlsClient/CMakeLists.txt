@@ -16,13 +16,23 @@ foreach(PY_VER IN LISTS KMC_PYTHON_USABLE)
     set(_site_build   ${PROJECT_BINARY_DIR}/lib/python${PY_VER}/site-packages)
     set(_site_install ${CMAKE_INSTALL_PREFIX}/lib/python${PY_VER}/site-packages)
     set(_stamp        ${PROJECT_BINARY_DIR}/KmcSdlsClient_${PY_VER}.stamp)
+    set(_dbg_env "")
+    if(DEBUG_SYMBOLS)
+        set(_dbg_env "CFLAGS=-g -O0")
+    endif()
+    set(CL_SCRIPTS_MACOS ${PROJECT_SOURCE_DIR}/scripts/macos)
+    set(_dsym_cmd "")
+    if(APPLE AND DEBUG_SYMBOLS)
+        set(_dsym_cmd COMMAND ${CL_SCRIPTS_MACOS}/dsym_pyext.sh ${_site_build})
+    endif()
     set(_pip ${PYTHON_${PY_VER}} -m pip install --no-deps --no-build-isolation --upgrade
              --no-warn-script-location --disable-pip-version-check)
 
     add_custom_command(
             OUTPUT ${_stamp}
-            COMMAND ${CMAKE_COMMAND} -E env KMC_SDLS_LIB_DIR=${PROJECT_BINARY_DIR}/lib
+            COMMAND ${CMAKE_COMMAND} -E env KMC_SDLS_LIB_DIR=${PROJECT_BINARY_DIR}/lib ${_dbg_env}
                     ${_pip} --target ${_site_build} ${CMAKE_CURRENT_SOURCE_DIR}
+            ${_dsym_cmd}
             COMMAND ${CMAKE_COMMAND} -E touch ${_stamp}
             DEPENDS kmc_sdls
                     ${CMAKE_CURRENT_SOURCE_DIR}/pyproject.toml

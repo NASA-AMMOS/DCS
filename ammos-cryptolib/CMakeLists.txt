@@ -95,6 +95,14 @@ IF(DEBUG)
     add_compile_options(-ggdb)
 ENDIF(DEBUG)
 
+# Debugger-friendly build (lldb/gdb) without the debug print output enabled by DEBUG: full symbols and no optimisation
+# for the C libraries and the Python cffi extension (pip builds it with CFLAGS from the environment).
+OPTION(DEBUG_SYMBOLS "Build with -g -O0 for debugger use" OFF)
+MESSAGE(STATUS "DEBUG_SYMBOLS: ${DEBUG_SYMBOLS}")
+IF(DEBUG_SYMBOLS)
+    add_compile_options(-g -O0 -fno-omit-frame-pointer)
+ENDIF(DEBUG_SYMBOLS)
+
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     include(CTest)
     enable_testing()
@@ -163,6 +171,21 @@ endif()
 
 add_subdirectory(CryptoLib)
 add_subdirectory(kmc_sdls)
+
+# Apple linkers only record a debug map pointing at the .o files; dsymutil bundles the DWARF into .dSYM directories
+# next to each library so the symbols survive `make clean` of the object files and lldb finds them anywhere.
+if(APPLE AND DEBUG_SYMBOLS)
+    find_program(DSYMUTIL dsymutil REQUIRED)
+    set(_dsym_libs crypto kmc_sdls)
+    if(TARGET kmc_sdls_java)
+        list(APPEND _dsym_libs kmc_sdls_java)
+    endif()
+    set(_dsym_cmds "")
+    foreach(_t IN LISTS _dsym_libs)
+        list(APPEND _dsym_cmds COMMAND ${DSYMUTIL} $<TARGET_FILE:${_t}> -o $<TARGET_FILE:${_t}>.dSYM)
+    endforeach()
+    add_custom_target(dsym ALL ${_dsym_cmds} DEPENDS ${_dsym_libs} COMMENT "Generating .dSYM bundles" VERBATIM)
+endif()
 
 # `make clean` resets every product directory so repeated builds can't accumulate stale output: build/ (libs, jar,
 # CLI tools and the pip-installed Python trees, none of which CMake tracks individually), install/ (`make install`
