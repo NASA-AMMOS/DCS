@@ -168,6 +168,28 @@ Registered tests: `Kmc_Process_Security`, `TestKmcSdlsJavaTest` (Maven + JNI), `
   `Kmc_Cffi_Cdef_Drift` regenerates them from the headers and fails if they differ. If a header change is
   intended, copy `_cffi_src/filtered_headers/gen_cffi_definitions.i` over `cffi_definitions.i`.
 
+### Python pytest suite (SDLS round trips)
+
+`kmc_sdls_python/kmc_python_tests/pytest_suite/` holds apply/process round-trip tests for TC, TM and AOS (CBC and GCM
+with partial IVs, pad and OCF handling, reported FECF, IV/ARSN rollover on process, auth-only GMAC). They need
+`pytest` (`pip install pytest`) and run from that directory:
+
+```bash
+export DYLD_LIBRARY_PATH=$PWD/build/lib PYTHONPATH=$PWD/build/lib/python3.14/site-packages   # LD_ on Linux
+cd kmc_sdls/kmc_sdls_python/kmc_python_tests/pytest_suite
+pytest                                                         # --backend=gcrypt (default), no services
+pytest --backend=kmc --kmc-props=kmc.properties                # MariaDB SADB + KMC crypto service
+```
+
+* The default `gcrypt` backend uses the in-memory SADB, libgcrypt and CryptoLib's built-in test key ring, and edits SAs
+  through `KmcSdlsClient.get_sa(spi)`. It needs a native build with `-DKEY_INTERNAL=ON` (adds the hard-coded test keys,
+  so keep it off in shipping builds); without it those tests skip. `Kmc_Python_Pytest_PY<X.Y>` runs it under ctest when
+  `pytest` is importable.
+* `--backend=kmc` expects the fixture SAs from `pytest_suite/kmc_seed.sql` (SPIs 9041-9069) to be loaded in MariaDB first;
+  see `kmc.properties.example`. Tests that edit SA state (rollover) are skipped there. Regenerate the SQL with
+  `python harness.py > kmc_seed.sql`; `test_seed.py` fails if it drifts.
+* `upstream_bug` tests are non-strict xfails for known CryptoLib defects and flip to XPASS once fixed.
+
 ## Running a local build
 
 To run the CLI utilities, execute them directly, e.g.:

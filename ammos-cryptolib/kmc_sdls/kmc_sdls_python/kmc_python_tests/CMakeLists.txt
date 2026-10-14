@@ -25,4 +25,15 @@ foreach(PY_VER IN LISTS KMC_PYTHON_USABLE)
 		set_tests_properties(Kmc_Python_${_name}_PY${PY_VER} PROPERTIES ENVIRONMENT
 			"PYTHONPATH=${PROJECT_BINARY_DIR}/lib/python${PY_VER}/site-packages;LD_LIBRARY_PATH=${PROJECT_BINARY_DIR}/lib")
 	endforeach()
+
+	# pytest suite (hermetic gcrypt backend). Needs pytest and a build with -DKEY_INTERNAL=ON, otherwise those
+	# tests skip themselves. Run manually with --backend=kmc for MariaDB + KMC crypto service.
+	execute_process(COMMAND ${PYTHON_${PY_VER}} -c "import pytest" RESULT_VARIABLE _pytest_rc OUTPUT_QUIET ERROR_QUIET)
+	if(_pytest_rc EQUAL 0)
+		add_test(NAME Kmc_Python_Pytest_PY${PY_VER}
+				COMMAND ${PYTHON_${PY_VER}} -m pytest -q ${PROJECT_PYTHON_TEST_DIR}/pytest_suite
+				WORKING_DIRECTORY ${PROJECT_PYTHON_TEST_DIR}/pytest_suite)
+		set_tests_properties(Kmc_Python_Pytest_PY${PY_VER} PROPERTIES ENVIRONMENT
+			"PYTHONPATH=${PROJECT_BINARY_DIR}/lib/python${PY_VER}/site-packages:${PROJECT_PYTHON_TEST_DIR}/pytest_suite;DYLD_LIBRARY_PATH=${PROJECT_BINARY_DIR}/lib;LD_LIBRARY_PATH=${PROJECT_BINARY_DIR}/lib")
+	endif()
 endforeach()
