@@ -156,7 +156,7 @@ ctest --output-on-failure        # in the build directory; run serially, tests w
 ```
 
 Registered tests: `Kmc_Process_Security`, `TestKmcSdlsJavaTest` (Maven + JNI), `Kmc_Cffi_Cdef_Drift`, and
-`Kmc_Python_{Tests,Mock}_PY<X.Y>` for each usable interpreter. Useful filter:
+`Kmc_Python_{Tests,Mock,Native}_PY<X.Y>` for each usable interpreter. Useful filter:
 `ctest -R 'Kmc_Python|Kmc_Cffi|TestKmcSdlsJavaTest'`.
 
 * `-DTEST=ON` additionally builds CryptoLib's own C unit tests. They need CryptoLib's test configuration (for

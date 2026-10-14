@@ -15,7 +15,7 @@
 set(PROJECT_PYTHON_TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 foreach(PY_VER IN LISTS KMC_PYTHON_USABLE)
-	foreach(_t IN ITEMS Tests:kmc_python_test Mock:mock_hex_tests)
+	foreach(_t IN ITEMS Tests:kmc_python_test Mock:mock_hex_tests Native:kmc_python_native_regression_test)
 		string(REPLACE ":" ";" _p ${_t})
 		list(GET _p 0 _name)
 		list(GET _p 1 _file)

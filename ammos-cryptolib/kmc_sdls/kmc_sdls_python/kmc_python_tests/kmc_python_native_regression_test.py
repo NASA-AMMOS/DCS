@@ -1,5 +1,7 @@
 import binascii
 import ctypes
+import ctypes.util
+import sys
 import unittest
 
 import kmc_python_c_sdls_interface
@@ -22,7 +24,7 @@ TM_CONFIG = ['cryptolib.sadb.type=inmemory', 'cryptolib.crypto.type=libgcrypt',
              'cryptolib.tm.3.0.0.max_frame_length=%d' % TM_MAX_FRAME_LENGTH]
 TM_HEADER_AND_SPI = bytes.fromhex("0030000018000001")
 
-_libc = ctypes.CDLL("libc.so.6")
+_libc = ctypes.CDLL(ctypes.util.find_library("c"))
 
 
 class _MallInfo2(ctypes.Structure):
@@ -31,7 +33,22 @@ class _MallInfo2(ctypes.Structure):
                  "keepcost")]
 
 
-_libc.mallinfo2.restype = _MallInfo2
+if sys.platform.startswith("linux"):
+    _libc.mallinfo2.restype = _MallInfo2
+
+
+class _MallocStatistics(ctypes.Structure):  # macOS malloc_statistics_t
+    _fields_ = [("blocks_in_use", ctypes.c_uint), ("size_in_use", ctypes.c_size_t),
+                ("max_size_in_use", ctypes.c_size_t), ("size_allocated", ctypes.c_size_t)]
+
+
+def _heap_in_use():
+    """Bytes currently allocated from the C heap (glibc mallinfo2 on Linux, malloc zone statistics on macOS)."""
+    if sys.platform.startswith("linux"):
+        return _libc.mallinfo2().uordblks
+    stats = _MallocStatistics()
+    _libc.malloc_zone_statistics(None, ctypes.byref(stats))
+    return stats.size_in_use
 
 
 class _KmcCryptoServiceConfig(ctypes.Structure):
@@ -49,9 +66,18 @@ def _error_name(code):
 
 
 def _crypto_service_config():
-    cryptolib = ctypes.CDLL("libcryptolib.so")
-    ptr = ctypes.POINTER(_KmcCryptoServiceConfig).in_dll(cryptolib, "cryptography_kmc_crypto_config")
-    return ptr.contents
+    # The variable lives in libcryptolib, which the cffi extension has already loaded. macOS exposes it through the
+    # global namespace; on Linux the library is found by name (same already-loaded image). Never dlopen another copy
+    # of the library by path: it would hold its own, uninitialised variable.
+    name = "libcryptolib.dylib" if sys.platform == "darwin" else "libcryptolib.so"
+    for handle in (lambda: ctypes.CDLL(None), lambda: ctypes.CDLL(name)):
+        try:
+            ptr = ctypes.POINTER(_KmcCryptoServiceConfig).in_dll(handle(), "cryptography_kmc_crypto_config")
+            if ptr:
+                return ptr.contents
+        except (OSError, ValueError):
+            continue
+    raise RuntimeError("cryptography_kmc_crypto_config not found (is libcryptolib loaded and initialised?)")
 
 
 class NativeRegressionTest(unittest.TestCase):
@@ -89,11 +115,11 @@ class NativeRegressionTest(unittest.TestCase):
         client = self._client(TC_CONFIG)
         for _ in range(100):
             self._applied_ping(client)
-        before = _libc.mallinfo2().uordblks
+        before = _heap_in_use()
         iterations = 20000
         for _ in range(iterations):
             self._applied_ping(client)
-        growth = _libc.mallinfo2().uordblks - before
+        growth = _heap_in_use() - before
         # A leaked output frame is >= len(TC_PING) bytes per call (~440 KB here)
         self.assertLess(growth, iterations * 4)
 
