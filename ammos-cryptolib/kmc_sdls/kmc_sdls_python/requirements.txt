@@ -1,2 +1,4 @@
-cffi==1.14.6
-invoke==1.6.0
+setuptools>=61
+cffi>=1.16; python_version < "3.13"
+cffi>=1.17.1; python_version == "3.13"
+cffi>=2.0; python_version >= "3.14"

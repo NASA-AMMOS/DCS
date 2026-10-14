@@ -10,26 +10,40 @@
 #exporting such information to foreign countries or providing access to
 #foreign persons.
 
-list(APPEND PYTHON_VERSIONS 3.6 3.7 3.8 3.9)
 
-foreach(PY_VER IN LISTS PYTHON_VERSIONS)
-    find_program(PYTHON_${PY_VER} python${PY_VER})
-    if(PYTHON_${PY_VER})
-        execute_process (
-                COMMAND bash "-c" "${PYTHON_${PY_VER}} -c 'import sys;print(\"%d.%d\"%(sys.version_info[0],sys.version_info[1]))'"
-                OUTPUT_STRIP_TRAILING_WHITESPACE
-                OUTPUT_VARIABLE PythonVersion_${PY_VER}
-        )
+set(_prev_target "")
+foreach(PY_VER IN LISTS KMC_PYTHON_USABLE)
+    set(_site_build   ${PROJECT_BINARY_DIR}/lib/python${PY_VER}/site-packages)
+    set(_site_install ${CMAKE_INSTALL_PREFIX}/lib/python${PY_VER}/site-packages)
+    set(_stamp        ${PROJECT_BINARY_DIR}/KmcSdlsClient_${PY_VER}.stamp)
+    set(_pip ${PYTHON_${PY_VER}} -m pip install --no-deps --no-build-isolation --upgrade
+             --no-warn-script-location --disable-pip-version-check)
 
-        add_custom_command(OUTPUT ${PROJECT_BINARY_DIR}/lib/python${PythonVersion_${PY_VER}}/site-packages/gov/nasa/jpl/ammos/kmc/sdlsclient/KmcSdlsClient.py
-                              COMMAND PYTHONPATH=${PROJECT_BINARY_DIR}/lib/python${PythonVersion_${PY_VER}}/site-packages ${PYTHON_${PY_VER}} setup.py install --single-version-externally-managed --root=/ --prefix=${PROJECT_BINARY_DIR}
-                              WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+    add_custom_command(
+            OUTPUT ${_stamp}
+            COMMAND ${CMAKE_COMMAND} -E env KMC_SDLS_LIB_DIR=${PROJECT_BINARY_DIR}/lib
+                    ${_pip} --target ${_site_build} ${CMAKE_CURRENT_SOURCE_DIR}
+            COMMAND ${CMAKE_COMMAND} -E touch ${_stamp}
+            DEPENDS kmc_sdls
+                    ${CMAKE_CURRENT_SOURCE_DIR}/pyproject.toml
+                    ${CMAKE_CURRENT_SOURCE_DIR}/setup.py
+                    ${CMAKE_CURRENT_SOURCE_DIR}/kmc_cffi_build.py
+                    ${CMAKE_CURRENT_SOURCE_DIR}/../_cffi_src/cffi_definitions.i
+                    ${CMAKE_CURRENT_SOURCE_DIR}/src/gov/nasa/jpl/ammos/kmc/sdlsclient/KmcSdlsClient.py
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+            VERBATIM)
+    add_custom_target(KmcSdlsClient_${PY_VER} ALL DEPENDS ${_stamp})
 
-        #install(SCRIPT ${PYTHON_${PY_VER}} setup.py install --single-version-externally-managed --root=/ --prefix=${CMAKE_INSTALL_PREFIX})
-        install(CODE "execute_process(COMMAND ${PYTHON_${PY_VER}} setup.py install --single-version-externally-managed --root=/ --prefix=${CMAKE_INSTALL_PREFIX}
-                                      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})")
-
-        add_custom_target(KmcSdlsClient_${PY_VER} ALL
-                DEPENDS ${PROJECT_BINARY_DIR}/lib/python${PythonVersion_${PY_VER}}/site-packages/gov/nasa/jpl/ammos/kmc/sdlsclient/KmcSdlsClient.py)
+    # setuptools builds in-tree (KmcSdlsClient/build, src/*.egg-info); serialize so
+    # parallel make (-j) doesn't race on the shared egg-info dir.
+    if(_prev_target)
+        add_dependencies(KmcSdlsClient_${PY_VER} ${_prev_target})
     endif()
+    set(_prev_target KmcSdlsClient_${PY_VER})
+
+    install(DIRECTORY ${_site_build}/ DESTINATION ${_site_install}
+            PATTERN "__pycache__" EXCLUDE)
 endforeach()
+
+set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_CLEAN_FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/build ${CMAKE_CURRENT_SOURCE_DIR}/src/KmcSdlsClient.egg-info)
