@@ -155,8 +155,9 @@ Run `make help` (or `cmake --build <dir> --target help`) for the full list for y
 ctest --output-on-failure        # in the build directory; run serially, tests write sa_save_file.bin
 ```
 
-Registered tests: `Kmc_Process_Security`, `TestKmcSdlsJavaTest` (Maven + JNI), `Kmc_Cffi_Cdef_Drift`, and
-`Kmc_Python_{Tests,Mock,Native}_PY<X.Y>` for each usable interpreter. Useful filter:
+Registered tests: `TestKmcSdlsJavaTest` (Maven + JNI), `Kmc_Cffi_Cdef_Drift`, and
+`Kmc_Python_{Tests,Mock,Native}_PY<X.Y>` for each usable interpreter. `Kmc_Process_Security` is registered only when
+`MC_INTERNAL`, `SA_INTERNAL` and `KEY_INTERNAL` are all ON (it segfaults on the stub interfaces otherwise). Useful filter:
 `ctest -R 'Kmc_Python|Kmc_Cffi|TestKmcSdlsJavaTest'`.
 
 * `-DTEST=ON` additionally builds CryptoLib's own C unit tests. They need CryptoLib's test configuration (for

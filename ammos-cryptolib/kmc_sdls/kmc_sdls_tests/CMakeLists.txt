@@ -15,6 +15,10 @@
 #   ivv-itc@lists.nasa.gov
 set(PROJECT_TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_test(NAME Kmc_Process_Security
-         COMMAND ${PROJECT_BINARY_DIR}/bin/kmc_process_security tc ${PROJECT_TEST_DIR}/data/tc4.1.dat
-         WORKING_DIRECTORY ${PROJECT_TEST_DIR})
+# kmc_process_security only works with CryptoLib's internal modules; with the build.sh flags (MC_DISABLED, KEY_KMC) it
+# loads the stub interfaces and segfaults, so register it only for a build with all three internal modules.
+if(MC_INTERNAL AND SA_INTERNAL AND KEY_INTERNAL)
+    add_test(NAME Kmc_Process_Security
+             COMMAND ${PROJECT_BINARY_DIR}/bin/kmc_process_security tc ${PROJECT_TEST_DIR}/data/tc4.1.dat
+             WORKING_DIRECTORY ${PROJECT_TEST_DIR})
+endif()
