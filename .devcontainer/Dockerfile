@@ -1,6 +1,6 @@
 FROM ubuntu:noble-20250127
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential cmake git swig pkg-config \
+    build-essential cmake git swig \
     libcurl4-openssl-dev libgcrypt20-dev \
     libmariadb-dev libmariadb-dev-compat \
     libffi-dev python3 python3-dev python3-pip python3-setuptools python3-cffi \
