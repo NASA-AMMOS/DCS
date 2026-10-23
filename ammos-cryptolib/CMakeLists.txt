@@ -121,10 +121,13 @@ set(PROJECT_BINARY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/build)
 # include/lib dirs via include_directories()/link_directories() -- which are inherited by the CryptoLib
 # submodule's directory scope via add_subdirectory() below -- fixes this without touching the submodule.
 if(CRYPTO_LIBGCRYPT)
-    find_package(PkgConfig REQUIRED)
-    pkg_check_modules(LIBGCRYPT REQUIRED libgcrypt)
-    include_directories(${LIBGCRYPT_INCLUDE_DIRS})
-    link_directories(${LIBGCRYPT_LIBRARY_DIRS})
+    find_path(LIBGCRYPT_INCLUDE_DIR gcrypt.h HINTS /opt/homebrew/include /usr/local/include)
+    find_library(LIBGCRYPT_LIBRARY gcrypt HINTS /opt/homebrew/lib /usr/local/lib)
+    if(LIBGCRYPT_INCLUDE_DIR AND LIBGCRYPT_LIBRARY)
+        include_directories(${LIBGCRYPT_INCLUDE_DIR})
+        get_filename_component(LIBGCRYPT_LIBRARY_DIR "${LIBGCRYPT_LIBRARY}" DIRECTORY)
+        link_directories(${LIBGCRYPT_LIBRARY_DIR})
+    endif()
 endif()
 
 if(CRYPTO_KMC)
