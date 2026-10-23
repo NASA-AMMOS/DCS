@@ -21,6 +21,13 @@ else
 fi
 echo "----------------------------------------"
 
+# Print the end of a log file indented, so a failure is visible in the console output
+show_log_tail() {
+  echo "---- last lines of $1 ----"
+  tail -n "${2:-40}" "$1" 2>/dev/null | sed 's/^/    | /'
+  echo "----"
+}
+
 # Initialize variables to track build failures
 BUILD_FAILURES=()
 BUILD_FLAG=0
@@ -37,18 +44,21 @@ if [ -x /usr/bin/cmake ]; then
   cmake -DDEBUG=OFF -DCRYPTO_KMC=ON -DCRYPTO_LIBGCRYPT=ON -DKEY_KMC=ON -DMC_DISABLED=ON -DSA_MARIADB=ON -DSA_INTERNAL=ON -DTEST=OFF -DSA_FILE=OFF -DKMC_MDB_DB=ON -DCODECOV=OFF . > make.out 2>&1
   if [ $? -ne 0 ]; then
     echo "ERROR: Failed cmake in $SRC_CRYPTO_LIB"
+    show_log_tail make.out
     BUILD_FAILURES+=("AMMOS CryptoLib cmake")
     BUILD_FLAG=1
   else
     make >> make.out 2>&1
     if [ $? -ne 0 ]; then
       echo "ERROR: Failed to build $SRC_CRYPTO_LIB"
+      show_log_tail make.out
       BUILD_FAILURES+=("AMMOS CryptoLib make")
       BUILD_FLAG=1
     else
       make install >> make.out 2>&1
       if [ $? -ne 0 ]; then
         echo "ERROR: Failed to install $SRC_CRYPTO_LIB"
+        show_log_tail make.out
         BUILD_FAILURES+=("AMMOS CryptoLib make install")
         BUILD_FLAG=1
       fi
@@ -56,6 +66,7 @@ if [ -x /usr/bin/cmake ]; then
         make kmc_sdls_java_test >> make.out 2>&1
         if [ $? -ne 0 ]; then
           echo "ERROR: Failed KmcSdlsJNI tests in $SRC_CRYPTO_LIB"
+          show_log_tail make.out
           BUILD_FAILURES+=("AMMOS CryptoLib KmcSdlsJNI tests")
           BUILD_FLAG=1
         fi
@@ -145,6 +156,7 @@ rm -fr local-maven-repo   # remove leftovers from the old bridge
 (cd "$SRC_CRYPTO_LIB" && make kmc_sdls_java_m2_install >> make.out 2>&1)
 if [ $? -ne 0 ]; then
   echo "ERROR: Failed to install KmcSdlsJNI to local Maven repo"
+  show_log_tail "$SRC_CRYPTO_LIB/make.out"
   BUILD_FAILURES+=("KmcSdlsJNI m2 install")
   BUILD_FLAG=1
 fi
