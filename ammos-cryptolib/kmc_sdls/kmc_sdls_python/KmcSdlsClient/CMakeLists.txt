@@ -35,7 +35,6 @@ foreach(PY_VER IN LISTS KMC_PYTHON_USABLE)
             ${_dsym_cmd}
             COMMAND ${CMAKE_COMMAND} -E touch ${_stamp}
             DEPENDS kmc_sdls
-                    ${CMAKE_CURRENT_SOURCE_DIR}/pyproject.toml
                     ${CMAKE_CURRENT_SOURCE_DIR}/setup.py
                     ${CMAKE_CURRENT_SOURCE_DIR}/kmc_cffi_build.py
                     ${CMAKE_CURRENT_SOURCE_DIR}/../_cffi_src/cffi_definitions.i
