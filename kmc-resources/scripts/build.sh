@@ -35,13 +35,14 @@ BUILD_FLAG=0
 echo "----------------------------------------"
 echo "AMMOS CryptoLib"
 echo "----------------------------------------"
-if command -v cmake >/dev/null 2>&1; then
+if [ -x /usr/bin/cmake ]; then CMAKE=/usr/bin/cmake; else CMAKE=$(command -v cmake); fi
+if [ -n "$CMAKE" ]; then
   cd $SRC_CRYPTO_LIB
   if [ -f CMakeCache.txt ]; then
     make clean
     rm -f CMakeCache.txt make.out
   fi
-  cmake -DDEBUG=OFF -DCRYPTO_KMC=ON -DCRYPTO_LIBGCRYPT=ON -DKEY_KMC=ON -DMC_DISABLED=ON -DSA_MARIADB=ON -DSA_INTERNAL=ON -DTEST=OFF -DSA_FILE=OFF -DKMC_MDB_DB=ON -DCODECOV=OFF . > make.out 2>&1
+  $CMAKE -DDEBUG=OFF -DCRYPTO_KMC=ON -DCRYPTO_LIBGCRYPT=ON -DKEY_KMC=ON -DMC_DISABLED=ON -DSA_MARIADB=ON -DSA_INTERNAL=ON -DTEST=OFF -DSA_FILE=OFF -DKMC_MDB_DB=ON -DCODECOV=OFF . > make.out 2>&1
   if [ $? -ne 0 ]; then
     echo "ERROR: Failed cmake in $SRC_CRYPTO_LIB"
     show_log_tail make.out
