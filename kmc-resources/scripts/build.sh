@@ -35,7 +35,7 @@ BUILD_FLAG=0
 echo "----------------------------------------"
 echo "AMMOS CryptoLib"
 echo "----------------------------------------"
-if [ -x /usr/bin/cmake ]; then
+if command -v cmake >/dev/null 2>&1; then
   cd $SRC_CRYPTO_LIB
   if [ -f CMakeCache.txt ]; then
     make clean
@@ -152,6 +152,8 @@ echo "DCS SDLS Service"
 echo "----------------------------------------"
 cd $SRC_KMC/kmc-sdls-service
 export LD_LIBRARY_PATH=${SRC_CRYPTO_LIB}/build/lib
+# Tests run in Maven's own JVM (forkCount=0); macOS ignores LD_LIBRARY_PATH and SIP strips DYLD_*
+export MAVEN_OPTS="${MAVEN_OPTS} -Djava.library.path=${SRC_CRYPTO_LIB}/build/lib"
 rm -fr local-maven-repo   # remove leftovers from the old bridge
 (cd "$SRC_CRYPTO_LIB" && make kmc_sdls_java_m2_install >> make.out 2>&1)
 if [ $? -ne 0 ]; then
