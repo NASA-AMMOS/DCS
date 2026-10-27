@@ -49,6 +49,14 @@ add_custom_command(TARGET kmc_sdls POST_BUILD
         COMMENT "Created ${PROJECT_BINARY_DIR}/lib/libkmc_sdls${CMAKE_SHARED_LIBRARY_SUFFIX}"
         )
 
+# Copy libcryptolib to build/lib so kmc_sdls can find it via RPATH
+add_custom_command(TARGET kmc_sdls POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                $<TARGET_FILE:crypto>
+                ${PROJECT_BINARY_DIR}/lib/$<TARGET_FILE_NAME:crypto>
+        COMMENT "Copying libcryptolib to build/lib for RPATH"
+        VERBATIM)
+
 install(TARGETS kmc_sdls
         DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
         PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_PREFIX}/include)
