@@ -26,10 +26,15 @@ set(CMAKE_SWIG_FLAGS -package ${SWIGJAVAPKG})
 
 # Maven compiles everything under swig-java/, so a type removed from kmc_sdls.i leaves a stale
 # .java behind. After removing a type from kmc_sdls.i, run `make clean`.
+set_property(SOURCE kmc_sdls.i PROPERTY DEPENDS
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../CryptoLib/include/crypto_config_structs.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../CryptoLib/include/crypto_structs.h)
 swig_add_library(kmc_sdls_java
                     LANGUAGE java
                     SOURCES kmc_sdls.i
                     OUTPUT_DIR ${CMAKE_SWIG_OUTDIR})
+
+target_compile_definitions(kmc_sdls_java PRIVATE MAC_SIZE=${MAC_SIZE})
 
 swig_link_libraries(kmc_sdls_java kmc_sdls)
 

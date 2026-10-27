@@ -7,7 +7,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     openjdk-17-jdk maven \
     && rm -rf /var/lib/apt/lists/*
 # kmc-resources/scripts/setenv.sh defaults JAVA_HOME to the RHEL path
-RUN ln -s "$(ls -d /usr/lib/jvm/java-17-openjdk-* | head -1)" /usr/lib/jvm/java-17-openjdk
+RUN JDK_PATH=$(ls -d /usr/lib/jvm/java-17-openjdk-* 2>/dev/null | head -1) && \
+    [ -n "$JDK_PATH" ] || { echo "ERROR: JDK 17 not found in /usr/lib/jvm"; exit 1; } && \
+    ln -s "$JDK_PATH" /usr/lib/jvm/java-17-openjdk
 ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk
 # the repo is bind-mounted with the host user's ownership
 RUN git config --system --add safe.directory '*'

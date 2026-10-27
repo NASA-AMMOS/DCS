@@ -14,6 +14,7 @@
 
 #include "kmc_sdls.h"
 #include <crypto.h>
+#include <stdio.h>
 #include <string.h>
 
 extern CryptoConfigGlobal_t crypto_config_global;
@@ -76,6 +77,7 @@ int32_t sdls_config_cryptolib(uint8_t sadb_type, uint8_t cryptography_type) {
 int32_t sdls_config_cryptolib_ex(uint8_t sadb_type, uint8_t cryptography_type, uint8_t key_type) {
 #ifndef KMC_SDLS_KEY_INTERNAL
     if (key_type == KEY_TYPE_INTERNAL) {
+        fprintf(stderr, "ERROR: KEY_TYPE_INTERNAL is not enabled. Rebuild with -DKEY_INTERNAL=ON to use internal test keys.\n");
         return CRYPTO_LIB_ERROR;
     }
 #endif
@@ -87,10 +89,7 @@ static int32_t sdls_sa_lookup(uint16_t spi, SecurityAssociation_t **sa_out) {
         return CRYPTO_LIB_ERROR;
     }
     *sa_out = NULL;
-    int32_t status = sa_if->sa_get_from_spi(spi, sa_out);
-    /* The in-memory SADB hands back the pointer before validating the SA contents. A default or half-edited SA can
-     * legitimately fail validation, so only report an error when no SA was returned. */
-    return (*sa_out != NULL) ? CRYPTO_LIB_SUCCESS : status;
+    return sa_if->sa_get_from_spi(spi, sa_out);
 }
 
 int32_t sdls_sa_set_scalar(uint16_t spi, int32_t field, uint32_t value) {

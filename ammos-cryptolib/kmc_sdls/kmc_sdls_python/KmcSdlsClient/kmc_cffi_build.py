@@ -25,7 +25,7 @@ ffi.set_source(
     libraries=["kmc_sdls"],
     library_dirs=[lib_dir],
     include_dirs=include_dirs,
-    define_macros=[("MAC_SIZE", "64")],
+    define_macros=[("MAC_SIZE", os.environ.get("MAC_SIZE", "64"))],
     extra_link_args=["-Wl,-rpath,%s" % rpath],
     py_limited_api=False,
 )

@@ -35,7 +35,7 @@ foreach(PY_VER IN LISTS KMC_PYTHON_USABLE)
     add_custom_command(
             OUTPUT ${_stamp}
             COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/pip-tmp
-            COMMAND ${CMAKE_COMMAND} -E env KMC_SDLS_LIB_DIR=${PROJECT_BINARY_DIR}/lib ${_dbg_env}
+            COMMAND ${CMAKE_COMMAND} -E env KMC_SDLS_LIB_DIR=${PROJECT_BINARY_DIR}/lib MAC_SIZE=${MAC_SIZE} ${_dbg_env}
                     TMPDIR=${PROJECT_BINARY_DIR}/pip-tmp
                     KMC_CFFI_CDEF=${CMAKE_CURRENT_SOURCE_DIR}/../_cffi_src/cffi_definitions.i
                     "KMC_SDLS_INCLUDE_DIRS=${PROJECT_SOURCE_DIR}/kmc_sdls/public_inc:${PROJECT_SOURCE_DIR}/CryptoLib/include"

@@ -133,7 +133,8 @@ endif()
 if(CRYPTO_KMC)
     find_package(CURL REQUIRED)
     include_directories(${CURL_INCLUDE_DIRS})
-    get_filename_component(CURL_LIBRARY_DIR "${CURL_LIBRARIES}" DIRECTORY)
+    list(GET CURL_LIBRARIES 0 _CURL_FIRST_LIB)
+    get_filename_component(CURL_LIBRARY_DIR "${_CURL_FIRST_LIB}" DIRECTORY)
     link_directories(${CURL_LIBRARY_DIR})
 endif()
 
@@ -175,6 +176,14 @@ endif()
 add_subdirectory(CryptoLib)
 add_subdirectory(kmc_sdls)
 
+# Copy libcryptolib to build/lib so kmc_sdls can find it via RPATH
+add_custom_command(TARGET kmc_sdls POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            $<TARGET_FILE:crypto>
+            ${PROJECT_BINARY_DIR}/lib/$<TARGET_FILE_NAME:crypto>
+    COMMENT "Copying libcryptolib to build/lib for RPATH"
+    VERBATIM)
+
 # Apple linkers only record a debug map pointing at the .o files; dsymutil bundles the DWARF into .dSYM directories
 # next to each library so the symbols survive `make clean` of the object files and lldb finds them anywhere.
 if(APPLE AND DEBUG_SYMBOLS)
@@ -206,6 +215,9 @@ if(CMAKE_INSTALL_PREFIX STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}/install")
     set_property(TARGET kmc_sdls APPEND PROPERTY ADDITIONAL_CLEAN_FILES ${CMAKE_INSTALL_PREFIX})
 endif()
 
+# Install libcryptolib so install tree works without DYLD_LIBRARY_PATH/LD_LIBRARY_PATH
+install(FILES $<TARGET_FILE:crypto>
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 
 #Useful Commands:
 #ctest --tests-regex 'Kmc.*'
