@@ -28,17 +28,20 @@ foreach(PY_VER IN LISTS KMC_PYTHON_USABLE)
     set(_pip ${PYTHON_${PY_VER}} -m pip install --no-deps --upgrade
              --no-warn-script-location --disable-pip-version-check)
 
-    # pip builds in an isolated environment with the pinned build requirements from pyproject.toml. Older pip
-    # (before 21.3) builds from a temporary copy of this directory, so the paths kmc_cffi_build.py needs are passed
-    # explicitly rather than derived from its own location.
+    # pip builds in an isolated environment with the pinned build requirements from pyproject.toml. That environment
+    # holds compiled extensions (cffi), which cannot be loaded from a /tmp mounted noexec, so TMPDIR points into the
+    # build tree. Pip before 21.3 builds from a temporary copy of this directory, so the paths kmc_cffi_build.py needs
+    # are passed explicitly rather than derived from its own location.
     add_custom_command(
             OUTPUT ${_stamp}
+            COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/pip-tmp
             COMMAND ${CMAKE_COMMAND} -E env KMC_SDLS_LIB_DIR=${PROJECT_BINARY_DIR}/lib ${_dbg_env}
+                    TMPDIR=${PROJECT_BINARY_DIR}/pip-tmp
                     KMC_CFFI_CDEF=${CMAKE_CURRENT_SOURCE_DIR}/../_cffi_src/cffi_definitions.i
                     "KMC_SDLS_INCLUDE_DIRS=${PROJECT_SOURCE_DIR}/kmc_sdls/public_inc:${PROJECT_SOURCE_DIR}/CryptoLib/include"
                     ${_pip} --target ${_site_build} ${CMAKE_CURRENT_SOURCE_DIR}
             ${_dsym_cmd}
-            COMMAND ${PYTHON_${PY_VER}} -c "import os, sys; d = sys.argv[1]; os.path.isdir(os.path.join(d, 'gov', 'nasa')) or sys.exit('ERROR: KmcSdlsClient was not installed into ' + d + ' (an old pip/setuptools that cannot read pyproject.toml, e.g. a venv with --system-site-packages? use pip >= 21.3 without it)')" ${_site_build}
+            COMMAND ${PYTHON_${PY_VER}} -c "import os, sys; d = sys.argv[1]; os.path.isdir(os.path.join(d, 'gov', 'nasa')) or sys.exit('ERROR: KmcSdlsClient was not installed into ' + d + ' (the pip build produced no package, see the pip output above)')" ${_site_build}
             COMMAND ${CMAKE_COMMAND} -E touch ${_stamp}
             DEPENDS kmc_sdls
                     ${CMAKE_CURRENT_SOURCE_DIR}/pyproject.toml
