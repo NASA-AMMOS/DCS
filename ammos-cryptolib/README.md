@@ -14,14 +14,18 @@ Common to all platforms:
 * CMake, SWIG, libgcrypt, libcurl/OpenSSL, and the MariaDB client development package (provides `mysql_config`).
 * JDK 17 on `JAVA_HOME` and `mvn` on `PATH` for the Java bindings (needs network access or a populated `~/.m2` on
   the first build).
-* Python 3.9 - 3.14 for the Python bindings. Each `python3.X` found on `PATH` needs `setuptools`, `cffi` and `pip`;
-  interpreters missing them are skipped with a CMake warning. Install them per interpreter:
+* Python 3.9 - 3.14 for the Python bindings. Each `python3.X` found on `PATH` needs `pip` and `cffi` (the client
+  imports it at runtime); interpreters missing them are skipped with a CMake warning. Install them per interpreter:
 
   ```bash
   python3.12 -m pip install -r kmc_sdls/kmc_sdls_python/requirements.txt
   ```
 
-  or use the OS packages (`python3-setuptools python3-cffi`).
+  or use the OS packages (`python3-pip python3-cffi`). The build tools (setuptools, cffi, pycparser) are not needed
+  on the interpreter: pip installs the versions pinned in `kmc_sdls/kmc_sdls_python/KmcSdlsClient/pyproject.toml`
+  into an isolated build environment, so the build needs access to PyPI or a mirror. On a host without internet
+  access, point pip at an internal index (`PIP_INDEX_URL`) or at a pre-populated directory of wheels
+  (`PIP_FIND_LINKS=/path/to/wheels PIP_NO_INDEX=1`).
 
 ### Linux (Ubuntu example)
 

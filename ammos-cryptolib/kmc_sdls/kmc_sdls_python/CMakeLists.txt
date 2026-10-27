@@ -18,12 +18,12 @@ set(KMC_PYTHON_USABLE "")
 foreach(PY_VER IN LISTS KMC_PYTHON_VERSIONS)
     find_program(PYTHON_${PY_VER} python${PY_VER})
     if(PYTHON_${PY_VER})
-        execute_process(COMMAND ${PYTHON_${PY_VER}} -c "import setuptools, cffi, pip"
+        execute_process(COMMAND ${PYTHON_${PY_VER}} -c "import cffi, pip"
                         RESULT_VARIABLE _ok OUTPUT_QUIET ERROR_QUIET)
         if(_ok EQUAL 0)
             list(APPEND KMC_PYTHON_USABLE ${PY_VER})
         else()
-            message(WARNING "python${PY_VER} found but missing setuptools/cffi/pip -- skipping. "
+            message(WARNING "python${PY_VER} found but missing cffi/pip -- skipping. "
                             "Fix: python${PY_VER} -m pip install -r ${CMAKE_CURRENT_SOURCE_DIR}/requirements.txt")
         endif()
     endif()
