@@ -299,7 +299,7 @@ if [ ! -r "${SVC_CFG_DIR}/.props.configured" ]; then
   if [ -z "${CREATE_ECF}" -o "${CREATE_ECF},," == "true" ]; then
     CREATE_ECF='true'
   fi
-  /bin/sed -i -e "s|^#cryptolib.apply_tc.create_ecf=.*|cryptolib.apply_tc.create_ecf=${CREATE_ECF}|" "${SVC_PROPS}"
+  /bin/sed -i -e "s|^#cryptolib.tc.create_ecf=.*|cryptolib.tc.create_ecf=${CREATE_ECF}|" "${SVC_PROPS}"
 
   if [ -z "${VCID_BITMASK}" ]; then
     VCID_BITMASK='0x3f'
