@@ -1,7 +1,7 @@
 package gov.nasa.jpl.ammos.kmc.keyclient;
 
 /**
- * This exception is thrown by the ASEC KMC cryptographic API to indicate that
+ * This exception is thrown by the ASEC DCS cryptographic API to indicate that
  * it was not initialized properly due to errors in the config file.
  *
  *
