@@ -1,0 +1,15 @@
+# Used with: pytest --backend=kmc --kmc-props=kmc.properties
+# Load kmc_seed.sql into the SADB first. Adjust to your environment.
+cryptolib.sadb.type=mariadb
+cryptolib.sadb.mariadb.fqdn=127.0.0.1
+cryptolib.sadb.mariadb.port=3307
+cryptolib.sadb.mariadb.username=sadb_user
+cryptolib.sadb.mariadb.password=sadb_password
+cryptolib.sadb.mariadb.tls.verifyserver=false
+cryptolib.sadb.mariadb.require_secure_transport=false
+cryptolib.crypto.type=kmccryptoservice
+cryptolib.crypto.kmccryptoservice.protocol=http
+cryptolib.crypto.kmccryptoservice.fqdn=localhost
+cryptolib.crypto.kmccryptoservice.port=8080
+cryptolib.crypto.kmccryptoservice.app=crypto-service
+cryptolib.crypto.kmccryptoservice.verifyserver=true

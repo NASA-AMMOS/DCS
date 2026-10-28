@@ -1,0 +1,12 @@
+[build-system]
+# Pinned so builds are repeatable: pip installs exactly these into an isolated build environment (this needs access to
+# PyPI or a mirror configured through PIP_INDEX_URL / pip.conf). wheel is needed by setuptools older than 70.1, which
+# can end up running the build on Debian/Ubuntu (see setup.py). The extension built with this cffi runs against any
+# runtime cffi that satisfies install_requires in setup.py.
+requires = [
+    "setuptools==80.9.0",
+    "wheel==0.45.1",
+    "cffi==2.0.0",
+    "pycparser==2.23",
+]
+build-backend = "setuptools.build_meta"

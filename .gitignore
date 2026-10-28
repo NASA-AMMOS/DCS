@@ -49,10 +49,15 @@ ammos-cryptolib/CryptoLib/lib
 ammos-cryptolib/CryptoLib/Testing
 ammos-cryptolib/Cryptolib/DartConfiguration.tcl
 ammos-cryptolib/kmc_sdls/kmc_perf_test/performance_test
-ammos-cryptolib/kmc_sdls/kmc_sdls_java/gov/nasa/jpl/ammos/asec/kmc/*.java
-ammos-cryptolib/kmc_sdls/kmc_sdls_java/gov/nasa/jpl/ammos/asec/kmc/*.c
-!ammos-cryptolib/kmc_sdls/kmc_sdls_java/gov/nasa/jpl/ammos/asec/kmc/KmcSdlsEngine.java
-!ammos-cryptolib/kmc_sdls/kmc_sdls_java/gov/nasa/jpl/ammos/asec/kmc/SDLS_TC_TransferFrame.java
+ammos-cryptolib/kmc_sdls/kmc_sdls_java/swig-java/
+ammos-cryptolib/kmc_sdls/kmc_sdls_java/target/
+ammos-cryptolib/kmc_sdls/kmc_sdls_java/src/test/resources/sa_save_file.bin
+ammos-cryptolib/kmc_sdls/kmc_sdls_python/kmc_python_tests/sa_save_file.bin
+ammos-cryptolib/build-native/
+ammos-cryptolib/kmc_sdls/kmc_sdls_python/KmcSdlsClient/build/
+ammos-cryptolib/kmc_sdls/kmc_sdls_python/KmcSdlsClient/src/*.egg-info/
+ammos-cryptolib/kmc_sdls/kmc_sdls_tests/sa_save_file.bin
+ammos-cryptolib/kmc_sdls/kmc_sdls_tests/log.txt
 
 
 # IDE / Editor files
@@ -79,7 +84,3 @@ kmc-resources/packaging/container/kmcroot/*
 
 # OS specific non-project files #
 **/.DS_Store
-
-# .devcontainer
-.devcontainer
-.devcontainer/

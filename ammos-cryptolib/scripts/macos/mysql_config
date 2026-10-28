@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# Shim for `mysql_config` used only for native macOS builds of ammos-cryptolib.
+#
+# CryptoLib/src/CMakeLists.txt (a git submodule we don't control) does:
+#
+#   execute_process(COMMAND mysql_config --cflags OUTPUT_VARIABLE MYSQL_CFLAGS ...)
+#   target_compile_options(crypto PUBLIC ${MYSQL_CFLAGS})
+#
+# `mysql_config`'s real output is a single whitespace-separated string, e.g.
+# "-I/path/mysql -I/path/mysql/..". CMake's unquoted ${MYSQL_CFLAGS} expansion only
+# splits on ';' (CMake's list separator), not on whitespace, so the whole string is
+# passed to the compiler/linker as one bogus argument instead of two real flags --
+# this reliably breaks `-DSA_MARIADB=ON` builds (confirmed: "mysql/mysql.h file not
+# found" even though the header exists, because the -I flags never actually land).
+#
+# This wraps the real mysql_config and reformats any whitespace-separated output into
+# a ';'-separated CMake list, so ${MYSQL_CFLAGS} (and ${MYSQL_LIBS}) expand correctly.
+#
+# ammos-cryptolib/CMakeLists.txt puts this directory first on PATH during configuration on macOS when
+# SA_MARIADB=ON, so no manual setup is needed. See ../../README.md.
+set -euo pipefail
+
+self_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Resolve the real mysql_config, skipping our own directory so we don't recurse.
+real_mysql_config="$(PATH="${PATH//$self_dir:/}" command -v mysql_config)" || {
+    echo "mysql_config shim ($self_dir/mysql_config): no other mysql_config found on PATH" >&2
+    exit 1
+}
+
+"$real_mysql_config" "$@" | tr -s '[:space:]' ';' | sed -e 's/^;*//' -e 's/;*$//'

@@ -20,6 +20,51 @@
 
 extern int32_t sdls_config_cryptolib(uint8_t sadb_type, uint8_t cryptography_type);
 
+extern int32_t sdls_config_cryptolib_ex(uint8_t sadb_type, uint8_t cryptography_type, uint8_t key_type);
+
+typedef enum
+{
+    SDLS_SA_SA_STATE = 0,
+    SDLS_SA_TFVN,
+    SDLS_SA_SCID,
+    SDLS_SA_VCID,
+    SDLS_SA_MAPID,
+    SDLS_SA_LPID,
+    SDLS_SA_EST,
+    SDLS_SA_AST,
+    SDLS_SA_SHIVF_LEN,
+    SDLS_SA_SHSNF_LEN,
+    SDLS_SA_SHPLF_LEN,
+    SDLS_SA_STMACF_LEN,
+    SDLS_SA_ECS_LEN,
+    SDLS_SA_ECS,
+    SDLS_SA_IV_LEN,
+    SDLS_SA_ACS_LEN,
+    SDLS_SA_ACS,
+    SDLS_SA_ABM_LEN,
+    SDLS_SA_ARSN_LEN,
+    SDLS_SA_ARSNW,
+    SDLS_SA_EKID,
+    SDLS_SA_AKID,
+    SDLS_SA_NULL_IV,
+    SDLS_SA_NULL_ARSN,
+    SDLS_SA_NUM_FIELDS
+} SdlsSaScalarField;
+
+typedef enum
+{
+    SDLS_SA_BYTES_IV = 0,
+    SDLS_SA_BYTES_ARSN,
+    SDLS_SA_BYTES_ABM,
+    SDLS_SA_NUM_BYTE_FIELDS
+} SdlsSaByteField;
+
+/* Accessors for the in-memory SADB's SAs (struct bitfields can't be mapped by cffi). Only for cryptolib.sadb.type=inmemory. */
+extern int32_t sdls_sa_set_scalar(uint16_t spi, int32_t field, uint32_t value);
+extern int32_t sdls_sa_get_scalar(uint16_t spi, int32_t field, uint32_t *value);
+extern int32_t sdls_sa_set_bytes(uint16_t spi, int32_t field, const uint8_t *data, uint16_t len);
+extern int32_t sdls_sa_get_bytes(uint16_t spi, int32_t field, uint8_t *data, uint16_t max_len, uint16_t *len);
+
 extern int32_t sdls_config_cryptolib_tc(uint8_t crypto_create_fecf, uint8_t process_sdls_pdus, uint8_t has_pus_hdr,
                                         uint8_t ignore_anti_replay, uint8_t ignore_sa_state,
                                         uint8_t unique_sa_per_mapid,

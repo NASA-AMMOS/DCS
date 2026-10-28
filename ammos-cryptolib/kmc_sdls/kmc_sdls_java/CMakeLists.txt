@@ -13,21 +13,28 @@
 find_package(SWIG REQUIRED)
 find_package(Java REQUIRED)
 find_package(JNI REQUIRED)
-include(UseJava)
 include(UseSWIG)
 include_directories(${JNI_INCLUDE_DIRS})
 
 set(SWIGJAVADIR gov/nasa/jpl/ammos/asec/kmc)
 set(SWIGJAVAPKG gov.nasa.jpl.ammos.asec.kmc)
-set(CMAKE_SWIG_OUTDIR ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR})
+set(SWIG_JAVA_ROOT ${CMAKE_CURRENT_BINARY_DIR}/swig-java)          # package root
+set(CMAKE_SWIG_OUTDIR ${SWIG_JAVA_ROOT}/${SWIGJAVADIR})
 set(CMAKE_SWIG_FLAGS -package ${SWIGJAVAPKG})
 #SWIGJAVASRCDIR = ./$(SWIGJAVADIR)
 #SWIGJAVACLASSDIR = $(JAVABUILDDIR)/$(SWIGJAVADIR)
 
+# Maven compiles everything under swig-java/, so a type removed from kmc_sdls.i leaves a stale
+# .java behind. After removing a type from kmc_sdls.i, run `make clean`.
+set_property(SOURCE kmc_sdls.i PROPERTY DEPENDS
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../CryptoLib/include/crypto_config_structs.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../CryptoLib/include/crypto_structs.h)
 swig_add_library(kmc_sdls_java
                     LANGUAGE java
                     SOURCES kmc_sdls.i
-                    OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR})
+                    OUTPUT_DIR ${CMAKE_SWIG_OUTDIR})
+
+target_compile_definitions(kmc_sdls_java PRIVATE MAC_SIZE=${MAC_SIZE})
 
 swig_link_libraries(kmc_sdls_java kmc_sdls)
 
@@ -41,113 +48,49 @@ add_custom_command(
 install(TARGETS kmc_sdls_java
         DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 
-# Doesn't work because this happens at cmake time, but swig command generated files at build time...
-# file(GLOB_RECURSE kmc_sdls_jni_sources ${CMAKE_SWIG_OUTDIR}/*.java)
+find_program(MVN_EXECUTABLE mvn REQUIRED)
+set(KMC_MVN_ARGS "-B;-ntp" CACHE STRING "Extra args passed to every mvn invocation (;-separated)")
 
-#You must manually update this when new source files are generated! -- cmake can't get them at build time!
-##I think the only way to have this be automated is a cmake sub project with add_custom_target -- TBD.
-set(SWIG_GENERATED_SRCS
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/TcUniqueSaPerMapId.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/TcSegmentHdrsPresent.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/TcPusHdrPresent.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/TcProcessSdlsPdus.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/TcIgnoreSaState.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/IgnoreAntiReplay.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/FecfPresent.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/CreateFecfBool.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/CheckFecfBool.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/SadbType.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/CamConfig_t.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/CamEnabledBool.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/CamLoginMethod.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/SaIncrementNonTransmittedIvPortion.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/CryptographyType.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/EncCipherSuite.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/AuthCipherSuite.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/CryptoConfigGlobal_t.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/CryptoConfigAOS_t.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/CryptoConfigTC_t.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/CryptoConfigTM_t.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/_TCGvcidManagedParameters_t.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/_TMGvcidManagedParameters_t.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/_AOSGvcidManagedParameters_t.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/SadbMariaDBConfig_t.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/CryptographyKmcCryptoServiceConfig_t.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/crypto_gvcid_t.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/SecurityAssociation_t.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/SDLS_FSR_t.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/SDLS_TLV_Hdr_t.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/SDLS_TLV_t.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/SDLS_OTAR_t.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/SDLS_EKB_t.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/SDLS_KEY_t.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/SDLS_KEY_INVENTORY_CMD_t.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/SDLS_KEY_INVENTORY_RPLY_t.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/SDLS_KEY_BLK_t.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/SDLS_KEYV_CMD_BLK_t.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/SDLS_KEYV_RPLY_t.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/SDLS_KEYV_RPLY_BLK_t.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/SDLS_KEYV_CMD_t.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/SDLS_KEYDB_RPLY_t.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/SDLS_KEYDB_CMD_t.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/SDLS_SA_STATUS_RPLY_t.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/SDLS_SA_READ_ARSN_RPLY_t.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/SDLS_MC_LOG_RPLY_t.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/SDLS_MC_ST_RPLY_t.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/SDLS_MC_SN_RPLY_t.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/SDLS_MC_DUMP_RPLY_t.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/SDLS_MC_LOG_RPLY_t.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/SDLS_MC_DUMP_BLK_RPLY_t.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/TC_FramePrimaryHeader_t.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/TC_FrameSecurityTrailer_t.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/TC_FrameSecurityHeader_t.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/TC_t.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/CCSDS_SPP_HDR_t.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/ECSS_PUS_t.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/CCSDS_t.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/TM_FrameSecurityHeader_t.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/TM_FramePrimaryHeader_t.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/TM_FrameSecurityTrailer_t.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/TM_t.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/kmc_sdlsJNI.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/kmc_sdlsConstants.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/kmc_sdls.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/SWIGTYPE_p_unsigned_short.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/SWIGTYPE_p_unsigned_char.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/SWIGTYPE_p_p_unsigned_char.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/SWIGTYPE_p_int.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/AOS_FramePrimaryHeader_t.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/AOS_FrameSecurityHeader_t.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/AOS_FrameSecurityTrailer_t.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/AOS_t.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/AosFhecPresent.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/AosInsertZonePresent.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/InitStatus.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/IvType.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/KeyType.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/McType.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/OcfPresent.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/SDLS_MC_LOG_RPLY_t.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/Telemetry_Frame_Ocf_Clcw_t.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/Telemetry_Frame_Ocf_Fsr_t.java
-        ${CMAKE_CURRENT_BINARY_DIR}/${SWIGJAVADIR}/TmSecondaryHdrPresent.java
-        )
+set(KMC_JNI_POM   ${CMAKE_CURRENT_SOURCE_DIR}/pom.xml)
+set(KMC_JNI_JAR   ${CMAKE_CURRENT_SOURCE_DIR}/target/KmcSdlsJNI.jar)
+set(KMC_JNI_MVN   ${MVN_EXECUTABLE} ${KMC_MVN_ARGS} -f ${KMC_JNI_POM}
+                  -Dswig.generated.dir=${SWIG_JAVA_ROOT}
+                  -Dnative.lib.dir=${PROJECT_BINARY_DIR}/lib)
 
-set(KMC_SDLS_ENGINE_SRCS
-        ${CMAKE_CURRENT_SOURCE_DIR}/${SWIGJAVADIR}/KmcSdlsEngine.java
-        ${CMAKE_CURRENT_SOURCE_DIR}/${SWIGJAVADIR}/SDLS_TC_TransferFrame.java
-        )
+file(GLOB_RECURSE KMC_JNI_HANDWRITTEN CONFIGURE_DEPENDS
+     ${CMAKE_CURRENT_SOURCE_DIR}/src/main/java/*.java)
 
-add_jar(KmcSdlsJNI
-        SOURCES ${SWIG_GENERATED_SRCS} ${KMC_SDLS_ENGINE_SRCS}
-        OUTPUT_DIR ${PROJECT_BINARY_DIR}/lib)
+add_custom_command(
+        OUTPUT ${KMC_JNI_JAR}
+        COMMAND ${KMC_JNI_MVN} -DskipTests package
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${KMC_JNI_JAR} ${PROJECT_BINARY_DIR}/lib/KmcSdlsJNI.jar
+        DEPENDS kmc_sdls_java ${KMC_JNI_POM} ${KMC_JNI_HANDWRITTEN}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMENT "Building KmcSdlsJNI.jar with Maven"
+        VERBATIM)
+add_custom_target(KmcSdlsJNI ALL DEPENDS ${KMC_JNI_JAR})
 
+install(FILES ${PROJECT_BINARY_DIR}/lib/KmcSdlsJNI.jar DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 
-add_dependencies(KmcSdlsJNI kmc_sdls_java)
+# Publish to ~/.m2 only when explicitly asked (build.sh does this). Not part of ALL.
+add_custom_target(kmc_sdls_java_m2_install
+        COMMAND ${KMC_JNI_MVN} -DskipTests install
+        DEPENDS KmcSdlsJNI
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        VERBATIM)
 
-install_jar(KmcSdlsJNI
-            DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
+# Runs the KmcSdlsJNI unit tests against the freshly built native libs. Not part of ALL; build.sh invokes it.
+add_custom_target(kmc_sdls_java_test
+        COMMAND ${KMC_JNI_MVN} -DskipTests=false test
+        DEPENDS KmcSdlsJNI
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        VERBATIM)
 
-add_subdirectory(kmc_sdls_java_test)
+if(BUILD_TESTING)
+    add_test(NAME TestKmcSdlsJavaTest
+             COMMAND ${KMC_JNI_MVN} -DskipTests=false test
+             WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+endif()
 
-set_target_properties(kmc_sdls_java PROPERTIES ADDITIONAL_CLEAN_FILES "${SWIG_GENERATED_SRCS}")
+set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_CLEAN_FILES
+             ${CMAKE_CURRENT_SOURCE_DIR}/target ${SWIG_JAVA_ROOT})

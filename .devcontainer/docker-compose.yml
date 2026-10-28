@@ -1,0 +1,13 @@
+services:
+  cryptolib-build:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ..:/workspace
+      - ${HOME}/.m2:/root/.m2
+    working_dir: /workspace
+    ports:
+      - "8445:8445"   # kmc-sdls-service HTTP
+      - "5005:5005"   # JDWP remote debug port
+    command: sleep infinity

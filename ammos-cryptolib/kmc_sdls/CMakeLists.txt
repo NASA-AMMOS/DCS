@@ -15,8 +15,12 @@ include_directories(public_inc)
 
 aux_source_directory(src LIB_SRC_FILES)
 
-set(CMAKE_EXE_LINKER_FLAGS    "-Wl,--as-needed ${CMAKE_EXE_LINKER_FLAGS}")
-set(CMAKE_SHARED_LINKER_FLAGS "-Wl,--as-needed ${CMAKE_SHARED_LINKER_FLAGS}")
+# --as-needed is a GNU ld option; Apple's linker doesn't support it and errors on it ("unknown options:
+# --as-needed").
+if(NOT APPLE)
+    set(CMAKE_EXE_LINKER_FLAGS    "-Wl,--as-needed ${CMAKE_EXE_LINKER_FLAGS}")
+    set(CMAKE_SHARED_LINKER_FLAGS "-Wl,--as-needed ${CMAKE_SHARED_LINKER_FLAGS}")
+endif()
 
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     include(CTest)
@@ -27,6 +31,11 @@ endif()
 # Create the app module
 set(APPTYPE "SHARED")
 add_library(kmc_sdls ${APPTYPE} ${LIB_SRC_FILES})
+if(KEY_INTERNAL)
+    # Lets sdls_config_cryptolib_ex() accept KEY_TYPE_INTERNAL (CryptoLib's built-in test key ring).
+    # Off in shipping builds; enable with -DKEY_INTERNAL=ON for the hermetic pytest suite.
+    target_compile_definitions(kmc_sdls PRIVATE KMC_SDLS_KEY_INTERNAL)
+endif()
 
 # Add cryptolib
 #target_link_options(kmc_sdls INTERFACE)
@@ -36,9 +45,17 @@ target_link_libraries(kmc_sdls PUBLIC crypto)
 set_target_properties(kmc_sdls PROPERTIES PUBLIC_HEADER "public_inc/kmc_sdls.h")
 
 add_custom_command(TARGET kmc_sdls POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:kmc_sdls> ${PROJECT_BINARY_DIR}/lib/libkmc_sdls.so
-        COMMENT "Created ${PROJECT_BINARY_DIR}/lib/libkmc_sdls.so"
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:kmc_sdls> ${PROJECT_BINARY_DIR}/lib/libkmc_sdls${CMAKE_SHARED_LIBRARY_SUFFIX}
+        COMMENT "Created ${PROJECT_BINARY_DIR}/lib/libkmc_sdls${CMAKE_SHARED_LIBRARY_SUFFIX}"
         )
+
+# Copy libcryptolib to build/lib so kmc_sdls can find it via RPATH
+add_custom_command(TARGET kmc_sdls POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                $<TARGET_FILE:crypto>
+                ${PROJECT_BINARY_DIR}/lib/$<TARGET_FILE_NAME:crypto>
+        COMMENT "Copying libcryptolib to build/lib for RPATH"
+        VERBATIM)
 
 install(TARGETS kmc_sdls
         DESTINATION ${CMAKE_INSTALL_PREFIX}/lib

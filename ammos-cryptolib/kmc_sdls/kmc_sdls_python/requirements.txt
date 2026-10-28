@@ -1,2 +1,7 @@
-cffi==1.14.6
-invoke==1.6.0
+# Runtime requirements of the KmcSdlsClient (each python3.X that should get the bindings also needs pip).
+# The build tools (setuptools, cffi, pycparser) are installed by pip in an isolated build environment from the
+# pins in KmcSdlsClient/pyproject.toml, so they do not need to be installed here.
+cffi>=1.14.5; python_version < "3.12"
+cffi>=1.16; python_version == "3.12"
+cffi>=1.17.1; python_version == "3.13"
+cffi>=2.0; python_version >= "3.14"

@@ -24,9 +24,7 @@ Required Build Dependencies:
 * cmake [3.26.5]
 * swig [4.1.1]
 * MariaDB Connector/C [3.2.6]
-* cffi (Python module) [1.14.5]
-* invoke (Python module) [2.2.0]
-* pycryptodome (Python module) [3.20.0]
+* Python 3.9 - 3.14 with the pip and cffi modules [cffi 1.14.5]. The AMMOS CryptoLib Python bindings are built for every `python3.X` in this range found on PATH; interpreters missing those modules are skipped with a warning, so install them for each interpreter you need. The build tools are downloaded by pip from PyPI (or a configured mirror) during the build (see ammos-cryptolib/README.md)
 * maven [3.6.3]
 
 ## Deploying DCS
