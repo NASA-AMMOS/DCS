@@ -1,8 +1,8 @@
 package gov.nasa.jpl.ammos.kmc.keyclient;
 
 /**
- * This exception is thrown by the ASEC KMC Crypto Manager to indicate that
- * errors in the KMC config file and for any other reasons.  Unknown parameters
+ * This exception is thrown by the ASEC DCS Crypto Manager to indicate that
+ * errors in the DCS config file and for any other reasons.  Unknown parameters
  * are ignored.
  *
  *
@@ -17,15 +17,15 @@ public class KmcKeyClientManagerException extends Exception {
      */
     public enum KmcKeyOpsManagerErrorCode {
         /**
-         * The ASEC KMS has not been initialized.
+         * The KMS has not been initialized.
          */
         NOT_INITIALIZED,
         /**
-         * The ASEC KMS config file is not found.
+         * The KMS config file is not found.
          */
         CONFIG_FILE_NOT_FOUND,
         /**
-         * The parameter is not found in the ASEC KMS config file.
+         * The parameter is not found in the KMS config file.
          */
         CONFIG_PARAMETER_NOT_FOUND,
         /**
