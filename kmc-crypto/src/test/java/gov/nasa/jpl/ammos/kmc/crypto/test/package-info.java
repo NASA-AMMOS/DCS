@@ -1,5 +1,5 @@
 /**
- * This package is used for testing the KMC Crypto Manager.
+ * This package is used for testing the DCS Crypto Manager.
  *
  */
 
