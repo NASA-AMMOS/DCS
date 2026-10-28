@@ -1,5 +1,5 @@
 /**
- * The package contains the KMC Cryptography API unit tests.
+ * The package contains the DCS Cryptography API unit tests.
  *
  *
  */
