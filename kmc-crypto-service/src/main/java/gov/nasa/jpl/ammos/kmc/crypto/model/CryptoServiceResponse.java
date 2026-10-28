@@ -3,7 +3,7 @@ package gov.nasa.jpl.ammos.kmc.crypto.model;
 
 
 /**
- * Response from KMC Crypto Service.
+ * Response from DCS Crypto Service.
  *
  *
  */
