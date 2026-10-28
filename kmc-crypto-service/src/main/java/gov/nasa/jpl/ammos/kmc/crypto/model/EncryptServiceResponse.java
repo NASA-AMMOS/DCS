@@ -3,7 +3,7 @@ package gov.nasa.jpl.ammos.kmc.crypto.model;
 import java.util.Base64;
 
 /**
- * Response from KMC Encrypt Service.
+ * Response from DCS Encrypt Service.
  *
  *
  */
