@@ -1,7 +1,7 @@
 package gov.nasa.jpl.ammos.kmc.crypto.model;
 
 /**
- * Response from KMC ICV Create Service.
+ * Response from DCS ICV Create Service.
  *
  *
  */
