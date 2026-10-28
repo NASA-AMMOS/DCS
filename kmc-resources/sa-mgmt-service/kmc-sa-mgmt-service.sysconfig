@@ -1,4 +1,4 @@
-# KMC SA Management Service Environment settings
+# DCS SA Management Service Environment settings
 
 # General environment settings
 CATALINA_PID=__LOGPATH__/kmc-sa-mgmt-service.pid
