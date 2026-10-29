@@ -1,5 +1,7 @@
 package gov.nasa.jpl.ammos.kmc.crypto;
 
+import java.io.Serial;
+
 /**
  * This exception is thrown by the ASEC KMC cryptographic API for any error occurred
  * during initialization or performing the cryptographic functions.
@@ -7,6 +9,7 @@ package gov.nasa.jpl.ammos.kmc.crypto;
  *
  */
 public class KmcCryptoException extends Exception {
+    @Serial
     private static final long serialVersionUID = 7713300322251991392L;
     /**
      * The error code of the KmcCryptoException.
