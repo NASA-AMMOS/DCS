@@ -110,8 +110,7 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
-          <source>17</source>
-          <target>17</target>
+          <release>${java.version}</release>
         </configuration>
       </plugin>
       <plugin>
@@ -196,7 +195,7 @@
     </dependency>
      <dependency>
         <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-web</artifactId>
+        <artifactId>spring-boot-starter-webmvc</artifactId>
         <exclusions>
             <exclusion>
                 <groupId>org.springframework.boot</groupId>
@@ -226,10 +225,22 @@
     <dependency>
       <groupId>gov.nasa.jpl.ammos.kmc</groupId>
       <artifactId>kmc-crypto</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>junit</groupId>
+          <artifactId>junit</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>gov.nasa.jpl.ammos.kmc</groupId>
       <artifactId>kmc-crypto-library</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>junit</groupId>
+          <artifactId>junit</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
