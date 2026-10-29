@@ -815,4 +815,31 @@ public class SaCreateTest extends BaseCommandLineTest {
         assertNull(dao.getSa(new SpiScid(6, (short) 46), type));
     }
 
+    @Test
+    public void testCreateBulkArsnLenZeroWithZeroArsn() throws Exception {
+        testCreateBulkArsnLenZeroWithZeroArsn(FrameType.TC);
+        testCreateBulkArsnLenZeroWithZeroArsn(FrameType.TM);
+        testCreateBulkArsnLenZeroWithZeroArsn(FrameType.AOS);
+    }
+
+    // arsn_len=0 with 20 zero bytes is the real DB default, so it must still import
+    public void testCreateBulkArsnLenZeroWithZeroArsn(FrameType type) throws Exception {
+        // row 2 of test-sas-h2.csv has arsn_len=0 and a 20 zero byte arsn; re-key it to a new SPI
+        java.util.List<String> lines = java.nio.file.Files.readAllLines(java.nio.file.Path.of(
+                getClass().getClassLoader().getResource("test-sas-h2.csv").toURI()));
+        assertTrue(lines.get(2).contains("\"0\",\"0x" + "00".repeat(20) + "\""));
+        java.nio.file.Path csv = java.nio.file.Files.createTempFile("arsn-zero", ".csv");
+        try {
+            java.nio.file.Files.writeString(csv, lines.get(0) + "\n" + lines.get(2).replaceFirst("^\"2\"", "\"50\"") +
+                    "\n");
+            CommandLine cmd = getCmd(new SaCreate(), true, null, null);
+            int exit = cmd.execute(String.format(FILE_FMT, csv), String.format(TYPE_FMT, type.name()));
+            assertEquals(type.name(), 0, exit);
+            ISecAssn sa = dao.getSa(new SpiScid(50, (short) 46), type);
+            assertNotNull(type.name(), sa);
+            assertEquals(0, (short) sa.getArsnLen());
+        } finally {
+            java.nio.file.Files.deleteIfExists(csv);
+        }
+    }
 }
