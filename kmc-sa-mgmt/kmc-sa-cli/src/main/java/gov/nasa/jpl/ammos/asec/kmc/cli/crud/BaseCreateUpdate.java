@@ -220,6 +220,19 @@ public abstract class BaseCreateUpdate extends BaseCliApp {
     protected void updateSa(final ISecAssn sa, IKmcDao dao, IDbSession session) throws KmcException {
         ISecAssn mutableSa   = sa;
         boolean  needsUpdate = false;
+        // validate before mutating anything. IV and IV length fall back to the stored record; the ECS-specific
+        // check only uses an ECS/ST supplied on the command line
+        if (ivBytes != null || ivLen != null || ecsBytes != null || st != null) {
+            SecAssnValidator.verifyIv(ivBytes != null ? ivBytes : sa.getIv(), ivLen != null ? ivLen : sa.getIvLen(),
+                    st != null ? st.getEncryptionType() : null, ecsBytes);
+        }
+        byte[] newArsn = null;
+        Short  newArsnLen = null;
+        if (arsnBytes != null || arsnlen != null) {
+            newArsnLen = arsnlen != null ? arsnlen : sa.getArsnLen();
+            newArsn = arsnBytes != null ? arsnBytes : (arsnlen != null && arsnlen == 0 ? new byte[0] : sa.getArsn());
+            SecAssnValidator.verifyArsn(newArsn, newArsnLen);
+        }
         if (updateEnc) {
             console(getUpdateMessage(user, "encryption key", frameType, mutableSa.getId()));
             dao.rekeySaEnc(session, mutableSa.getId(), ekid, ecsBytes, (short) 1, frameType);
@@ -232,10 +245,10 @@ public abstract class BaseCreateUpdate extends BaseCliApp {
             session.flush();
             mutableSa = dao.getSa(session, mutableSa.getId(), frameType);
         }
-        if (arsnBytes != null) {
+        if (newArsn != null) {
             console(getUpdateMessage(user, "ARSN", frameType, mutableSa.getId()));
-            mutableSa.setArsn(arsnBytes);
-            mutableSa.setArsnLen(arsnlen);
+            mutableSa.setArsn(newArsn);
+            mutableSa.setArsnLen(newArsnLen);
             needsUpdate = true;
         }
         if (arsnw != null) {
@@ -243,10 +256,14 @@ public abstract class BaseCreateUpdate extends BaseCliApp {
             mutableSa.setArsnw(arsnw);
             needsUpdate = true;
         }
-        if (ivBytes != null) {
+        if (ivBytes != null || ivLen != null) {
             console(getUpdateMessage(user, "IV", frameType, mutableSa.getId()));
-            mutableSa.setIv(ivBytes);
-            mutableSa.setIvLen(ivLen);
+            if (ivBytes != null) {
+                mutableSa.setIv(ivBytes);
+            }
+            if (ivLen != null) {
+                mutableSa.setIvLen(ivLen);
+            }
             needsUpdate = true;
         }
         if (updateAbm) {
@@ -319,11 +336,8 @@ public abstract class BaseCreateUpdate extends BaseCliApp {
      */
     protected void checkIvParams(String iv, Short ivLen, String stStr, String ecsBytes) throws KmcException {
         checkSt(stStr);
-        Short encryptionType = null;
-        if (st != null) {
-            encryptionType = st.getEncryptionType();
-        }
-        this.ivBytes = SecAssnValidator.verifyIv(iv, ivLen, encryptionType, ecsBytes);
+        // cross-field validation happens in updateSa against the stored record
+        this.ivBytes = SecAssnValidator.convertHexToBytes(iv, "iv must be a hex string", true);
         this.ivLen = ivLen;
     }
 
@@ -365,7 +379,8 @@ public abstract class BaseCreateUpdate extends BaseCliApp {
      * @throws KmcException KMC ex
      */
     protected void checkArsnParams(String arsn, Short arsnlen) throws KmcException {
-        this.arsnBytes = SecAssnValidator.verifyArsn(arsn, arsnlen);
+        // cross-field validation happens in updateSa against the stored record
+        this.arsnBytes = SecAssnValidator.convertHexToBytes(arsn, "ARSN must be a hex string", true);
         this.arsnlen = arsnlen;
     }
 

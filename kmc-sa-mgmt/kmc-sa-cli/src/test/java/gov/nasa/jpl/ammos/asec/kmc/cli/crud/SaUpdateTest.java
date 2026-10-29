@@ -683,4 +683,105 @@ public class SaUpdateTest extends BaseCommandLineTest {
         assertEquals(initialVcid, (byte) sa.getVcid());
     }
 
+    @Test
+    public void testIvLenAloneEmptyIv() throws KmcException {
+        testIvLenAloneEmptyIv(FrameType.TC);
+        testIvLenAloneEmptyIv(FrameType.TM);
+        testIvLenAloneEmptyIv(FrameType.AOS);
+    }
+
+    public void testIvLenAloneEmptyIv(FrameType type) throws KmcException {
+        CommandLine cli = getCmd(new SaUpdate(), true);
+        SpiScid     id  = new SpiScid(1, (short) 46);
+        ISecAssn    sa  = dao.getSa(id, type);
+        assertEquals(0, (short) sa.getIvLen());
+        assertNull(sa.getIv());
+        int exit = cli.execute(SPI_1, SCID_46, "--ivlen=16", String.format(TYPE_FMT, type.name()));
+        assertEquals(type.name(), 0, exit);
+        assertEquals(16, (short) dao.getSa(id, type).getIvLen());
+    }
+
+    @Test
+    public void testIvLenAloneMismatchedIvFails() throws KmcException {
+        testIvLenAloneMismatchedIvFails(FrameType.TC);
+        testIvLenAloneMismatchedIvFails(FrameType.TM);
+        testIvLenAloneMismatchedIvFails(FrameType.AOS);
+    }
+
+    public void testIvLenAloneMismatchedIvFails(FrameType type) throws KmcException {
+        CommandLine cli = getCmd(new SaUpdate(), true);
+        SpiScid     id  = new SpiScid(2, (short) 46);
+        assertEquals(12, dao.getSa(id, type).getIv().length);
+        int exit = cli.execute("--spi=2", SCID_46, "--ivlen=16", String.format(TYPE_FMT, type.name()));
+        assertNotEquals(type.name(), 0, exit);
+        assertEquals(12, (short) dao.getSa(id, type).getIvLen());
+    }
+
+    @Test
+    public void testIvAloneMatchingStoredIvLen() throws KmcException {
+        testIvAloneMatchingStoredIvLen(FrameType.TC);
+        testIvAloneMatchingStoredIvLen(FrameType.TM);
+        testIvAloneMatchingStoredIvLen(FrameType.AOS);
+    }
+
+    public void testIvAloneMatchingStoredIvLen(FrameType type) throws KmcException {
+        CommandLine cli = getCmd(new SaUpdate(), true);
+        SpiScid     id  = new SpiScid(2, (short) 46);
+        int exit = cli.execute("--spi=2", SCID_46, "--iv=0x000000000000000000000002", String.format(TYPE_FMT,
+                type.name()));
+        assertEquals(type.name(), 0, exit);
+        assertArrayEquals(new byte[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2}, dao.getSa(id, type).getIv());
+    }
+
+    @Test
+    public void testIvAloneMismatchingStoredIvLenFails() throws KmcException {
+        testIvAloneMismatchingStoredIvLenFails(FrameType.TC);
+        testIvAloneMismatchingStoredIvLenFails(FrameType.TM);
+        testIvAloneMismatchingStoredIvLenFails(FrameType.AOS);
+    }
+
+    public void testIvAloneMismatchingStoredIvLenFails(FrameType type) throws KmcException {
+        CommandLine cli = getCmd(new SaUpdate(), true);
+        SpiScid     id  = new SpiScid(2, (short) 46);
+        int exit = cli.execute("--spi=2", SCID_46, "--iv=0x00112233465566778899aabbccddeeff", String.format(TYPE_FMT,
+                type.name()));
+        assertNotEquals(type.name(), 0, exit);
+        assertEquals(12, dao.getSa(id, type).getIv().length);
+    }
+
+    @Test
+    public void testMismatchedIvAndIvLenWithoutEcsFails() throws KmcException {
+        testMismatchedIvAndIvLenWithoutEcsFails(FrameType.TC);
+        testMismatchedIvAndIvLenWithoutEcsFails(FrameType.TM);
+        testMismatchedIvAndIvLenWithoutEcsFails(FrameType.AOS);
+    }
+
+    public void testMismatchedIvAndIvLenWithoutEcsFails(FrameType type) throws KmcException {
+        CommandLine cli = getCmd(new SaUpdate(), true);
+        SpiScid     id  = new SpiScid(2, (short) 46);
+        int exit = cli.execute("--spi=2", SCID_46, "--iv=0x000000000000000000000002", "--ivlen=16",
+                String.format(TYPE_FMT, type.name()));
+        assertNotEquals(type.name(), 0, exit);
+        assertEquals(12, (short) dao.getSa(id, type).getIvLen());
+        assertEquals(1, dao.getSa(id, type).getIv()[11]);
+    }
+
+    @Test
+    public void testArsnLenZeroAloneClearsArsn() throws KmcException {
+        testArsnLenZeroAloneClearsArsn(FrameType.TC);
+        testArsnLenZeroAloneClearsArsn(FrameType.TM);
+        testArsnLenZeroAloneClearsArsn(FrameType.AOS);
+    }
+
+    public void testArsnLenZeroAloneClearsArsn(FrameType type) throws KmcException {
+        CommandLine cli = getCmd(new SaUpdate(), true);
+        SpiScid     id  = new SpiScid(5, (short) 46);
+        assertEquals(4, dao.getSa(id, type).getArsn().length);
+        int exit = cli.execute(SPI_5, SCID_46, "--arsnlen=0", String.format(TYPE_FMT, type.name()));
+        assertEquals(type.name(), 0, exit);
+        ISecAssn sa = dao.getSa(id, type);
+        assertEquals(0, (short) sa.getArsnLen());
+        assertEquals(0, sa.getArsn().length);
+    }
+
 }
