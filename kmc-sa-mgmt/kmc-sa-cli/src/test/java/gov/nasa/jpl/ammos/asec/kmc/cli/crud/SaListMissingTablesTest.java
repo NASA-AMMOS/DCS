@@ -2,35 +2,39 @@ package gov.nasa.jpl.ammos.asec.kmc.cli.crud;
 
 import gov.nasa.jpl.ammos.asec.kmc.api.ex.KmcException;
 import gov.nasa.jpl.ammos.asec.kmc.api.sa.FrameType;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import picocli.CommandLine;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.SQLException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 /**
  * Tests for listing SAs
  */
-public class SaListTestMissingTables extends BaseCommandLineTest {
+public class SaListMissingTablesTest extends BaseCommandLineTest {
 
     public static final String TYPE_FMT = "--type=%s";
 
+    @BeforeEach
     @Override
     public void beforeTest() {
         setupTc();
     }
 
+    @AfterEach
     @Override
     public void afterTest() throws SQLException {
         truncateTc();
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUpBeforeClass() throws Exception {
         dropAos();
         dropTm();

@@ -1,19 +1,19 @@
 package gov.nasa.jpl.ammos.asec.kmc.cli.format;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import gov.nasa.jpl.ammos.asec.kmc.api.ex.KmcException;
 import gov.nasa.jpl.ammos.asec.kmc.api.sa.FrameType;
 import gov.nasa.jpl.ammos.asec.kmc.api.sa.ISecAssn;
 import gov.nasa.jpl.ammos.asec.kmc.format.SaCsvInput;
 import org.apache.commons.codec.DecoderException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.List;
-
-import static org.junit.Assert.*;
 
 /**
  * CSV input tests
@@ -61,18 +61,22 @@ public class SaCsvInputTest {
         assertArrayEquals(new byte[]{}, val);
     }
 
-    @Test(expected = DecoderException.class)
-    public void testParseHexFail() throws DecoderException {
-        SaCsvInput i   = new SaCsvInput();
-        String     hex = "0xG0";
-        byte[]     val = i.parseHex(hex);
+    @Test
+    public void testParseHexFail() {
+        assertThrows(DecoderException.class, () -> {
+            SaCsvInput i = new SaCsvInput();
+            String hex = "0xG0";
+            byte[] val = i.parseHex(hex);
+        });
     }
 
-    @Test(expected = DecoderException.class)
-    public void testParseHexFail1() throws DecoderException {
-        SaCsvInput i   = new SaCsvInput();
-        String     hex = "0";
-        byte[]     val = i.parseHex(hex);
+    @Test
+    public void testParseHexFail1() {
+        assertThrows(DecoderException.class, () -> {
+            SaCsvInput i = new SaCsvInput();
+            String hex = "0";
+            byte[] val = i.parseHex(hex);
+        });
     }
 
 }

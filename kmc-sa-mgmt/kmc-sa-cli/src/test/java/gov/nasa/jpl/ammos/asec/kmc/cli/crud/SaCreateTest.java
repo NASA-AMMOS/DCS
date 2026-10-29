@@ -1,20 +1,24 @@
 package gov.nasa.jpl.ammos.asec.kmc.cli.crud;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import gov.nasa.jpl.ammos.asec.kmc.api.ex.KmcException;
 import gov.nasa.jpl.ammos.asec.kmc.api.sa.FrameType;
 import gov.nasa.jpl.ammos.asec.kmc.api.sa.ISecAssn;
 import gov.nasa.jpl.ammos.asec.kmc.api.sa.ServiceType;
 import gov.nasa.jpl.ammos.asec.kmc.api.sa.SpiScid;
 import gov.nasa.jpl.ammos.asec.kmc.sadb.KmcDao;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import picocli.CommandLine;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.SQLException;
 import java.util.List;
-
-import static org.junit.Assert.*;
 
 /**
  * Tests for creating an SA
@@ -82,8 +86,8 @@ public class SaCreateTest extends BaseCommandLineTest {
                 type.name()));
 
         assertEquals(0, exitCode);
-        assertTrue("Incorrect error message: " + w, w.toString().contains("SA create failed: an SA with " + "the " +
-                "SPI/SCID combination 20/44 already exists"));
+        assertTrue(w.toString().contains("SA create failed: an SA with " + "the " +
+                "SPI/SCID combination 20/44 already exists"), "Incorrect error message: " + w);
     }
 
     @Test
@@ -102,7 +106,7 @@ public class SaCreateTest extends BaseCommandLineTest {
         int exitCode = cmd.execute(String.format(FILE_FMT,
                 getClass().getClassLoader().getResource(BULK_SA_FILE).getFile()), String.format(TYPE_FMT,
                 type.name()));
-        assertEquals(w.toString(), 0, exitCode);
+        assertEquals(0, exitCode, w.toString());
         List<ISecAssn> sas = dao.getSas(type);
         int expectedSize = 0;
         switch (type) {
@@ -117,7 +121,7 @@ public class SaCreateTest extends BaseCommandLineTest {
                 expectedSize = 86;
                 break;
         }
-        assertEquals(type.name() + " " + w, expectedSize, sas.size());
+        assertEquals(expectedSize, sas.size(), type.name() + " " + w);
     }
 
     @Test
@@ -133,11 +137,11 @@ public class SaCreateTest extends BaseCommandLineTest {
         List<ISecAssn> sas = dao.getSas(FrameType.ALL);
         List<ISecAssn> tc =
                 sas.stream().filter(sa -> sa.getType() == FrameType.TC).toList();
-        assertEquals("bulk ALL tc records", 32, tc.size());
+        assertEquals(32, tc.size(), "bulk ALL tc records");
         List<ISecAssn> tm = sas.stream().filter(sa -> sa.getType() == FrameType.TM).toList();
-        assertEquals("bulk ALL tm records", 32, tm.size());
+        assertEquals(32, tm.size(), "bulk ALL tm records");
         List<ISecAssn> aos = sas.stream().filter(sa -> sa.getType() == FrameType.AOS).toList();
-        assertEquals("bulk ALL aos records", 17, aos.size());
+        assertEquals(17, aos.size(), "bulk ALL aos records");
         afterTest();
     }
 
@@ -150,9 +154,9 @@ public class SaCreateTest extends BaseCommandLineTest {
         int exitCode = cmd.execute(String.format(FILE_FMT,
                 getClass().getClassLoader().getResource(BULK_SA_FILE_2).getFile()), String.format(TYPE_FMT,
                 type.name()));
-        assertEquals(w.toString(), 0, exitCode);
+        assertEquals(0, exitCode, w.toString());
         List<ISecAssn> sas = dao.getSas(type);
-        assertEquals(w.toString(), expected, sas.size());
+        assertEquals(expected, sas.size(), w.toString());
     }
 
     @Test
@@ -481,7 +485,7 @@ public class SaCreateTest extends BaseCommandLineTest {
         CommandLine  cmd = getCmd(new SaCreate(), true, out, err);
         int exitCode = cmd.execute(TFVN_EQ_0, SCID_46, VCID_0, MAPID_0, SPI_EQ_6, IVLEN_12, "--ecs" +
                 "=0x01", EKID_130, String.format(TYPE_FMT, type.name()));
-        assertEquals("Incorrect error message: " + w.toString(), 0, exitCode);
+        assertEquals(0, exitCode, "Incorrect error message: " + w.toString());
         ISecAssn sa = dao.getSa(new SpiScid(6, (short) 46), type);
         assertEquals(12, (short) sa.getIvLen());
     }
@@ -502,7 +506,7 @@ public class SaCreateTest extends BaseCommandLineTest {
         int exitCode = cmd.execute(TFVN_EQ_0, SCID_46, VCID_0, MAPID_0, SPI_EQ_6, "--abm" +
                 "=0x1111111111111111111111111111111111111111", ABMLEN_20, "--type=" + type.name());
 
-        assertEquals("got " + w.toString(), 0, exitCode);
+        assertEquals(0, exitCode, "got " + w.toString());
         ISecAssn sa = dao.getSa(new SpiScid(6, (short) 46), FrameType.TC);
         assertArrayEquals(new byte[]{0x11,
                 0x11,
@@ -636,7 +640,7 @@ public class SaCreateTest extends BaseCommandLineTest {
         CommandLine  cmd = getCmd(new SaCreate(), true, out, err);
         int exitCode = cmd.execute(TFVN_EQ_0, SCID_46, VCID_0, MAPID_0, SPI_7, EKID_130, ECS_0_X_01,
                 AKID_130, ACS_0_X_01, ST_3, String.format(TYPE_FMT, type.name()));
-        assertEquals("got " + w.toString(), 0, exitCode);
+        assertEquals(0, exitCode, "got " + w.toString());
         ISecAssn sa = dao.getSa(new SpiScid(7, (short) 46), type);
         assertNotNull(sa);
         assertEquals(7, (int) sa.getSpi());

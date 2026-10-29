@@ -4,16 +4,16 @@ import gov.nasa.jpl.ammos.asec.kmc.api.ex.KmcException;
 import gov.nasa.jpl.ammos.asec.kmc.api.sa.FrameType;
 import gov.nasa.jpl.ammos.asec.kmc.api.sa.ISecAssn;
 import gov.nasa.jpl.ammos.asec.kmc.api.sa.SpiScid;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import picocli.CommandLine;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 public class SaExpireTest extends BaseCommandLineTest {
 
@@ -22,7 +22,7 @@ public class SaExpireTest extends BaseCommandLineTest {
     public static final String SPI_1 = "--spi=1";
     private CommandLine cli;
 
-    @Before
+    @BeforeEach
     public void setupTest() {
         cli = getCmd(new SaExpire(), true);
     }

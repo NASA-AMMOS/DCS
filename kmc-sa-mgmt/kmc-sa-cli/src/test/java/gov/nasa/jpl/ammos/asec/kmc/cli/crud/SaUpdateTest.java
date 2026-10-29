@@ -1,19 +1,22 @@
 package gov.nasa.jpl.ammos.asec.kmc.cli.crud;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 import gov.nasa.jpl.ammos.asec.kmc.api.ex.KmcException;
 import gov.nasa.jpl.ammos.asec.kmc.api.sa.FrameType;
 import gov.nasa.jpl.ammos.asec.kmc.api.sa.ISecAssn;
 import gov.nasa.jpl.ammos.asec.kmc.api.sa.ServiceType;
 import gov.nasa.jpl.ammos.asec.kmc.api.sa.SpiScid;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import picocli.CommandLine;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-
-import static org.junit.Assert.*;
 
 /**
  * Tests for updating an SA
@@ -66,13 +69,13 @@ public class SaUpdateTest extends BaseCommandLineTest {
 
     public void testUpdateBulkNotExistType(FrameType type, int expect) throws KmcException {
         List<ISecAssn> sas = dao.getSas(type);
-        assertEquals(type.name(), expect, sas.size());
+        assertEquals(expect, sas.size(), type.name());
         CommandLine cli = getCmd(new SaUpdate(), true);
         int exit = cli.execute(String.format(FILE_FMT, getClass().getClassLoader().getResource(
                 BULK_SA_FILE_2).getFile()), String.format(TYPE_FMT, type.name()));
-        assertEquals(type.name(), 0, exit);
+        assertEquals(0, exit, type.name());
         sas = dao.getSas(type);
-        assertEquals(type.name(), expect, sas.size());
+        assertEquals(expect, sas.size(), type.name());
     }
 
     @Test
