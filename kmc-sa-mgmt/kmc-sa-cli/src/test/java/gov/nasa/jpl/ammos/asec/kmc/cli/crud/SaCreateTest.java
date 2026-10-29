@@ -766,4 +766,53 @@ public class SaCreateTest extends BaseCommandLineTest {
         assertEquals(0, (short) sa.getAst());
     }
 
+    @Test
+    public void testCreateSaDefaultArsn() throws KmcException {
+        testCreateSaDefaultArsn(FrameType.TC);
+        testCreateSaDefaultArsn(FrameType.TM);
+        testCreateSaDefaultArsn(FrameType.AOS);
+    }
+
+    public void testCreateSaDefaultArsn(FrameType type) throws KmcException {
+        CommandLine cmd = getCmd(new SaCreate(), true, null, null);
+        int exitCode = cmd.execute(TFVN_EQ_0, SCID_46, VCID_0, MAPID_0, SPI_EQ_6, String.format(TYPE_FMT,
+                type.name()));
+        assertEquals(type.name(), 0, exitCode);
+        ISecAssn sa = dao.getSa(new SpiScid(6, (short) 46), type);
+        assertEquals(0, (short) sa.getArsnLen());
+        assertEquals(0, sa.getArsn().length);
+    }
+
+    @Test
+    public void testCreateSaArsnLenZeroAlone() throws KmcException {
+        testCreateSaArsnLenZeroAlone(FrameType.TC);
+        testCreateSaArsnLenZeroAlone(FrameType.TM);
+        testCreateSaArsnLenZeroAlone(FrameType.AOS);
+    }
+
+    public void testCreateSaArsnLenZeroAlone(FrameType type) throws KmcException {
+        CommandLine cmd = getCmd(new SaCreate(), true, null, null);
+        int exitCode = cmd.execute(TFVN_EQ_0, SCID_46, VCID_0, MAPID_0, SPI_EQ_6, "--arsnlen=0",
+                String.format(TYPE_FMT, type.name()));
+        assertEquals(type.name(), 0, exitCode);
+        ISecAssn sa = dao.getSa(new SpiScid(6, (short) 46), type);
+        assertEquals(0, (short) sa.getArsnLen());
+        assertEquals(0, sa.getArsn().length);
+    }
+
+    @Test
+    public void testCreateSaArsnLenMismatchFails() throws KmcException {
+        testCreateSaArsnLenMismatchFails(FrameType.TC);
+        testCreateSaArsnLenMismatchFails(FrameType.TM);
+        testCreateSaArsnLenMismatchFails(FrameType.AOS);
+    }
+
+    public void testCreateSaArsnLenMismatchFails(FrameType type) throws KmcException {
+        CommandLine cmd = getCmd(new SaCreate(), true, null, null);
+        int exitCode = cmd.execute(TFVN_EQ_0, SCID_46, VCID_0, MAPID_0, SPI_EQ_6, "--arsnlen=5", "--arsn=0x010203",
+                String.format(TYPE_FMT, type.name()));
+        assertNotEquals(type.name(), 0, exitCode);
+        assertNull(dao.getSa(new SpiScid(6, (short) 46), type));
+    }
+
 }
