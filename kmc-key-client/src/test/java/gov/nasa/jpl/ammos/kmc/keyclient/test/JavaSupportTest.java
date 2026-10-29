@@ -1,11 +1,14 @@
 package gov.nasa.jpl.ammos.kmc.keyclient.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.security.InvalidAlgorithmParameterException;
+
+import org.junit.jupiter.api.Test;
 import java.security.InvalidKeyException;
 import java.security.InvalidParameterException;
 import java.security.KeyPairGenerator;
@@ -22,8 +25,6 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
-
-import org.junit.Test;
 
 /**
  * Tests for verifying key algorithms and lengths that are supported by Java.
@@ -102,9 +103,10 @@ public class JavaSupportTest {
         }
     }
 
-    @Test(expected = NoSuchAlgorithmException.class)
-    public final void testCreateRSAKey() throws NoSuchAlgorithmException {
-        KeyGenerator.getInstance("RSA");
+    @Test
+    public final void testCreateRSAKey() {
+        assertThrows(NoSuchAlgorithmException.class, () ->
+            KeyGenerator.getInstance("RSA"));
     }
 
     @Test
@@ -131,22 +133,24 @@ public class JavaSupportTest {
         assertEquals(550, privateKey.length);
     }
 
-    @Test(expected = NoSuchProviderException.class)
-    public final void testGCM() throws NoSuchAlgorithmException, NoSuchPaddingException, NoSuchProviderException, InvalidKeyException, InvalidAlgorithmParameterException {
-        KeyGenerator gen = KeyGenerator.getInstance("AES");
-        gen.init(128);
-        SecretKey key = gen.generateKey();
-        assertNotNull(key);
-        assertEquals("AES", key.getAlgorithm());
+    @Test
+    public final void testGCM() throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException {
+        assertThrows(NoSuchProviderException.class, () -> {
+            KeyGenerator gen = KeyGenerator.getInstance("AES");
+            gen.init(128);
+            SecretKey key = gen.generateKey();
+            assertNotNull(key);
+            assertEquals("AES", key.getAlgorithm());
 
-        byte[] ivBytes = new byte[128];
-        Random random = SecureRandom.getInstance("SHA1PRNG", "SUN");
-        random.nextBytes(ivBytes);
-        IvParameterSpec ivSpec = new IvParameterSpec(ivBytes);
-        //GCMParameterSpec s = new GCMParameterSpec(128, ivBytes);
-        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding", "BC");
-        cipher.init(Cipher.ENCRYPT_MODE, key, ivSpec);
-        assertEquals("AES", cipher.getAlgorithm());
+            byte[] ivBytes = new byte[128];
+            Random random = SecureRandom.getInstance("SHA1PRNG", "SUN");
+            random.nextBytes(ivBytes);
+            IvParameterSpec ivSpec = new IvParameterSpec(ivBytes);
+            //GCMParameterSpec s = new GCMParameterSpec(128, ivBytes);
+            Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding", "BC");
+            cipher.init(Cipher.ENCRYPT_MODE, key, ivSpec);
+            assertEquals("AES", cipher.getAlgorithm());
+        });
     }
 
     @Test
