@@ -1,6 +1,7 @@
 package gov.nasa.jpl.ammos.kmc.crypto.service;
 
 import java.io.IOException;
+import java.io.Serial;
 
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
@@ -35,6 +36,7 @@ import gov.nasa.jpl.ammos.kmc.crypto.model.Status;
  */
 @WebServlet("/key-info")
 public class CryptoKeyService extends HttpServlet {
+    @Serial
     private static final long serialVersionUID = 1056079085902283284L;
 
     private static final Logger logger = LoggerFactory.getLogger(CryptoKeyService.class);
