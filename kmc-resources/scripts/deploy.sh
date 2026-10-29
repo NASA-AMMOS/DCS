@@ -90,7 +90,7 @@ while [ : ]; do
         DEPLOY_KMC_SDLS_SERVICE=1
         DEPLOY_KMC_SA_MGMT_SERVICE=1
         BUILD_RPM=1
-        PKGROOT="${DIST}/kmc-resources/packaging/rpm/BUILD/kmc-${VERSION}"
+        PKGROOT="${DIST}/kmc-resources/packaging/rpm/BUILD/dcs-${VERSION}"
         [ -d "${PKGROOT}" ] && /bin/rm -rf "${PKGROOT}"
         /bin/mkdir -p "${PKGROOT}"
         shift
@@ -867,8 +867,8 @@ if [ ${BUILD_RPM} -eq 1 ]; then
   QA_RPATHS=$(( 0x0001|0x0002 )) /bin/rpmbuild -ba \
   --define "_topdir ${SRC_RSC}/packaging/rpm" \
   --define "buildroot %{_buildrootdir}/%{NAME}-%{VERSION}" \
-  --define "kmc_version ${VERSION}" \
-  --define "kmc_release ${RPM_REV}" \
+  --define "dcs_version ${VERSION}" \
+  --define "dcs_release ${RPM_REV}" \
   --define "cryptogrp ${CRYPTOGRP_NAME}" \
   --define "cryptogrp_gid ${CRYPTOGRP_GID}" \
   --define "cryptogrp_members '${CRYPTOGRP_MEMBERS}'" \
@@ -908,7 +908,7 @@ if [ ${BUILD_RPM} -eq 1 ]; then
   --define "samgmtsvc_prefix ${SAMGMTSVC_PREFIX}" \
   --define "samgmtsvc_cfgpath ${SAMGMTSVC_CFGPATH}" \
   --define "samgmtsvc_logpath ${SAMGMTSVC_LOGPATH}" \
-  ${GRPMEMBERS} kmc.spec
+  ${GRPMEMBERS} dcs.spec
 
   if [ $? -eq 0 ]; then
     echo "RPM Build successful.  RPM packages located in ${SRC_RSC}/packaging/rpm/RPMS/x86_64."
@@ -929,10 +929,10 @@ if [ ${BUILD_IMG} -eq 1 ]; then
   echo '-------------------------------'
   pushd ${SRC_RSC}/packaging/container/crypto-service >/dev/null 2>&1
   /bin/cp -r ../kmcroot .
-  CRYPTO_BUILD=$("${CONTAINER_EXEC}" build -t "kmc-crypto-service:${VERSION}" \
+  CRYPTO_BUILD=$("${CONTAINER_EXEC}" build -t "dcs-crypto-service:${VERSION}" \
     --env VERSION="${VERSION}" --env GIT_COMMIT="${GIT_COMMIT}" . ) 
 
-  CRYPTO_IMG=$("${CONTAINER_EXEC}" image list -n --digests "kmc-crypto-service:${VERSION}")
+  CRYPTO_IMG=$("${CONTAINER_EXEC}" image list -n --digests "dcs-crypto-service:${VERSION}")
   if [ -n "${CRYPTO_IMG}" ]; then
     echo "Crypto Service Container build complete:"
     echo "${CRYPTO_IMG}"
@@ -950,10 +950,10 @@ if [ ${BUILD_IMG} -eq 1 ]; then
   echo '-------------------------------'
   pushd ${SRC_RSC}/packaging/container/sdls-service >/dev/null 2>&1
   /bin/cp -r ../kmcroot .
-  SDLS_BUILD=$("${CONTAINER_EXEC}" build -t "kmc-sdls-service:${VERSION}" \
+  SDLS_BUILD=$("${CONTAINER_EXEC}" build -t "dcs-sdls-service:${VERSION}" \
     --env VERSION="${VERSION}" --env GIT_COMMIT="${GIT_COMMIT}" . )
 
-  SDLS_IMG=$("${CONTAINER_EXEC}" image list -n --digests "kmc-sdls-service:${VERSION}")
+  SDLS_IMG=$("${CONTAINER_EXEC}" image list -n --digests "dcs-sdls-service:${VERSION}")
   if [ -n "${SDLS_IMG}" ]; then
     echo "SDLS Service Container build complete:"
     echo "${SDLS_IMG}"
@@ -971,10 +971,10 @@ if [ ${BUILD_IMG} -eq 1 ]; then
   echo '-------------------------------'
   pushd ${SRC_RSC}/packaging/container/sa-mgmt-service >/dev/null 2>&1
   /bin/cp -r ../kmcroot .
-  SAMGMT_BUILD=$("${CONTAINER_EXEC}" build -t "kmc-sa-mgmt-service:${VERSION}" \
+  SAMGMT_BUILD=$("${CONTAINER_EXEC}" build -t "dcs-sa-mgmt-service:${VERSION}" \
     --env VERSION="${VERSION}" --env GIT_COMMIT="${GIT_COMMIT}" . ) 
 
-  SAMGMT_IMG=$("${CONTAINER_EXEC}" image list -n --digests "kmc-sa-mgmt-service:${VERSION}")
+  SAMGMT_IMG=$("${CONTAINER_EXEC}" image list -n --digests "dcs-sa-mgmt-service:${VERSION}")
   if [ -n "${SDLS_IMG}" ]; then
     echo "SA Management Service Container build complete:"
     echo "${SAMGMT_IMG}"

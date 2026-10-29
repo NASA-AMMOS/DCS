@@ -1,10 +1,10 @@
-Name:           kmc
-Version:        %{kmc_version}
-Release:        %{kmc_release}%{?dist}
+Name:           dcs
+Version:        %{dcs_version}
+Release:        %{dcs_release}%{?dist}
 Summary:        AMMOS Data Cryptography Services (DCS)
 
 AutoReqProv:    no
-Provides:       ammos(kmc) = %{version}-%{release}
+Provides:       ammos(dcs) = %{version}-%{release}
 
 License:        Apache 2.0
 URL:            https://github.com/NASA-AMMOS/DCS
@@ -17,8 +17,8 @@ Summary:        AMMOS Data Cryptography Services (DCS)
 Version:        %{version}
 License:        Apache 2.0
 AutoReqProv:    no
-Provides:       ammos(kmc)(crypto-service) = %{version}-%{release}
-Requires:       ammos(kmc) = %{version}-%{release}
+Provides:       ammos(dcs)(crypto-service) = %{version}-%{release}
+Requires:       ammos(dcs) = %{version}-%{release}
 
 %description    crypto-service
 AMMOS Key Management & Cryptography Crypto Service
@@ -28,8 +28,8 @@ Summary:        AMMOS Key Management & Cryptography SDLS Service
 Version:        %{version}
 License:        Apache 2.0
 AutoReqProv:    no
-Provides:       ammos(kmc)(sdls-service) = %{version}-%{release}
-Requires:       ammos(kmc) = %{version}-%{release}
+Provides:       ammos(dcs)(sdls-service) = %{version}-%{release}
+Requires:       ammos(dcs) = %{version}-%{release}
 
 %description    sdls-service
 AMMOS Key Management & Cryptography SDLS Service
@@ -39,15 +39,15 @@ Summary:        AMMOS Key Management & Cryptography SA Management Service
 Version:        %{version}
 License:        Apache 2.0
 AutoReqProv:    no
-Provides:       ammos(kmc)(sa-mgmt-service) = %{version}-%{release}
-Requires:       ammos(kmc) = %{version}-%{release}
+Provides:       ammos(dcs)(sa-mgmt-service) = %{version}-%{release}
+Requires:       ammos(dcs) = %{version}-%{release}
 
 %description    sa-mgmt-service
 AMMOS Key Management & Cryptography Security Association (SA) Management Service
 
 %prep
 
-%build
+%build -n kmc-%{version}}
 
 %install
 [ -d %{buildroot} ] && /bin/rm -rf %{buildroot}
@@ -439,6 +439,8 @@ fi
 %firewalld_reload
 
 %changelog
+* Thu Oct 29 2026 MGSS ASEC Team <mgss.css.requests@jpl.nasa.gov> - 4.0.0-1
+- Updated RPM names from KMC to DCS
 * Thu Nov 21 2024 MGSS ASEC Team <mgss.css.requests@jpl.nasa.gov> - 3.7.0-1
 - Initial RPM spec for KMC 3.7.0
 - 
