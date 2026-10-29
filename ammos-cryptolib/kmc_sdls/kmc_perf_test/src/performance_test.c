@@ -1,5 +1,5 @@
-/* Copyright (C) 2009 - 2022 National Aeronautics and Space Administration.
- * Copyright (c) 2014-26 California Institute of Technology (“Caltech”). U.S. Government sponsorship acknowledged.
+/*
+ * Copyright (c) 2014-2026 California Institute of Technology (“Caltech”). U.S. Government sponsorship acknowledged.
  *
  * All rights reserved.
  *
@@ -19,7 +19,8 @@
  * APACHE LICENSE, VERSION 2.0
  *  • Text version: https://www.apache.org/licenses/LICENSE-2.0.txt
  *  • SPDX short identifier: Apache-2.0
-*/
+ *  • OSI Approved License: https://opensource.org/licenses/Apache-2.0
+ */
 
 #include "crypto.h"
 #include "crypto_error.h"
