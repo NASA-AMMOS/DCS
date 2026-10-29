@@ -1,9 +1,9 @@
 package gov.nasa.jpl.ammos.kmc.crypto.library.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -15,9 +15,8 @@ import java.util.Base64;
 import java.util.Random;
 
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import gov.nasa.jpl.ammos.kmc.crypto.Decrypter;
 import gov.nasa.jpl.ammos.kmc.crypto.Encrypter;
 import gov.nasa.jpl.ammos.kmc.crypto.KmcCryptoException;
@@ -48,7 +47,7 @@ public class EncryptionIVTest {
     private static KmcCryptoManager cryptoManager;
     private static String[] args = null;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() throws KmcCryptoManagerException {
         cryptoManager = new KmcCryptoManager(null);
         random = new Random();
@@ -193,7 +192,7 @@ public class EncryptionIVTest {
         ByteArrayOutputStream eos2 = new ByteArrayOutputStream(AES_ENCRYPT_SIZE);
         String metadata2 = encrypter.encrypt(bis2, 0, iv2, eos2);
         byte[] encryptedData2 = eos2.toByteArray();
-        assertFalse("Same ciphertext using different IVs", Arrays.equals(encryptedData, encryptedData2));
+        assertFalse(Arrays.equals(encryptedData, encryptedData2), "Same ciphertext using different IVs");
 
         // verify both decrypt correctly
         InputStream eis = new ByteArrayInputStream(encryptedData);
@@ -226,7 +225,7 @@ public class EncryptionIVTest {
         ByteArrayOutputStream eos2 = new ByteArrayOutputStream(AES_ENCRYPT_SIZE);
         encrypter.encrypt(bis2, 0, iv, eos2);
         byte[] encryptedData2 = eos.toByteArray();
-        assertTrue("Ciphertext not the same using the same IV", Arrays.equals(encryptedData, encryptedData2));
+        assertTrue(Arrays.equals(encryptedData, encryptedData2), "Ciphertext not the same using the same IV");
 
         InputStream eis = new ByteArrayInputStream(encryptedData);
         ByteArrayOutputStream dos = new ByteArrayOutputStream(TEST_STRING.length());

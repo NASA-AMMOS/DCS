@@ -1,9 +1,8 @@
 package gov.nasa.jpl.ammos.kmc.crypto.library.test;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.security.AlgorithmParameters;
@@ -30,8 +29,8 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.bouncycastle.util.encoders.Hex;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for Authenticated Encryption algorithms
@@ -45,7 +44,7 @@ public class AEAlgorithmTest {
     private static final int GCM_IV_LENGTH = 12;    // bytes
     private static final int GCM_TAG_LENGTH = 16;   // bytes
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() throws ClassNotFoundException, InstantiationException, IllegalAccessException {
         Class<?> providerClass = Class.forName(BCFIPS_PROVIDER);
         Provider provider = (Provider) providerClass.newInstance();
@@ -84,12 +83,12 @@ public class AEAlgorithmTest {
         eCipher = Cipher.getInstance("AES/GCM/NoPadding", "BCFIPS");
         eCipher.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(aN));
         byte[] enc = eCipher.doFinal(aP);
-        assertArrayEquals("ciphertext doesn't match.", enc, aC);
+        assertArrayEquals(enc, aC, "ciphertext doesn't match.");
 
         dCipher = Cipher.getInstance("AES/GCM/NoPadding", "BCFIPS");
         dCipher.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(aN));
         byte[] dec = dCipher.doFinal(aC);
-        assertArrayEquals("plaintext doesn't match.", dec, aP);
+        assertArrayEquals(dec, aP, "plaintext doesn't match.");
 
         try {
             eCipher = Cipher.getInstance("AES/GCM/PKCS5Padding", "BCFIPS");
@@ -227,12 +226,12 @@ public class AEAlgorithmTest {
 
         eax.updateAAD(aA);
         byte[] c = eax.doFinal(aP);
-        assertArrayEquals("JCE encrypt with additional data failed.", aC, c);
+        assertArrayEquals(aC, c, "JCE encrypt with additional data failed.");
 
         eax.init(Cipher.DECRYPT_MODE, key, iv);
         eax.updateAAD(aA);
         byte[] p = eax.doFinal(aC);
-        assertArrayEquals("JCE decrypt with additional data failed.", aP, p);
+        assertArrayEquals(aP, p, "JCE decrypt with additional data failed.");
     }
 
     private void testGCMParameterSpec(final byte[] aK, final byte[] aN, final byte[] aA, final byte[] aP, final byte[] aC)
@@ -247,12 +246,12 @@ public class AEAlgorithmTest {
 
         eax.updateAAD(aA);
         byte[] c = eax.doFinal(aP);
-        assertArrayEquals("JCE encrypt with additional data and GCMParameterSpec failed.", aC, c);
+        assertArrayEquals(aC, c, "JCE encrypt with additional data and GCMParameterSpec failed.");
 
         eax.init(Cipher.DECRYPT_MODE, key, spec);
         eax.updateAAD(aA);
         byte[] p = eax.doFinal(aC);
-        assertArrayEquals("JCE decrypt with additional data and GCMParameterSpec failed.", aP, p);
+        assertArrayEquals(aP, p, "JCE decrypt with additional data and GCMParameterSpec failed.");
     }
 
     private void testGCMParameterSpecWithMultipleUpdates(
@@ -315,13 +314,13 @@ public class AEAlgorithmTest {
 
         eax.updateAAD(aA);
         byte[] c = eax.doFinal(aP);
-        assertArrayEquals("JCE encrypt with additional data and GCMParameterSpec failed.", aC, c);
+        assertArrayEquals(aC, c, "JCE encrypt with additional data and GCMParameterSpec failed.");
 
         eax = Cipher.getInstance("GCM", "BCFIPS");
         eax.init(Cipher.DECRYPT_MODE, key, spec);
         eax.updateAAD(aA);
         byte[] p = eax.doFinal(aC);
-        assertArrayEquals("JCE decrypt with additional data and GCMParameterSpec failed.", aP, p);
+        assertArrayEquals(aP, p, "JCE decrypt with additional data and GCMParameterSpec failed.");
     }
 
 }

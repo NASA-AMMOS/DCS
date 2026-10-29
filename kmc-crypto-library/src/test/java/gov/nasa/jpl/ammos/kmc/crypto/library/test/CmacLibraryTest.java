@@ -1,9 +1,9 @@
 package gov.nasa.jpl.ammos.kmc.crypto.library.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
@@ -13,9 +13,8 @@ import java.security.Security;
 import java.util.Random;
 
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import gov.nasa.jpl.ammos.kmc.crypto.IcvCreator;
 import gov.nasa.jpl.ammos.kmc.crypto.IcvVerifier;
 import gov.nasa.jpl.ammos.kmc.crypto.KmcCryptoException;
@@ -48,7 +47,7 @@ public class CmacLibraryTest {
 
     private static KmcCryptoManager cryptoManager;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() throws KmcCryptoManagerException {
         cryptoManager = new KmcCryptoManager(null);
     }

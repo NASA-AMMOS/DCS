@@ -1,9 +1,9 @@
 package gov.nasa.jpl.ammos.kmc.crypto.library.test;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -21,9 +21,8 @@ import java.util.Arrays;
 import javax.crypto.AEADBadTagException;
 
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import gov.nasa.jpl.ammos.kmc.crypto.Decrypter;
 import gov.nasa.jpl.ammos.kmc.crypto.Encrypter;
 import gov.nasa.jpl.ammos.kmc.crypto.KmcCryptoException;
@@ -58,7 +57,7 @@ public class AELibraryTest {
 
     private static KmcCryptoManager cryptoManager;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() throws KmcCryptoManagerException {
         cryptoManager = new KmcCryptoManager(null);
         cryptoManager.setCipherTransformation(GCM_TRANSFORMATION);

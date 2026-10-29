@@ -1,9 +1,9 @@
 package gov.nasa.jpl.ammos.kmc.crypto.library.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -15,10 +15,9 @@ import java.util.Base64;
 import java.util.Random;
 
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import gov.nasa.jpl.ammos.kmc.crypto.Decrypter;
 import gov.nasa.jpl.ammos.kmc.crypto.Encrypter;
 import gov.nasa.jpl.ammos.kmc.crypto.IcvCreator;
@@ -64,7 +63,7 @@ public class TruncatedMacTest {
     private static KmcCryptoManager cryptoManager;
     private static String[] args;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() throws KmcCryptoManagerException, UnsupportedEncodingException {
         cryptoManager = new KmcCryptoManager(null);
 
@@ -77,7 +76,7 @@ public class TruncatedMacTest {
         iv = Base64.getUrlEncoder().encodeToString(initialVector);
     }
 
-    @Before
+    @BeforeEach
     public void reset() throws KmcCryptoManagerException, IOException {
         cryptoManager.setMacLength(-1);
         plaintext.reset();

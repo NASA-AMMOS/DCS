@@ -1,14 +1,13 @@
 package gov.nasa.jpl.ammos.kmc.crypto.library.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.security.Security;
 
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import gov.nasa.jpl.ammos.kmc.crypto.Encrypter;
 import gov.nasa.jpl.ammos.kmc.crypto.KmcCryptoException;
 import gov.nasa.jpl.ammos.kmc.crypto.KmcCryptoException.KmcCryptoErrorCode;
@@ -26,7 +25,7 @@ public class KeyCacheTest {
     private static final String KEYREF_AES256 = KEYNAME_HEAD + "AES256";
     private static KmcCryptoManager cryptoManager;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() throws KmcCryptoManagerException {
         cryptoManager = new KmcCryptoManager(null);
     }
