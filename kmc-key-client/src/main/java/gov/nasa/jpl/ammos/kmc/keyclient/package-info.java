@@ -1,5 +1,5 @@
 /**
- * The package contains the classes for KMC Key Client.
+ * The package contains the classes for DCS Key Client.
  *
  *
  */

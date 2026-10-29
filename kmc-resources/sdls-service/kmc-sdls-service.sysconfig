@@ -1,4 +1,4 @@
-# KMC SDLS Service Environment settings
+# DCS SDLS Service Environment settings
 
 # General environment settings
 CATALINA_PID=__LOGPATH__/kmc-sdls-service.pid

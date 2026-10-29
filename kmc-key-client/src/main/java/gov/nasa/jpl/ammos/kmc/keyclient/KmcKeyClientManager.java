@@ -15,8 +15,8 @@ import org.slf4j.LoggerFactory;
 import gov.nasa.jpl.ammos.kmc.keyclient.KmcKeyClientManagerException.KmcKeyOpsManagerErrorCode;
 
 /**
- * The KmcKeyClientManager handles the configuration of the KMC Key Client.
- * KMC Key Client provides functions for creating, retrieving,
+ * The KmcKeyClientManager handles the configuration of the DCS Key Client.
+ * DCS Key Client provides functions for creating, retrieving,
  * and changing the state of keys in KMS.
  * The KmcKeyClientManager performs the following functions:
  * <ul>
@@ -84,23 +84,23 @@ public class KmcKeyClientManager {
      */
     public static final String ENV_KMC_HOME = "KMC_HOME";
     /**
-     * The home directory of the KMC Client software.  Default of KMC_HOME is default is defined in kmc.properties
+     * The home directory of the DCS Client software.  Default of KMC_HOME is default is defined in kmc.properties
      */
     public static final String DEFAULT_KMC_HOME;
     /**
-     * Default KMC Key Service configuration directory relative to KMC_HOME.
+     * Default DCS Key Service configuration directory relative to KMC_HOME.
      */
     public static final String DEFAULT_KMC_KEY_SERVICE_CONFIG_DIR;
     /**
-     * Default KMC Key Client configuration directory relative to KMC_HOME.
+     * Default DCS Key Client configuration directory relative to KMC_HOME.
      */
     public static final String DEFAULT_KMC_KEY_CLIENT_CONFIG_DIR;
     /**
-     * Default KMC Key Service configuration file name.
+     * Default DCS Key Service configuration file name.
      */
     private static final String DEFAULT_KMC_KEY_SERVICE_CONFIG_FILE = "kmc-key-service.cfg";
     /**
-     * Default KMC Key Client configuration file name.
+     * Default DCS Key Client configuration file name.
      */
     private static final String DEFAULT_KMC_KEY_CLIENT_CONFIG_FILE = "kmc-key-client.cfg";
     /**

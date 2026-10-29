@@ -1,5 +1,5 @@
 /**
- * The package provides the KMC Admin Service for the Console to manage the keys in KMS.
+ * The package provides the DCS Admin Service for the Console to manage the keys in KMS.
  *
  *
  */

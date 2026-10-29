@@ -8,7 +8,7 @@ import java.util.jar.Manifest;
 import gov.nasa.jpl.ammos.kmc.keyclient.KmcKeyClientVersion;
 
 /**
- * This Java program prints the KMC Key Management API version information and can be run by the command:
+ * This Java program prints the DCS Key Management API version information and can be run by the command:
  * <code>java -jar kmc-keymgt.jar</code>.
  *
  *
@@ -24,7 +24,7 @@ public final class KmcKeyClientVersion {
      }
 
     /**
-     * The main program prints the KMC Key Management API version information.
+     * The main program prints the DCS Key Management API version information.
      * @param args command-line arguments are not used.
      */
     public static void main(final String[] args) {

@@ -1,4 +1,4 @@
-# Dockerfile for AMMOS KMC SA Management Service
+# Dockerfile for AMMOS DCS SA Management Service
 
 FROM redhat/ubi9
 

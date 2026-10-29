@@ -1,5 +1,5 @@
 /**
- * The package contains the KMC Cryptography API interfaces.
+ * The package contains the DCS Cryptography API interfaces.
  *
  *
  */

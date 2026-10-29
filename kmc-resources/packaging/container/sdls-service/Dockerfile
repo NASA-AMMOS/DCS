@@ -1,4 +1,4 @@
-# Dockerfile for AMMOS KMC SDLS Service
+# Dockerfile for AMMOS DCS SDLS Service
 
 FROM redhat/ubi9
 

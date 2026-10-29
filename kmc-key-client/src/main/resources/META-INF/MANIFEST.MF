@@ -1,4 +1,4 @@
 Main-Class: gov.nasa.jpl.ammos.kmc.keystore.KmcKeystoreCreate
 Version: ${version}
 Built-Time: ${build.time}
-Copyright: Copyright 2020, by the California Institute of Technology.
+Copyright: Copyright 2014 - 2026, by the California Institute of Technology.

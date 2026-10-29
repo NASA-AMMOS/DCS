@@ -1,5 +1,5 @@
 /**
- * The package contains the KMC Key Operations tests.
+ * The package contains the DCS Key Operations tests.
  *
  *
  */

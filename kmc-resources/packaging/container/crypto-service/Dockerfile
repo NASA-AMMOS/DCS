@@ -1,4 +1,4 @@
-# Dockerfile for AMMOS KMC Crypto Service
+# Dockerfile for AMMOS DCS Crypto Service
 
 FROM redhat/ubi9
 
