@@ -552,6 +552,15 @@ public class SaListTest extends BaseCommandLineTest {
     }
 
     public void testCsvRoundTrip(FrameType type) throws Exception {
+        // Normalize inconsistent seed data: seed row 1 has ecs=0x01 (AES_GCM) with DB default ivLen=0, but AES_GCM requires ivLen=12
+        for (gov.nasa.jpl.ammos.asec.kmc.api.sa.ISecAssn sa : dao.getSas(type)) {
+            if (sa.getEcs() != null && sa.getEcs().length > 0 && sa.getEcs()[0] == 0x01 && sa.getIvLen() == 0) {
+                sa.setIvLen((short) 12);
+                dao.updateSa(sa);
+            }
+        }
+
+        java.util.List<gov.nasa.jpl.ammos.asec.kmc.api.sa.ISecAssn> originalSas = dao.getSas(type);
         StringWriter listOut = new StringWriter();
         PrintWriter  listPw  = new PrintWriter(listOut);
         CommandLine  listCmd = getCmd(new SaList(), true, listPw, null);
@@ -577,15 +586,17 @@ public class SaListTest extends BaseCommandLineTest {
                 fail("Create failed with exit " + createExit + ":\n" + output);
             }
 
-            int actualCount = dao.getSas(type).size();
-            if (actualCount != 5) {
-                fail("Expected 5 SAs, got " + actualCount + ". Create output:\n" + output + "\nCSV:\n" + csv);
+            java.util.List<gov.nasa.jpl.ammos.asec.kmc.api.sa.ISecAssn> importedSas = dao.getSas(type);
+            assertEquals(originalSas.size(), importedSas.size());
+
+            for (gov.nasa.jpl.ammos.asec.kmc.api.sa.ISecAssn original : originalSas) {
+                gov.nasa.jpl.ammos.asec.kmc.api.sa.ISecAssn imported = dao.getSa(
+                    new gov.nasa.jpl.ammos.asec.kmc.api.sa.SpiScid(original.getSpi(), original.getScid()), type);
+                assertNotNull("SA " + original.getSpi() + "/" + original.getScid() + " not imported", imported);
+                assertEquals("SA " + original.getSpi() + " service type", original.getServiceType(), imported.getServiceType());
+                assertEquals("SA " + original.getSpi() + " est", original.getEst(), imported.getEst());
+                assertEquals("SA " + original.getSpi() + " ast", original.getAst(), imported.getAst());
             }
-            gov.nasa.jpl.ammos.asec.kmc.api.sa.ISecAssn sa1 = dao.getSa(new gov.nasa.jpl.ammos.asec.kmc.api.sa.SpiScid(1, (short) 46), type);
-            assertNotNull(sa1);
-            assertEquals(gov.nasa.jpl.ammos.asec.kmc.api.sa.ServiceType.AUTHENTICATED_ENCRYPTION, sa1.getServiceType());
-            assertEquals(1, (short) sa1.getEst());
-            assertEquals(1, (short) sa1.getAst());
         } finally {
             tmpFile.delete();
         }
