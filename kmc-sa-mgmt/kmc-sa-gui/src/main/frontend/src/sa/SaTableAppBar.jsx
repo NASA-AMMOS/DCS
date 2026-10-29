@@ -146,12 +146,28 @@ export default function SaTableAppBar({
         const errorCallback = createErrorCallback(enqueueSnackbar)
         errorCallback(e)
         setProgress(0)
+        setSelectedFile(null)
         refreshTable()
     }
 
     const [tmChecked, setTmChecked] = useState(true)
     const [tcChecked, setTcChecked] = useState(true)
     const [aosChecked, setAosChecked] = useState(true)
+    const [fileInputKey, setFileInputKey] = useState(0)
+
+    /**
+     * Close the bulk upload dialog and reset its state
+     */
+    const closeBulk = () => {
+        setBulkOpen(false)
+        setSelectedFile(null)
+        setProgress(0)
+        setReplaceExisting(false)
+        setTmChecked(true)
+        setTcChecked(true)
+        setAosChecked(true)
+        setFileInputKey(k => k + 1)
+    }
 
     /**
      * Upload CSV file
@@ -294,7 +310,7 @@ export default function SaTableAppBar({
                             onClick={() => setBulkOpen(true)}>
                         Bulk</Button>
                     <Dialog open={bulkOpen}
-                            onClose={() => setBulkOpen(false)}>
+                            onClose={closeBulk}>
                         <DialogTitle>Upload CSV</DialogTitle>
                         <DialogContent>Bulk creation of SAs by uploading a CSV file
                             <Table>
@@ -325,13 +341,17 @@ export default function SaTableAppBar({
                             <Stack>
                                 <Container>
                                     <label htmlFor={"contained-button-file"}>
-                                        <Input accept={".csv"} id={"contained-button-file"}
+                                        <Input key={fileInputKey} accept={".csv"} id={"contained-button-file"}
                                                type={"file"}
                                                onChange={uploadFileChange}/>
                                         <Button variant={"contained"}
                                                 onClick={() => uploadCsv()}
                                                 disabled={selectedFile == null}
                                         >Continue</Button>
+                                        <Button variant={"contained"}
+                                                onClick={closeBulk}>
+                                            Cancel
+                                        </Button>
                                     </label>
                                 </Container>
                                 <Container>
