@@ -1,26 +1,34 @@
 package gov.nasa.jpl.ammos.asec.kmc.saserver.app.sa;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.cfg.EnumFeature;
+import tools.jackson.databind.exc.InvalidFormatException;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.module.SimpleModule;
+import tools.jackson.databind.node.ObjectNode;
 import gov.nasa.jpl.ammos.asec.kmc.api.sa.FrameType;
 import gov.nasa.jpl.ammos.asec.kmc.api.sa.ISecAssn;
 import gov.nasa.jpl.ammos.asec.kmc.api.sa.SecAssn;
 import gov.nasa.jpl.ammos.asec.kmc.api.sa.SecAssnAos;
 import gov.nasa.jpl.ammos.asec.kmc.api.sa.SecAssnTm;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
-import static org.junit.Assert.*;
-
 public class SecAssnDeserializerTest {
-    private static ObjectMapper mapper = new ObjectMapper();
+    private static final ObjectMapper mapper;
 
     static {
         SimpleModule module = new SimpleModule();
         module.addDeserializer(ISecAssn.class, new SecAssnDeserializer());
-        mapper.registerModule(module);
+        mapper = JsonMapper.builder()
+                .disable(EnumFeature.WRITE_ENUMS_USING_TO_STRING)
+                .addModule(module)
+                .build();
     }
 
     private ObjectNode createSaJson() {
@@ -67,11 +75,13 @@ public class SecAssnDeserializerTest {
         assertTrue(sa instanceof SecAssn);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testSerializeUnknown() {
-        ObjectNode n = createSaJson();
-        n = n.put("type", "blah");
-        convertObject(n);
+        assertThrows(InvalidFormatException.class, () -> {
+            ObjectNode n = createSaJson();
+            n = n.put("type", "blah");
+            convertObject(n);
+        });
     }
 
     @Test
@@ -87,6 +97,6 @@ public class SecAssnDeserializerTest {
         ISecAssn   sa    = convertObject(n);
         ObjectNode deser = mapper.convertValue(sa, ObjectNode.class);
         assertTrue(deser.has("type"));
-        assertEquals(type.name(), deser.get("type").textValue());
+        assertEquals(type.name(), deser.get("type").stringValue());
     }
 }

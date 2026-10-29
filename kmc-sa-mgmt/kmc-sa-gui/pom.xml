@@ -168,8 +168,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>17</source>
-                    <target>17</target>
+          <release>${java.version}</release>
                 </configuration>
             </plugin>
             <plugin>
@@ -179,7 +178,6 @@
                     <profiles>${app.profiles}</profiles>
                     <mainClass>gov.nasa.jpl.ammos.asec.kmc.saserver.app.KmcSaMgmt</mainClass>
                     <layout>ZIP</layout>
-                    <loaderImplementation>CLASSIC</loaderImplementation>
                 </configuration>
                 <executions>
                     <execution>
@@ -278,6 +276,8 @@
                             <excludes>META-INF/**</excludes>
                             <overWriteReleases>true</overWriteReleases>
                             <overWriteSnapshots>true</overWriteSnapshots>
+                            <useRepositoryLayout>true</useRepositoryLayout>
+                            <skip>${skipTestUnpack}</skip>
                         </configuration>
                     </execution>
                 </executions>
@@ -300,13 +300,14 @@
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
+            <artifactId>spring-boot-starter-webmvc</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-starter-logging</artifactId>
                 </exclusion>
             </exclusions>
+      <version>4.0.9</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -337,14 +338,20 @@
             <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-resttestclient</artifactId>
+      <version>4.0.9</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-restclient</artifactId>
+      <scope>test</scope>
+    </dependency>
         <dependency>
             <groupId>gov.nasa.jpl.ammos.kmc</groupId>
             <artifactId>kmc-sa-db-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.h2database</groupId>

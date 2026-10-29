@@ -24,14 +24,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
+import org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
-import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.boot.jackson.autoconfigure.JsonMapperBuilderCustomizer;
+import tools.jackson.databind.MapperFeature;
+import tools.jackson.databind.cfg.EnumFeature;
+import tools.jackson.databind.module.SimpleModule;
 import org.springframework.web.filter.CommonsRequestLoggingFilter;
 
 import java.io.IOException;
@@ -51,6 +53,10 @@ public class KmcSaMgmt extends SpringBootServletInitializer {
     private              IKmcDao dao;
 
     public static void main(String[] args) {
+        // Boot's loader serves classpath resources as jar:nested: URLs, which commons-configuration2 rejects unless
+        // "nested" is allowed. It only points inside this application's own jar.
+        String schemes = "org.apache.commons.configuration2.io.FileLocationStrategy.schemes";
+        System.setProperty(schemes, System.getProperty(schemes, "file,jar,nested"));
         System.setProperty("spring.config.name", "kmc-sa-mgmt-service");
         SpringApplication.run(KmcSaMgmt.class, args);
     }
@@ -179,12 +185,11 @@ public class KmcSaMgmt extends SpringBootServletInitializer {
     }
 
     @Bean
-    public MappingJackson2HttpMessageConverter converter() {
-        MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
-        Jackson2ObjectMapperBuilder         builder   = new Jackson2ObjectMapperBuilder();
-        builder.deserializerByType(ISecAssn.class, new SecAssnDeserializer());
-        converter.setObjectMapper(builder.build());
-        return converter;
+    public JsonMapperBuilderCustomizer jsonMapperCustomizer() {
+        return builder -> builder
+                .disable(EnumFeature.WRITE_ENUMS_USING_TO_STRING)
+                .disable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)
+                .addModule(new SimpleModule().addDeserializer(ISecAssn.class, new SecAssnDeserializer()));
     }
 
     @PreDestroy

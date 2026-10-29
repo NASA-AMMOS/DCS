@@ -1,10 +1,11 @@
 package gov.nasa.jpl.ammos.asec.kmc.saserver.app.sa;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.annotation.JsonDeserialize;
+import tools.jackson.databind.annotation.JsonSerialize;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ObjectNode;
 import gov.nasa.jpl.ammos.asec.kmc.api.ex.KmcException;
 import gov.nasa.jpl.ammos.asec.kmc.api.json.ByteArrayDeserializer;
 import gov.nasa.jpl.ammos.asec.kmc.api.json.ByteArraySerializer;
@@ -20,7 +21,6 @@ import gov.nasa.jpl.ammos.asec.kmc.format.SaCsvOutput;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -59,9 +59,8 @@ public class SaController {
     public static final  String       SUCCESS_STATUS = "success";
     public static final  String       MESSAGES_KEY   = "messages";
     private final        IKmcDao      dao;
-    private static final ObjectMapper mapper         = new ObjectMapper();
+    private static final ObjectMapper mapper         = new JsonMapper();
 
-    @Autowired
     public SaController(IKmcDao dao) {
         this.dao = dao;
     }
