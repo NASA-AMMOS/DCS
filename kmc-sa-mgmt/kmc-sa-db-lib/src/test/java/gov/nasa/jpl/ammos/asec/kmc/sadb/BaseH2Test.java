@@ -3,9 +3,9 @@ package gov.nasa.jpl.ammos.asec.kmc.sadb;
 import gov.nasa.jpl.ammos.asec.kmc.api.ex.KmcException;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.h2.tools.RunScript;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -18,7 +18,7 @@ public abstract class BaseH2Test {
     public static final String PASSWORD = RandomStringUtils.secure().nextAlphanumeric(10);
     public static KmcDao dao;
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws KmcException {
 
         try (Connection conn = DriverManager.getConnection(JDBC_H_2_MEM_TEST); PreparedStatement stmt =
@@ -38,7 +38,7 @@ public abstract class BaseH2Test {
     /**
      * Before each test, populate the sample DB
      */
-    @Before
+    @BeforeEach
     public void beforeTest() {
         setupTc();
         setupAos();
@@ -113,7 +113,7 @@ public abstract class BaseH2Test {
      *
      * @throws SQLException
      */
-    @After
+    @AfterEach
     public void afterTest() throws SQLException {
         truncateTc();
         truncateTm();
