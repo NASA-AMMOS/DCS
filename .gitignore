@@ -3,9 +3,13 @@
 
 # Maven target directory #
 .classpath
+.factorypath
 .project
 .settings/
 target/
+
+# Output of kmc-resources/scripts/build.sh (copied classes for Sonar) #
+build-output-for-sonar/
 
 # Class Files #
 *.class
@@ -39,6 +43,8 @@ kmc-sdls-service/sa_save_file.bin
 #   Generated artifacts
 **/*.cmake
 **/*.so
+**/*.dylib
+**/*.jnilib
 **/CMakeFiles
 **/Makefile
 !ammos-cryptolib/unit_test/Makefile
