@@ -12,6 +12,7 @@ import gov.nasa.jpl.ammos.asec.kmc.api.sa.SecAssnValidator;
 import gov.nasa.jpl.ammos.asec.kmc.api.sa.SpiScid;
 import gov.nasa.jpl.ammos.asec.kmc.api.sadb.IDbSession;
 import gov.nasa.jpl.ammos.asec.kmc.api.sadb.IKmcDao;
+import gov.nasa.jpl.ammos.asec.kmc.format.Utilities;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -31,17 +32,6 @@ import java.util.Properties;
  */
 public class KmcDao implements IKmcDao {
 
-    /**
-     * Sanitizes a string for logging to prevent log injection.
-     * Removes control chars, newlines, tabs, and wraps in quotes for clarity.
-     */
-    private static String sanitizeForLog(String input) {
-        if (input == null) {
-            return "null";
-        }
-        // Remove all control characters incl. CR, LF, TAB, DEL, and make visible
-        return input.replaceAll("[\\p{Cntrl}]", "");
-    }
     /**
      * Logger
      */
@@ -300,9 +290,9 @@ public class KmcDao implements IKmcDao {
             sa.setSaState(SA_UNKEYED);
         }
 
-        LOG.info("Creating {}", sa);
+        LOG.info("Creating {}", Utilities.sanitizeForLog(sa));
         dbSession.persist(sa);
-        LOG.info("Created {}", sa);
+        LOG.info("Created {}", Utilities.sanitizeForLog(sa));
     }
 
     @Override
@@ -316,7 +306,7 @@ public class KmcDao implements IKmcDao {
                     type.name(), id.getSpi(), id.getScid()));
         }
         LOG.info("Rekeying SA {} [{}, {}] for encryption to EKID '{}' with ECS {}", type.name(), id.getSpi(),
-                id.getScid(), sanitizeForLog(ekid), ecs);
+                id.getScid(), Utilities.sanitizeForLog(ekid), Utilities.sanitizeForLog(Utilities.getHex(ecs)));
         sa.setEkid(ekid);
         sa.setEcs(ecs);
         sa.setEcsLen(ecsLen);
@@ -350,8 +340,7 @@ public class KmcDao implements IKmcDao {
                     type.name(), id.getSpi(), id.getScid()));
         }
         LOG.info("Rekeying SA {} [{}, {}] for authentication to AKID {} with ACS {}", type.name(), sa.getId(),
-                sa.getScid(), akid,
-                acs);
+                sa.getScid(), Utilities.sanitizeForLog(akid), Utilities.sanitizeForLog(Utilities.getHex(acs)));
         sa.setAkid(akid);
         sa.setAcs(acs);
         sa.setAcsLen(acsLen);
