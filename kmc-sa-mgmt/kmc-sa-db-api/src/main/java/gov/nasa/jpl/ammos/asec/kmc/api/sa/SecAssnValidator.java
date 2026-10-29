@@ -333,7 +333,8 @@ public class SecAssnValidator {
     }
 
     /**
-     * Verify ARSN bytes against the ARSN length. Null ARSN is treated as empty.
+     * Verify ARSN bytes against the ARSN length. Null ARSN is treated as empty. With a length of 0, an all-zero
+     * ARSN of any length is tolerated and an empty array is returned.
      *
      * @param arsn    anti-replay sequence number
      * @param arsnLen arsn length in bytes
@@ -343,9 +344,13 @@ public class SecAssnValidator {
     public static byte[] verifyArsn(byte[] arsn, Short arsnLen) throws KmcException {
         byte[] bytes = arsn == null ? new byte[0] : arsn;
         if (arsnLen == null || arsnLen == 0) {
-            if (bytes.length != 0) {
-                throwEx("ARSN must be empty when ARSN length is 0, but ARSN has " + bytes.length + " bytes");
+            // the DB default is arsn_len 0 with an all-zero arsn, so tolerate zero bytes of any length
+            for (byte b : bytes) {
+                if (b != 0) {
+                    throwEx("ARSN must be empty or all zero when ARSN length is 0, but ARSN has non-zero bytes");
+                }
             }
+            return new byte[0];
         } else if (bytes.length != arsnLen) {
             throwEx("ARSN byte length " + bytes.length + " must match ARSN length " + arsnLen);
         }

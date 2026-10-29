@@ -56,9 +56,17 @@ public class SecAssnValidatorTest {
     }
 
     @Test
+    public void verifyArsnLenZeroWithZeroBytesTolerated() throws KmcException {
+        assertArrayEquals(new byte[0], SecAssnValidator.verifyArsn(new byte[20], (short) 0));
+        assertArrayEquals(new byte[0], SecAssnValidator.verifyArsn("0x" + "00".repeat(20), (short) 0));
+    }
+
+    @Test
     public void verifyArsnLenZeroWithValueFails() {
         assertThrows(KmcException.class, () -> SecAssnValidator.verifyArsn("0102", (short) 0));
         assertThrows(KmcException.class, () -> SecAssnValidator.verifyArsn("0102", null));
+        assertThrows(KmcException.class, () -> SecAssnValidator.verifyArsn(new byte[]{1}, (short) 0));
+        assertThrows(KmcException.class, () -> SecAssnValidator.verifyArsn(new byte[]{0, 0, 1}, (short) 0));
     }
 
     @Test
