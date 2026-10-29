@@ -146,6 +146,10 @@ public class SecAssnValidator {
      * @throws KmcException exception
      */
     public static byte[] verifyIv(byte[] iv, Short ivLen, Short est, byte[] ecsBytes) throws KmcException {
+        boolean hasIv = iv != null && iv.length > 0;
+        if (hasIv && ivLen != null && iv.length != ivLen) {
+            throwEx("IV " + Hex.encodeHexString(iv) + " is length: " + iv.length + " but IV length is " + ivLen);
+        }
         ECSTYPE validEcs = ECSTYPE.fromBytes(ecsBytes);
         if (est != null && est == (short) 0) {
             //Encryption is not on, skip validation
@@ -156,11 +160,11 @@ public class SecAssnValidator {
             return iv;
             //throwEx("Unknown ECS, check value or request an update of the KMC API Library ECSTYPE list");
         }
-        if (ivLen.shortValue() != validEcs.getIvLen()) {
+        if (ivLen != null && ivLen.shortValue() != validEcs.getIvLen()) {
             throwEx("ivLen of " + ivLen.shortValue() + " is invalid for the current ECS; " + validEcs.name() + " " +
                     "accepts only ivLen " + validEcs.getIvLen());
         }
-        if (iv != null && iv.length != validEcs.getIvLen()) {
+        if (hasIv && iv.length != validEcs.getIvLen()) {
             throwEx("IV " + Hex.encodeHexString(iv) + " is length: " + iv.length + " but selected ECS " + validEcs.name() + " accepts only IVs of length " + validEcs.getIvLen());
         }
         return iv;
@@ -309,15 +313,14 @@ public class SecAssnValidator {
      * @throws KmcException ex
      */
     public static void verifyArsn(ISecAssn sa) throws KmcException {
-//        if (sa.getArsn().length != sa.getArsnLen()) {
-//            throw new KmcException("ARSN and ARSN length must agree");
-//        }
+        verifyArsn(sa.getArsn(), sa.getArsnLen());
     }
 
     /**
      * Verify ARSN parameters.
      * <p>
-     * If either ARSN or ARSN Length are supplied, both are required.
+     * If the ARSN length is null or 0, the ARSN must be null, empty or "0x". Otherwise the ARSN is required and its
+     * decoded byte length must equal the ARSN length.
      *
      * @param arsn    anti-replay sequence number
      * @param arsnLen arsn length in bytes
@@ -325,11 +328,28 @@ public class SecAssnValidator {
      * @throws KmcException ex
      */
     public static byte[] verifyArsn(String arsn, Short arsnLen) throws KmcException {
-        if (checkArgsNotNull("When specifying '--arsn' or '--arsnlen', both are required", arsn, arsnLen)) {
-            byte[] arcBytes = convertHexToBytes(arsn, "ARSN must be a hex string");
-            return arcBytes;
+        boolean blank = arsn == null || arsn.isBlank();
+        return verifyArsn(blank ? new byte[0] : convertHexToBytes(arsn, "ARSN must be a hex string"), arsnLen);
+    }
+
+    /**
+     * Verify ARSN bytes against the ARSN length. Null ARSN is treated as empty.
+     *
+     * @param arsn    anti-replay sequence number
+     * @param arsnLen arsn length in bytes
+     * @return arsn bytes, never null
+     * @throws KmcException ex
+     */
+    public static byte[] verifyArsn(byte[] arsn, Short arsnLen) throws KmcException {
+        byte[] bytes = arsn == null ? new byte[0] : arsn;
+        if (arsnLen == null || arsnLen == 0) {
+            if (bytes.length != 0) {
+                throwEx("ARSN must be empty when ARSN length is 0, but ARSN has " + bytes.length + " bytes");
+            }
+        } else if (bytes.length != arsnLen) {
+            throwEx("ARSN byte length " + bytes.length + " must match ARSN length " + arsnLen);
         }
-        return null;
+        return bytes;
     }
 
     /**
