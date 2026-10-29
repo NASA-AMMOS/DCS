@@ -107,30 +107,11 @@ abstract class ASecAssn implements ISecAssn {
             0x00};
     // anti replay counter len
     @Column(name = "arsn_len")
-    private              Short        arsnLen   = 20;
+    private              Short        arsnLen   = 0;
     // anti replay counter
     @JsonSerialize(using = ByteArraySerializer.class)
     @JsonDeserialize(using = ByteArrayDeserializer.class)
-    private              byte[]       arsn      = new byte[]{0x00,
-            0x00,
-            0x00,
-            0x00,
-            0x00,
-            0x00,
-            0x00,
-            0x00,
-            0x00,
-            0x00,
-            0x00,
-            0x00,
-            0x00,
-            0x00,
-            0x00,
-            0x00,
-            0x00,
-            0x00,
-            0x00,
-            0x00};
+    private              byte[]       arsn      = new byte[]{};
     // anti replay counter window
     private              Short        arsnw     = 0;
 
