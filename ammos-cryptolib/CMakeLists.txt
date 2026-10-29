@@ -205,6 +205,7 @@ endif()
 set_property(TARGET kmc_sdls APPEND PROPERTY ADDITIONAL_CLEAN_FILES
         ${PROJECT_BINARY_DIR}
         ${CMAKE_BINARY_DIR}/install_manifest.txt
+        ${CMAKE_CURRENT_SOURCE_DIR}/CryptoLib/libcryptolib.so
         ${CMAKE_CURRENT_SOURCE_DIR}/kmc_sdls/kmc_sdls_java/src/test/resources/sa_save_file.bin
         ${CMAKE_CURRENT_SOURCE_DIR}/kmc_sdls/kmc_sdls_python/kmc_python_tests/sa_save_file.bin
         ${CMAKE_CURRENT_SOURCE_DIR}/kmc_sdls/kmc_sdls_tests/sa_save_file.bin
