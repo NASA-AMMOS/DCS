@@ -23,9 +23,12 @@
  */
 package ch.ntb.inf.kmip.kmipenum;
 
+import java.io.Serial;
+
 public class KMIPEnumUndefinedKeyException extends Exception {
 
-	private static final long serialVersionUID = -1436942087576545363L;
+    @Serial
+    private static final long serialVersionUID = -1436942087576545363L;
 
 	public KMIPEnumUndefinedKeyException(String key, String name){
 		super("Undefined Enum Value of "+name+": "+key);

@@ -340,8 +340,8 @@ public class KMIPEncoder implements KMIPEncoderInterface {
 		} else if(batch.getOperation().getValue() == EnumOperation.Check || batch.getOperation().getValue() == EnumOperation.GetUsageAllocation){
 			while(it.hasNext()){
 				Attribute attrib = it.next();
-				if(attrib instanceof UsageLimits){
-					encodeUsageLimits((UsageLimits) attrib, al);
+				if(attrib instanceof UsageLimits limits){
+					encodeUsageLimits(limits, al);
 				} else{
 					encodeAttribute(attrib, al);
 				}
@@ -509,29 +509,29 @@ public class KMIPEncoder implements KMIPEncoderInterface {
 	
 	private void encodeManagedObject(ManagedObject managedObject, ArrayList<Byte> al) {
 		
-		if(managedObject instanceof Template){
-			encodeTemplate((Template)managedObject, al);
+		if(managedObject instanceof Template template){
+			encodeTemplate(template, al);
 		}
-		else if(managedObject instanceof SymmetricKey){
-			encodeSymmetricKey((SymmetricKey)managedObject, al);
+		else if(managedObject instanceof SymmetricKey key3){
+			encodeSymmetricKey(key3, al);
 		} 
-		else if(managedObject instanceof SecretData){
-			encodeSecretData((SecretData)managedObject, al);
+		else if(managedObject instanceof SecretData data){
+			encodeSecretData(data, al);
 		} 
-		else if(managedObject instanceof PrivateKey){
-			encodePrivateKey((PrivateKey)managedObject, al);
+		else if(managedObject instanceof PrivateKey key2){
+			encodePrivateKey(key2, al);
 		} 
-		else if(managedObject instanceof PublicKey){
-			encodePublicKey((PublicKey)managedObject, al);
+		else if(managedObject instanceof PublicKey key1){
+			encodePublicKey(key1, al);
 		} 
-		else if(managedObject instanceof Certificate){
-			encodeCertificate((Certificate)managedObject, al);
+		else if(managedObject instanceof Certificate certificate){
+			encodeCertificate(certificate, al);
 		} 
-		else if(managedObject instanceof SplitKey){
-			encodeSplitKey((SplitKey)managedObject, al);
+		else if(managedObject instanceof SplitKey key){
+			encodeSplitKey(key, al);
 		} 
-		else if(managedObject instanceof OpaqueObject){
-			encodeOpaqueObject((OpaqueObject)managedObject, al);
+		else if(managedObject instanceof OpaqueObject object){
+			encodeOpaqueObject(object, al);
 		}
 	}
 	

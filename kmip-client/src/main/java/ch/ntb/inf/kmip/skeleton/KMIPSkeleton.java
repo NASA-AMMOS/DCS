@@ -108,7 +108,7 @@ public class KMIPSkeleton implements KMIPSkeletonInterface{
 		    //logger.info("Loaded KMIP server log4j file " + KMS_LOG4J_FILE);
             logger.info("Loaded KMIP server config file " + KMS_CONFIG_FILE);
 
-			this.klmsAdapter = (KLMSAdapterInterface) Class.forName(DEFAULT_LOCATION_ADAPTER).newInstance();
+			this.klmsAdapter = (KLMSAdapterInterface) Class.forName(DEFAULT_LOCATION_ADAPTER).getDeclaredConstructor().newInstance();
 			this.klmsAdapter.setKLMS(props.getProperty("KLMS"), DEFAULT_LOCATION_KLMS);
 
 			this.encoderPool = new KMIPEncoderPool(props.getProperty("Encoder"), DEFAULT_LOCATION_ENCODER);

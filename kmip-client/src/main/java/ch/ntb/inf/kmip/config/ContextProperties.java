@@ -26,6 +26,7 @@
 package ch.ntb.inf.kmip.config;
 
 import java.io.File;
+import java.io.Serial;
 import java.util.Properties;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -38,7 +39,8 @@ import org.w3c.dom.NodeList;
 
 public class ContextProperties extends Properties {
 
-	private static final long serialVersionUID = 5523640676789403887L;
+    @Serial
+    private static final long serialVersionUID = 5523640676789403887L;
 
 	public ContextProperties(String xmlPath, String name) {
 		

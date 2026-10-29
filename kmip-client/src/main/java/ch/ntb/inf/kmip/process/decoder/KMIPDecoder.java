@@ -1942,7 +1942,7 @@ public class KMIPDecoder implements KMIPDecoderInterface{
     private Attribute loadAttributeInstance(KMIPTextString attributeName) throws KMIPUnexpectedAttributeNameException{
 		String className = attributeName.getValue().replaceAll("\\s","");
 		try{
-			return (Attribute) Class.forName(ATTRIBUTE_LOCATION + className).newInstance();
+			return (Attribute) Class.forName(ATTRIBUTE_LOCATION + className).getDeclaredConstructor().newInstance();
 		}
 		catch(Exception e1){
 			try{

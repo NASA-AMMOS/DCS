@@ -27,9 +27,12 @@
  */
 package ch.ntb.inf.kmip.process.encoder;
 
+import java.io.Serial;
+
 public class KMIPEncoderPoolOverflowException extends Exception {
 
-	private static final long serialVersionUID = -8958423205345013137L;
+    @Serial
+    private static final long serialVersionUID = -8958423205345013137L;
 
 	KMIPEncoderPoolOverflowException(int max){
 		super("PoolOverflowException:: Max number ("+max+") reached! Wait until some get returned");

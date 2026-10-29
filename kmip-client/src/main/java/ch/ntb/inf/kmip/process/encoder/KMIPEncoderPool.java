@@ -62,9 +62,9 @@ public class KMIPEncoderPool {
 			KMIPEncoderInterface encoder = null;		
 			try{
 				if(encoderPath != null){
-					encoder = (KMIPEncoderInterface) Class.forName(encoderPath).newInstance();
+					encoder = (KMIPEncoderInterface) Class.forName(encoderPath).getDeclaredConstructor().newInstance();
 				} else{
-					encoder = (KMIPEncoderInterface) Class.forName(defaultPath).newInstance();
+					encoder = (KMIPEncoderInterface) Class.forName(defaultPath).getDeclaredConstructor().newInstance();
 				}
 				numberOfcreatedEncoders++;
 				encoders.put(encoder, Boolean.TRUE);

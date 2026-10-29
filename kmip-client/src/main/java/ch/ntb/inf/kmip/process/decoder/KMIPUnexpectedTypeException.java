@@ -28,10 +28,13 @@
 
 package ch.ntb.inf.kmip.process.decoder;
 
+import java.io.Serial;
+
 
 public class KMIPUnexpectedTypeException extends Exception{
 
-	private static final long serialVersionUID = -5181012948977547485L;
+    @Serial
+    private static final long serialVersionUID = -5181012948977547485L;
 
 	public KMIPUnexpectedTypeException(String obj, String type){
         super("Unexpected Type of " + obj + " , " + type + " expected");

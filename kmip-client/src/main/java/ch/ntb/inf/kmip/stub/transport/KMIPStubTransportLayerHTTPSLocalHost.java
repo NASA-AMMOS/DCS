@@ -121,8 +121,8 @@ public class KMIPStubTransportLayerHTTPSLocalHost implements KMIPStubTransportLa
         URL url = new URL(targetURL);
         URLConnection connection = url.openConnection();
         HttpsURLConnection httpsConnection = null;
-        if (connection instanceof HttpsURLConnection) {
-        	httpsConnection = (HttpsURLConnection) connection;
+        if (connection instanceof HttpsURLConnection lConnection) {
+        	httpsConnection = lConnection;
         }
         else{
         	logger.warn("Connection is no HttpsURLConnection!");

@@ -61,9 +61,9 @@ public class KMIPDecoderPool {
 			KMIPDecoderInterface decoder = null;
 			try {
 				if(decoderPath != null){
-					decoder = (KMIPDecoderInterface) Class.forName(decoderPath).newInstance();
+					decoder = (KMIPDecoderInterface) Class.forName(decoderPath).getDeclaredConstructor().newInstance();
 				} else{
-					decoder = (KMIPDecoderInterface) Class.forName(defaultPath).newInstance();
+					decoder = (KMIPDecoderInterface) Class.forName(defaultPath).getDeclaredConstructor().newInstance();
 				}
 				numberOfcreatedDecoders++;
 				decoders.put(decoder, Boolean.TRUE);

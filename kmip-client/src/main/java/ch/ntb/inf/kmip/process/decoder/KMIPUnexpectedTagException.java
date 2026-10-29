@@ -28,10 +28,13 @@
 
 package ch.ntb.inf.kmip.process.decoder;
 
+import java.io.Serial;
+
 
 public class KMIPUnexpectedTagException extends Exception{
 
-	private static final long serialVersionUID = -140899381069466822L;
+    @Serial
+    private static final long serialVersionUID = -140899381069466822L;
 
 	public KMIPUnexpectedTagException(String msg){
         super("Unexpected Tag, " + msg + " expected");

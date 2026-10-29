@@ -25,10 +25,13 @@
  */
 package ch.ntb.inf.kmip.types;
 
+import java.io.Serial;
+
 
 public class KMIPTypeInvalidValueException extends Exception{
 
-	private static final long serialVersionUID = -2844330029781466388L;
+    @Serial
+    private static final long serialVersionUID = -2844330029781466388L;
 
 	public KMIPTypeInvalidValueException(String className, String value){
 		super("Invalid value (" + value + ") for KMIPType " + className);

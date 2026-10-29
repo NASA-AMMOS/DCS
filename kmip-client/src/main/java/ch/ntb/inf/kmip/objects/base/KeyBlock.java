@@ -69,10 +69,10 @@ public class KeyBlock extends BaseObject {
 	}
 
 	public void addAttribute(Attribute a) {
-		if(a instanceof CryptographicLength){
-			this.cryptographicLength = (CryptographicLength) a;
-		} else if(a instanceof CryptographicAlgorithm){
-			this.cryptographicAlgorithm = (CryptographicAlgorithm) a;
+		if(a instanceof CryptographicLength length){
+			this.cryptographicLength = length;
+		} else if(a instanceof CryptographicAlgorithm algorithm){
+			this.cryptographicAlgorithm = algorithm;
 		}
 	}
 

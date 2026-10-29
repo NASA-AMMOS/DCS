@@ -83,15 +83,15 @@ public class KMIPStub implements KMIPStubInterface {
 	 */
 	public KMIPStub(final Map<String, Object> configParams) throws Exception {
 		try {
-		    this.encoder = (KMIPEncoderInterface) Class.forName(DEFAULT_ENCODER).newInstance();
-		    this.decoder = (KMIPDecoderInterface) Class.forName(DEFAULT_DECODER).newInstance();
+		    this.encoder = (KMIPEncoderInterface) Class.forName(DEFAULT_ENCODER).getDeclaredConstructor().newInstance();
+		    this.decoder = (KMIPDecoderInterface) Class.forName(DEFAULT_DECODER).getDeclaredConstructor().newInstance();
 		    String kmsURI = (String) configParams.get(CFG_KMS_URI);
 		    logger.debug("KMIPStub: kmsURI = " + kmsURI);
 		    if (kmsURI.startsWith("http")) {
-		        this.transportLayer = (KMIPStubTransportLayerInterface) Class.forName(DEFAULT_HTTP_TRANSPORT).newInstance();
+		        this.transportLayer = (KMIPStubTransportLayerInterface) Class.forName(DEFAULT_HTTP_TRANSPORT).getDeclaredConstructor().newInstance();
 		        this.transportLayer.setConfigParameters(configParams);
 		    } else if (kmsURI.startsWith("tls10://") || kmsURI.startsWith("tls12://")) {
-		        this.transportLayer = (KMIPStubTransportLayerInterface) Class.forName(DEFAULT_TLS_TRANSPORT).newInstance();
+		        this.transportLayer = (KMIPStubTransportLayerInterface) Class.forName(DEFAULT_TLS_TRANSPORT).getDeclaredConstructor().newInstance();
 		        this.transportLayer.setConfigParameters(configParams);
 		    } else {
 		        String msg = "Invalid " + CFG_KMS_URI + ": " + kmsURI;
