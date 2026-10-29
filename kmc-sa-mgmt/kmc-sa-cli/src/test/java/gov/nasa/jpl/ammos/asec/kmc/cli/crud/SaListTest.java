@@ -11,7 +11,9 @@ import java.io.StringWriter;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Tests for listing SAs
@@ -550,14 +552,50 @@ public class SaListTest extends BaseCommandLineTest {
     }
 
     public void testCsvRoundTrip(FrameType type) throws Exception {
-        StringWriter w1   = new StringWriter();
-        PrintWriter  out1 = new PrintWriter(w1);
-        CommandLine  cli1 = getCmd(new SaList(), true, out1, null);
-        int          exit = cli1.execute("--extended", String.format(TYPE_FMT, type.name()));
+        StringWriter listOut = new StringWriter();
+        PrintWriter  listPw  = new PrintWriter(listOut);
+        CommandLine  listCmd = getCmd(new SaList(), true, listPw, null);
+        int          exit    = listCmd.execute("--extended", String.format(TYPE_FMT, type.name()));
         assertEquals(0, exit);
-        String csv = w1.toString();
-        assertTrue(csv.contains("\"st\""));
-        assertFalse(csv.contains("\"est\""));
-        assertFalse(csv.contains("\"ast\""));
+        String csv = listOut.toString();
+
+        java.io.File tmpFile = java.io.File.createTempFile("sa-roundtrip-", ".csv");
+        try {
+            java.nio.file.Files.writeString(tmpFile.toPath(), csv);
+
+            truncateTable(type);
+            assertEquals(0, dao.getSas(type).size());
+
+            StringWriter createOut = new StringWriter();
+            PrintWriter  createPw  = new PrintWriter(createOut);
+            StringWriter createErr = new StringWriter();
+            PrintWriter  createErrPw = new PrintWriter(createErr);
+            CommandLine  createCmd = getCmd(new SaCreate(), true, createPw, createErrPw);
+            int createExit = createCmd.execute("--file=" + tmpFile.getAbsolutePath(), String.format(TYPE_FMT, type.name()));
+            String output = createOut.toString() + createErr.toString();
+            if (createExit != 0) {
+                fail("Create failed with exit " + createExit + ":\n" + output);
+            }
+
+            int actualCount = dao.getSas(type).size();
+            if (actualCount != 5) {
+                fail("Expected 5 SAs, got " + actualCount + ". Create output:\n" + output + "\nCSV:\n" + csv);
+            }
+            gov.nasa.jpl.ammos.asec.kmc.api.sa.ISecAssn sa1 = dao.getSa(new gov.nasa.jpl.ammos.asec.kmc.api.sa.SpiScid(1, (short) 46), type);
+            assertNotNull(sa1);
+            assertEquals(gov.nasa.jpl.ammos.asec.kmc.api.sa.ServiceType.AUTHENTICATED_ENCRYPTION, sa1.getServiceType());
+            assertEquals(1, (short) sa1.getEst());
+            assertEquals(1, (short) sa1.getAst());
+        } finally {
+            tmpFile.delete();
+        }
+    }
+
+    private void truncateTable(FrameType type) throws Exception {
+        switch (type) {
+            case TC -> truncateTc();
+            case TM -> truncateTm();
+            case AOS -> truncateAos();
+        }
     }
 }
