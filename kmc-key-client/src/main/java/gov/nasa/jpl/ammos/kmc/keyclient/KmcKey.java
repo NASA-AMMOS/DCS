@@ -396,12 +396,12 @@ public class KmcKey {
     }
 
     private KeyBlock getKeyBlock() {
-        if (cryptoObject instanceof SymmetricKey) {
-            return ((SymmetricKey) cryptoObject).getKeyBlock();
-        } else if (cryptoObject instanceof ch.ntb.inf.kmip.objects.managed.PrivateKey) {
-            return ((ch.ntb.inf.kmip.objects.managed.PrivateKey) cryptoObject).getKeyBlock();
-        } else if (cryptoObject instanceof ch.ntb.inf.kmip.objects.managed.PublicKey) {
-            return ((ch.ntb.inf.kmip.objects.managed.PublicKey) cryptoObject).getKeyBlock();
+        if (cryptoObject instanceof SymmetricKey key2) {
+            return key2.getKeyBlock();
+        } else if (cryptoObject instanceof ch.ntb.inf.kmip.objects.managed.PrivateKey key1) {
+            return key1.getKeyBlock();
+        } else if (cryptoObject instanceof ch.ntb.inf.kmip.objects.managed.PublicKey key) {
+            return key.getKeyBlock();
         } else {
             return null;
         }
