@@ -1,12 +1,12 @@
 package gov.nasa.jpl.ammos.asec.kmc.api.json;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import org.junit.Test;
+import tools.jackson.core.JsonGenerator;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import java.io.IOException;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -21,8 +21,8 @@ public class ByteArraySerializerTest {
         ByteArraySerializer serializer = new ByteArraySerializer();
         serializer.serialize(new byte[]{0x01, 0x02, 0x03, 0x04}, gen, null);
         ArgumentCaptor<String> arg = ArgumentCaptor.forClass(String.class);
-        verify(gen).writeObject(want);
-        verify(gen).writeObject(arg.capture());
+        verify(gen).writePOJO(want);
+        verify(gen).writePOJO(arg.capture());
         assertEquals(want, arg.getValue());
     }
 
