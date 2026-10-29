@@ -122,6 +122,10 @@
                                 <id>build-frontend</id>
                                 <phase>none</phase>
                             </execution>
+                            <execution>
+                                <id>test-frontend</id>
+                                <phase>none</phase>
+                            </execution>
                         </executions>
                     </plugin>
                     <plugin>
@@ -228,6 +232,17 @@
                         <phase>prepare-package</phase>
                         <configuration>
                             <arguments>build</arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>test-frontend</id>
+                        <goals>
+                            <goal>yarn</goal>
+                        </goals>
+                        <phase>test</phase>
+                        <configuration>
+                            <arguments>test</arguments>
+                            <skip>${maven.test.skip}</skip>
                         </configuration>
                     </execution>
                 </executions>
