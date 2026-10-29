@@ -143,8 +143,8 @@ public class DecrypterLibrary implements Decrypter {
         }
         int keyLength = md.getKeyLength();
         int keySize;
-        if (key instanceof RSAKey) {
-            keySize = ((RSAKey) key).getModulus().bitLength();
+        if (key instanceof RSAKey aKey) {
+            keySize = aKey.getModulus().bitLength();
         } else {
             keySize = key.getEncoded().length * BYTE_SIZE;
             if ("DESede".equals(keyAlgorithm)) {

@@ -149,8 +149,8 @@ public class EncrypterLibrary implements Encrypter {
      */
     private void createCipher(final Key key) throws KmcCryptoException {
         keyAlgorithm = key.getAlgorithm();
-        if (key instanceof RSAKey) {
-            keyLength = ((RSAKey) key).getModulus().bitLength();
+        if (key instanceof RSAKey aKey) {
+            keyLength = aKey.getModulus().bitLength();
         } else {
             keyLength = key.getEncoded().length * BYTE_SIZE;
             if ("DESede".equals(keyAlgorithm)) {
