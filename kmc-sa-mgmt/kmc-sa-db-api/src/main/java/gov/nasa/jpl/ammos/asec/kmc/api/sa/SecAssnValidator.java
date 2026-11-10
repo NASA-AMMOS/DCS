@@ -48,6 +48,7 @@ public class SecAssnValidator {
         if (!STATE_RANGE.contains(sa.getSaState())) {
             throw new KmcException(String.format("%s invalid SA State %d", sa, sa.getSaState()));
         }
+        verifyVcid(sa);
         verifyEst(sa);
         verifyAst(sa);
         verifyArsn(sa);
@@ -57,6 +58,45 @@ public class SecAssnValidator {
         checkArgsNotNull("Invalid ABM: ABM and ABM length are both required", sa.getAbm(), sa.getAbmLen());
         if (sa.getAbmLen() != sa.getAbm().length) {
             throwEx(String.format("%s invalid ABM: byte size of ABM and ABM length must agree, %d != %d, ", sa, sa.getAbm().length, sa.getAbmLen()));
+        }
+    }
+
+    /**
+     * Largest VCID that fits the CCSDS VCID field: 6 bits for TC and AOS, 3 bits for TM. A mission's own split of the
+     * TC VCID (e.g. string id + channel id) is not interpreted here.
+     *
+     * @param frameType frame type
+     * @return max VCID
+     */
+    public static int maxVcid(FrameType frameType) {
+        return frameType == FrameType.TM ? 7 : 63;
+    }
+
+    /**
+     * Verify the VCID fits the VCID field of the SA's frame type.
+     *
+     * @param sa security association
+     * @throws KmcException ex
+     */
+    public static void verifyVcid(ISecAssn sa) throws KmcException {
+        verifyVcid(sa.getType(), sa.getVcid());
+    }
+
+    /**
+     * Verify the VCID fits the VCID field of the frame type.
+     *
+     * @param frameType frame type
+     * @param vcid      VCID, may be null (nothing to check)
+     * @throws KmcException ex
+     */
+    public static void verifyVcid(FrameType frameType, Byte vcid) throws KmcException {
+        if (vcid == null) {
+            return;
+        }
+        int max = maxVcid(frameType);
+        if (vcid < 0 || vcid > max) {
+            throwEx(String.format("Invalid VCID %d for %s: must be between 0 and %d (%d-bit field)", vcid, frameType,
+                    max, Integer.bitCount(max)));
         }
     }
 

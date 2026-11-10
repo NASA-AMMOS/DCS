@@ -228,6 +228,9 @@ public class SaController {
         if (original == null) {
             throw new KmcException(String.format("SA %s/%s does not exist", sa.getSpi(), sa.getScid()));
         }
+        if (!Objects.equals(original.getVcid(), sa.getVcid())) {
+            SecAssnValidator.verifyVcid(sa);
+        }
         // only validate IV/ARSN when they changed, so legacy rows can still be edited for unrelated fields
         if (!Arrays.equals(original.getIv(), sa.getIv()) || !Objects.equals(original.getIvLen(), sa.getIvLen())
                 || !Arrays.equals(original.getEcs(), sa.getEcs()) || !Objects.equals(original.getEst(), sa.getEst())) {

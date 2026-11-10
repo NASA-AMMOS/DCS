@@ -513,7 +513,8 @@ public abstract class BaseCreateUpdate extends BaseCliApp {
      *
      * @param vcid VCID
      */
-    protected void checkAndSetVcid(Byte vcid) {
+    protected void checkAndSetVcid(Byte vcid) throws KmcException {
+        SecAssnValidator.verifyVcid(frameType, vcid);
         this.vcid = vcid;
     }
 
