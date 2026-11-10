@@ -636,6 +636,25 @@ public class SaUpdateTest extends BaseCommandLineTest {
     }
 
     @Test
+    public void testUpdateVcidBounds() throws KmcException {
+        testUpdateVcidBounds(FrameType.TC, 63, 64);
+        testUpdateVcidBounds(FrameType.AOS, 63, 64);
+        testUpdateVcidBounds(FrameType.TM, 7, 8);
+    }
+
+    public void testUpdateVcidBounds(FrameType type, int max, int tooBig) throws KmcException {
+        SpiScid id = new SpiScid(1, (short) 46);
+        CommandLine cmd = getCmd(new SaUpdate(), true, null, null);
+        int exitCode = cmd.execute(SCID_46, SPI_1, "--vcid=" + tooBig, String.format(TYPE_FMT, type.name()));
+        assertNotEquals(0, exitCode);
+        assertEquals(0, (byte) dao.getSa(id, type).getVcid());
+        cmd = getCmd(new SaUpdate(), true, null, null);
+        exitCode = cmd.execute(SCID_46, SPI_1, "--vcid=" + max, String.format(TYPE_FMT, type.name()));
+        assertEquals(0, exitCode);
+        assertEquals(max, (byte) dao.getSa(id, type).getVcid());
+    }
+
+    @Test
     public void testUpdateMapidTfvnVcid() throws KmcException {
         testUpdateMapidTfvnVcid(FrameType.TC);
         testUpdateMapidTfvnVcid(FrameType.TM);
