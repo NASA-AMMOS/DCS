@@ -48,6 +48,7 @@ public class SecAssnValidator {
         if (!STATE_RANGE.contains(sa.getSaState())) {
             throw new KmcException(String.format("%s invalid SA State %d", sa, sa.getSaState()));
         }
+        verifyScid(sa);
         verifyVcid(sa);
         verifyEst(sa);
         verifyAst(sa);
@@ -58,6 +59,44 @@ public class SecAssnValidator {
         checkArgsNotNull("Invalid ABM: ABM and ABM length are both required", sa.getAbm(), sa.getAbmLen());
         if (sa.getAbmLen() != sa.getAbm().length) {
             throwEx(String.format("%s invalid ABM: byte size of ABM and ABM length must agree, %d != %d, ", sa, sa.getAbm().length, sa.getAbmLen()));
+        }
+    }
+
+    /**
+     * Largest SCID that fits the CCSDS SCID field: 8 bits for AOS, 10 bits for TC and TM.
+     *
+     * @param frameType frame type
+     * @return max SCID
+     */
+    public static int maxScid(FrameType frameType) {
+        return frameType == FrameType.AOS ? 255 : 1023;
+    }
+
+    /**
+     * Verify the SCID fits the SCID field of the SA's frame type.
+     *
+     * @param sa security association
+     * @throws KmcException ex
+     */
+    public static void verifyScid(ISecAssn sa) throws KmcException {
+        verifyScid(sa.getType(), sa.getScid());
+    }
+
+    /**
+     * Verify the SCID fits the SCID field of the frame type.
+     *
+     * @param frameType frame type
+     * @param scid      SCID, may be null (nothing to check)
+     * @throws KmcException ex
+     */
+    public static void verifyScid(FrameType frameType, Short scid) throws KmcException {
+        if (scid == null) {
+            return;
+        }
+        int max = maxScid(frameType);
+        if (scid < 0 || scid > max) {
+            throwEx(String.format("Invalid SCID %d for %s: must be between 0 and %d (%d-bit field)", scid, frameType,
+                    max, Integer.bitCount(max)));
         }
     }
 

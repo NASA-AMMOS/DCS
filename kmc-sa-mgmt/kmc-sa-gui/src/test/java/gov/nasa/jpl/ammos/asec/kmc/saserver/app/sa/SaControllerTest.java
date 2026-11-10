@@ -937,6 +937,25 @@ public class SaControllerTest extends BaseH2Test {
     }
 
     @Test
+    public void testCreateSaScidOutOfBoundsFails() throws KmcException {
+        createSaScidOutOfBoundsFails(FrameType.TC, 1024);
+        createSaScidOutOfBoundsFails(FrameType.TM, 1024);
+        createSaScidOutOfBoundsFails(FrameType.AOS, 256);
+    }
+
+    public void createSaScidOutOfBoundsFails(FrameType type, int scid) throws KmcException {
+        ObjectNode node = createSaJson();
+        node.put(TYPE, type.name());
+        node.put(SCID, scid);
+        node.withObject(ID_PATH).put(SCID, scid);
+        ResponseEntity<ObjectNode> resp = restTemplate.exchange(getUrl(), HttpMethod.PUT, new HttpEntity<>(node),
+                ObjectNode.class, new Object[0]);
+        assertEquals(HttpStatus.BAD_REQUEST, resp.getStatusCode());
+        assertEquals(ERROR, resp.getBody().get(STATUS).asText());
+        assertNull(dao.getSa(new SpiScid(100, (short) scid), type));
+    }
+
+    @Test
     public void testUpdateSaArsnMismatchFails() throws KmcException {
         createSaByType(FrameType.TC);
         ObjectNode node = createSaJson();

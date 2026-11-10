@@ -169,4 +169,23 @@ public class SecAssnValidatorTest {
         tc.setVcid((byte) 8);
         SecAssnValidator.verifyVcid(tc);
     }
+
+    @Test
+    public void verifyScidBoundsPerFrameType() throws KmcException {
+        SecAssnValidator.verifyScid(FrameType.TC, (short) 1023);
+        SecAssnValidator.verifyScid(FrameType.TM, (short) 1023);
+        SecAssnValidator.verifyScid(FrameType.AOS, (short) 255);
+        SecAssnValidator.verifyScid(FrameType.AOS, (short) 0);
+        SecAssnValidator.verifyScid(FrameType.TC, null);
+        assertThrows(KmcException.class, () -> SecAssnValidator.verifyScid(FrameType.TC, (short) 1024));
+        assertThrows(KmcException.class, () -> SecAssnValidator.verifyScid(FrameType.TM, (short) 1024));
+        assertThrows(KmcException.class, () -> SecAssnValidator.verifyScid(FrameType.AOS, (short) 256));
+        assertThrows(KmcException.class, () -> SecAssnValidator.verifyScid(FrameType.TC, (short) -1));
+    }
+
+    @Test
+    public void validateRejectsOutOfRangeScid() {
+        ISecAssn aos = new SecAssnAos(new SpiScid(1, (short) 256));
+        assertThrows(KmcException.class, () -> SecAssnValidator.validate(aos));
+    }
 }

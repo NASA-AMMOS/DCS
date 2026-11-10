@@ -486,7 +486,8 @@ public abstract class BaseCreateUpdate extends BaseCliApp {
      *
      * @param scid SCID
      */
-    protected void checkAndSetScid(Short scid) {
+    protected void checkAndSetScid(Short scid) throws KmcException {
+        SecAssnValidator.verifyScid(frameType, scid);
         this.scid = scid;
     }
 
