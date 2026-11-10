@@ -146,7 +146,6 @@ export default function SaTableAppBar({
         const errorCallback = createErrorCallback(enqueueSnackbar)
         errorCallback(e)
         setProgress(0)
-        setSelectedFile(null)
         refreshTable()
     }
 
