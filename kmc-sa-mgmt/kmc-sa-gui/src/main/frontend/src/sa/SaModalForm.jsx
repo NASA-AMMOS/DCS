@@ -111,7 +111,12 @@ const baseValidationSchema = yup.object({
 // VCID field width per CCSDS: 6 bits for TC and AOS, 3 bits for TM
 export const maxVcid = (type) => type === "TM" ? 7 : 63
 
+// SCID field width per CCSDS: 8 bits for AOS, 10 bits for TC and TM
+export const maxScid = (type) => type === "AOS" ? 255 : 1023
+
 export const validationSchemaFor = (type) => baseValidationSchema.shape({
+    scid: yup.number().integer('must be an integer').min(0)
+        .max(maxScid(type), `SCID must be at most ${maxScid(type)} for ${type} frames`).required('SCID is required'),
     vcid: yup.number().integer('must be an integer').min(0)
         .max(maxVcid(type), `VCID must be at most ${maxVcid(type)} for ${type} frames`).required('VCID is required'),
 })

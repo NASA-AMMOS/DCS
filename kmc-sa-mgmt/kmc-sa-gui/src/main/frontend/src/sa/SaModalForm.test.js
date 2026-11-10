@@ -1,5 +1,5 @@
 import {expect, test} from "vitest";
-import {maxVcid, validationSchemaFor} from "./SaModalForm.jsx";
+import {maxScid, maxVcid, validationSchemaFor} from "./SaModalForm.jsx";
 
 const vcidError = async (type, vcid) => {
     try {
@@ -32,4 +32,31 @@ test("TM accepts VCID 0-7 and rejects 8", async () => {
 test("VCID still rejects negatives and non-integers", async () => {
     expect(await vcidError("TC", -1)).not.toBeNull()
     expect(await vcidError("TC", 1.5)).not.toBeNull()
+})
+
+const scidError = async (type, scid) => {
+    try {
+        await validationSchemaFor(type).validateAt("scid", {scid})
+        return null
+    } catch (e) {
+        return e.message
+    }
+}
+
+test("SCID limits follow the CCSDS field width per frame type", () => {
+    expect(maxScid("TC")).toBe(1023)
+    expect(maxScid("TM")).toBe(1023)
+    expect(maxScid("AOS")).toBe(255)
+})
+
+test("TC and TM accept SCID up to 1023 and reject 1024", async () => {
+    for (const type of ["TC", "TM"]) {
+        expect(await scidError(type, 1023)).toBeNull()
+        expect(await scidError(type, 1024)).toMatch(/at most 1023/)
+    }
+})
+
+test("AOS accepts SCID up to 255 and rejects 256", async () => {
+    expect(await scidError("AOS", 255)).toBeNull()
+    expect(await scidError("AOS", 256)).toMatch(/at most 255/)
 })
