@@ -218,7 +218,7 @@ public class KmcDao implements IKmcDao {
                             "spi {}, tvfn {}, scid {}, vcid {}, mapid {}, type {} : {}", spi, tvfn, scid, vcid,
                     mapid
                     , type,
-                    e.getMessage());
+                    Utilities.sanitizeForLog(e.getMessage()));
             throw new KmcException("Unable to create SA due to error: ", e);
         }
         return getSa(new SpiScid(spi, scid), type);
@@ -242,11 +242,11 @@ public class KmcDao implements IKmcDao {
             spi = maxSpi + 1;
         } catch (HibernateException e) {
             LOG.error("Encountered Hibernate error while querying for max SPI for SCID {}: {}", scid,
-                    e.getMessage());
+                    Utilities.sanitizeForLog(e.getMessage()));
             throw new KmcException("Unable to get next available SPI due to Hibernate error: ", e);
         } catch (Exception e) {
             LOG.error("Encountered unexpected error while querying for max SPI for SCID {}: {}", scid,
-                    e.getMessage());
+                    Utilities.sanitizeForLog(e.getMessage()));
             throw new KmcException("Unable to get next available SPI due to unexpected error: ", e);
         }
         return spi;

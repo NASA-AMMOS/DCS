@@ -35,4 +35,14 @@ public class UtilitiesTest {
     public void testSanitizeForLogClean() {
         assertEquals("test value", Utilities.sanitizeForLog("test value"));
     }
+
+    @Test
+    public void testSanitizeForLogOtherControlCharacters() {
+        assertEquals("a_b_c", Utilities.sanitizeForLog("a\u001bb\u0000c"));
+    }
+
+    @Test
+    public void testSanitizeForLogUnicodeLineSeparators() {
+        assertEquals("a_b_c_d", Utilities.sanitizeForLog("a\u0085b\u2028c\u2029d"));
+    }
 }
