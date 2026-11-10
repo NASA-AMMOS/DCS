@@ -605,6 +605,36 @@ public class SaUpdateTest extends BaseCommandLineTest {
     }
 
     @Test
+    public void testUpdateLegacyStaleIv() throws KmcException {
+        testUpdateLegacyStaleIv(FrameType.TC);
+        testUpdateLegacyStaleIv(FrameType.TM);
+        testUpdateLegacyStaleIv(FrameType.AOS);
+    }
+
+    public void testUpdateLegacyStaleIv(FrameType type) throws KmcException {
+        SpiScid id = new SpiScid(1, (short) 46);
+        // legacy row: 12 byte IV but iv_len 16
+        ISecAssn stale = dao.getSa(id, type);
+        stale.setIv(new byte[12]);
+        stale.setIvLen((short) 16);
+        dao.updateSa(stale);
+
+        // an unrelated update must not be newly rejected because of the stale IV
+        CommandLine cmd = getCmd(new SaUpdate(), true, null, null);
+        assertEquals(0, cmd.execute(SCID_46, SPI_1, "--mapid=7", String.format(TYPE_FMT, type.name())));
+        assertEquals(7, (byte) dao.getSa(id, type).getMapid());
+
+        // touching the IV fields validates the merged record: 12 byte IV with iv_len 16 stays rejected
+        cmd = getCmd(new SaUpdate(), true, null, null);
+        assertNotEquals(0, cmd.execute(SCID_46, SPI_1, "--ivlen=16", String.format(TYPE_FMT, type.name())));
+
+        // and the stale row can be repaired by making the length agree
+        cmd = getCmd(new SaUpdate(), true, null, null);
+        assertEquals(0, cmd.execute(SCID_46, SPI_1, "--ivlen=12", String.format(TYPE_FMT, type.name())));
+        assertEquals(12, (short) dao.getSa(id, type).getIvLen());
+    }
+
+    @Test
     public void testUpdateMapidTfvnVcid() throws KmcException {
         testUpdateMapidTfvnVcid(FrameType.TC);
         testUpdateMapidTfvnVcid(FrameType.TM);

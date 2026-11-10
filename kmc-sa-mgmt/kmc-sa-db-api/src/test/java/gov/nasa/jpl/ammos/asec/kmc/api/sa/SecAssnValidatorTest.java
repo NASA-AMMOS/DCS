@@ -100,4 +100,40 @@ public class SecAssnValidatorTest {
         sa.setArsn(new byte[3]);
         assertThrows(KmcException.class, () -> SecAssnValidator.verifyArsn(sa));
     }
+
+    private static ISecAssn saWithIv(byte[] iv, short ivLen, short est, short ast) {
+        ISecAssn sa = new SecAssn(new SpiScid(1, (short) 44));
+        sa.setTfvn((byte) 0);
+        sa.setVcid((byte) 0);
+        sa.setMapid((byte) 0);
+        sa.setSaState((short) 1);
+        sa.setEcs(new byte[]{0x01});
+        sa.setIvLen(ivLen);
+        sa.setIv(iv);
+        sa.setEst(est);
+        sa.setAst(ast);
+        return sa;
+    }
+
+    @Test
+    public void validatePlaintextAndAuthOnlyWithoutIvAcceptAnyIvLen() throws KmcException {
+        SecAssnValidator.validate(saWithIv(new byte[0], (short) 0, (short) 0, (short) 0));
+        SecAssnValidator.validate(saWithIv(new byte[0], (short) 16, (short) 0, (short) 1));
+        SecAssnValidator.validate(saWithIv(new byte[0], (short) 12, (short) 1, (short) 1));
+    }
+
+    @Test
+    public void validatePlaintextAndAuthOnlyWithMatchingIvAccepted() throws KmcException {
+        SecAssnValidator.validate(saWithIv(new byte[12], (short) 12, (short) 0, (short) 0));
+        SecAssnValidator.validate(saWithIv(new byte[16], (short) 16, (short) 0, (short) 1));
+    }
+
+    @Test
+    public void validatePlaintextWithStaleIvRejected() {
+        // a stored IV that disagrees with iv_len is rejected even when encryption is off (AKMC-380)
+        assertThrows(KmcException.class,
+                () -> SecAssnValidator.validate(saWithIv(new byte[12], (short) 16, (short) 0, (short) 0)));
+        assertThrows(KmcException.class,
+                () -> SecAssnValidator.validate(saWithIv(new byte[12], (short) 0, (short) 0, (short) 1)));
+    }
 }
