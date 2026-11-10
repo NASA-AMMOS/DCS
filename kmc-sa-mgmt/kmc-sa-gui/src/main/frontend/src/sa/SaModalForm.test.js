@@ -60,3 +60,11 @@ test("AOS accepts SCID up to 255 and rejects 256", async () => {
     expect(await scidError("AOS", 255)).toBeNull()
     expect(await scidError("AOS", 256)).toMatch(/at most 255/)
 })
+
+test("an unchanged out-of-range VCID or SCID on an existing SA is accepted, a changed one is not", async () => {
+    const schema = validationSchemaFor("TM", {vcid: 20, scid: 2000})
+    await expect(schema.validateAt("vcid", {vcid: 20})).resolves.toBe(20)
+    await expect(schema.validateAt("scid", {scid: 2000})).resolves.toBe(2000)
+    await expect(schema.validateAt("vcid", {vcid: 21})).rejects.toThrow(/at most 7/)
+    await expect(schema.validateAt("scid", {scid: 2001})).rejects.toThrow(/at most 1023/)
+})

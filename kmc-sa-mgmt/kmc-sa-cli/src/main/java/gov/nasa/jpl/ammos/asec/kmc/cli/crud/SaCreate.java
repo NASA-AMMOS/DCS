@@ -134,6 +134,7 @@ public class SaCreate extends BaseCreateUpdate {
                 this.mode = Mode.SINGLE;
                 if (args.single.singleArgs != null) {
                     checkAndSetSpi(args.single.singleArgs.spi);
+                    SecAssnValidator.verifyScid(frameType, args.single.singleArgs.scid);
                     checkAndSetScid(args.single.singleArgs.scid);
                     checkAndSetTfvn(args.single.singleArgs.tfvn);
                     checkAndSetVcid(args.single.singleArgs.vcid);
