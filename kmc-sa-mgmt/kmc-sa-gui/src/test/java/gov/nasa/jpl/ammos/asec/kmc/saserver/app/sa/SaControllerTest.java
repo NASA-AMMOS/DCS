@@ -877,6 +877,14 @@ public class SaControllerTest extends BaseH2Test {
     }
 
     @Test
+    public void testUpdateNonexistentSaFails() {
+        ObjectNode node = createSaJson();
+        ResponseEntity<ObjectNode> resp = restTemplate.postForEntity(getUrl(), node, ObjectNode.class);
+        assertEquals(HttpStatus.BAD_REQUEST, resp.getStatusCode());
+        assertEquals(ERROR, resp.getBody().get(STATUS).asText());
+    }
+
+    @Test
     public void testUpdateSaArsnMismatchFails() throws KmcException {
         createSaByType(FrameType.TC);
         ObjectNode node = createSaJson();

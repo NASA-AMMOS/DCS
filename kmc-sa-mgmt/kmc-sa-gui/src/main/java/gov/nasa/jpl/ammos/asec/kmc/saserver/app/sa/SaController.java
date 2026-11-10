@@ -225,6 +225,9 @@ public class SaController {
         checkEncryption(sa);
         checkAuthentication(sa);
         ISecAssn original = dao.getSa(sa.getId(), sa.getType());
+        if (original == null) {
+            throw new KmcException(String.format("SA %s/%s does not exist", sa.getSpi(), sa.getScid()));
+        }
         // only validate IV/ARSN when they changed, so legacy rows can still be edited for unrelated fields
         if (!Arrays.equals(original.getIv(), sa.getIv()) || !Objects.equals(original.getIvLen(), sa.getIvLen())
                 || !Arrays.equals(original.getEcs(), sa.getEcs()) || !Objects.equals(original.getEst(), sa.getEst())) {
