@@ -61,10 +61,10 @@ public class SaList extends BaseCliApp {
                 sas = dao.getSas(frameType);
             }
             if (spi != null && sas != null) {
-                sas = sas.stream().filter(secAssn -> secAssn.getSpi().equals(spi)).toList();
+                sas = sas.stream().filter(secAssn -> spi.equals(secAssn.getSpi())).toList();
             }
             if (scid != null && sas != null) {
-                sas = sas.stream().filter(secAssn -> secAssn.getScid().equals(scid)).toList();
+                sas = sas.stream().filter(secAssn -> scid.equals(secAssn.getScid())).toList();
             }
             if (vcid != null && sas != null) {
                 sas = sas.stream().filter(secAssn -> vcid.equals(secAssn.getVcid())).toList();
