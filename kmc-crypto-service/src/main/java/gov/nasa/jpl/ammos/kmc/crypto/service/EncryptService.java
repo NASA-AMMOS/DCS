@@ -26,7 +26,6 @@ import gov.nasa.jpl.ammos.kmc.crypto.KmcCryptoException.KmcCryptoErrorCode;
 import gov.nasa.jpl.ammos.kmc.crypto.KmcCryptoManager;
 import gov.nasa.jpl.ammos.kmc.crypto.KmcCryptoManagerException;
 import gov.nasa.jpl.ammos.kmc.crypto.KmcCryptoManagerException.KmcCryptoManagerErrorCode;
-import gov.nasa.jpl.ammos.kmc.crypto.library.KmcKeyServiceClient;
 import gov.nasa.jpl.ammos.kmc.crypto.model.CryptoServiceResponse;
 import gov.nasa.jpl.ammos.kmc.crypto.model.EncryptServiceResponse;
 import gov.nasa.jpl.ammos.kmc.crypto.model.Status;
@@ -81,8 +80,8 @@ public class EncryptService extends HttpServlet {
             };
             cryptoManager = new KmcCryptoManager(args);
         } catch (KmcCryptoManagerException e) {
-            String msg = "Failed to create KmcCryptoManager: " + e;
-            failureResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, msg);
+            String msg = "Failed to create KmcCryptoManager.";
+            failureResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, msg, e);
             return;
         }
 
@@ -113,7 +112,7 @@ public class EncryptService extends HttpServlet {
                 encryptOffset = Integer.parseInt(encryptOffsetParam);
             } catch (NumberFormatException e) {
                 String msg = "Invalid encryptOffset value: " + encryptOffsetParam;
-                failureResponse(response, HttpServletResponse.SC_BAD_REQUEST, msg);
+                failureResponse(response, HttpServletResponse.SC_BAD_REQUEST, msg, e);
                 return;
             }
         }
@@ -123,8 +122,8 @@ public class EncryptService extends HttpServlet {
             try {
                 cryptoManager.setMacLength(macLength);
             } catch (KmcCryptoManagerException e) {
-                String msg = "Invalid macLength value (" + macLength + "): " + e;
-                failureResponse(response, HttpServletResponse.SC_BAD_REQUEST, msg);
+                String msg = "Invalid macLength value (" + macLength + ").";
+                failureResponse(response, HttpServletResponse.SC_BAD_REQUEST, msg, e);
                 return;
             }
         }
@@ -169,8 +168,8 @@ public class EncryptService extends HttpServlet {
                 cryptoManager.setCipherTransformation(transformation);
             }
         } catch (KmcCryptoManagerException e) {
-            String msg = "Error in cipher transformation: " + e;
-            failureResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, msg);
+            String msg = "Error in cipher transformation (" + transformation + ").";
+            failureResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, msg, e);
             return;
         }
 
@@ -178,24 +177,19 @@ public class EncryptService extends HttpServlet {
         try {
             encrypter = cryptoManager.createEncrypter(keyRef);
         } catch (KmcCryptoManagerException e) {
-            String msg = "EncryptService: ";
-            if (e.getCause() == null) {
-                msg = msg + e.getMessage();
-            } else {
-                msg = msg + e.getCause().getMessage();
-            }
+            String msg = "EncryptService: failed to create Encrypter for keyRef " + keyRef + ".";
             if (e.getErrorCode() == KmcCryptoManagerErrorCode.CRYPTO_KEY_ERROR) {
-                if (msg.contains(KmcKeyServiceClient.NO_KEY_SOURCE_ERROR_MSG)) {
+                if (CryptoServiceUtilities.isNoKeySource(e)) {
                     // no key source
-                    failureResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, msg);
+                    failureResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, msg, e);
                 } else {
                     // non-exist keyRef
-                    failureResponse(response, HttpServletResponse.SC_BAD_REQUEST, msg);
+                    failureResponse(response, HttpServletResponse.SC_BAD_REQUEST, msg, e);
                 }
             } else if (e.getErrorCode() == KmcCryptoManagerErrorCode.CRYPTO_ALGORITHM_ERROR) {
-                failureResponse(response, HttpServletResponse.SC_BAD_REQUEST, msg);
+                failureResponse(response, HttpServletResponse.SC_BAD_REQUEST, msg, e);
             } else {
-                failureResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, msg);
+                failureResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, msg, e);
             }
             return;
         }
@@ -212,21 +206,27 @@ public class EncryptService extends HttpServlet {
             out.flush();
             audit.info("EncryptService: User successfully encrypted data of " + offset + " bytes using keyRef " + keyRef);
         } catch (KmcCryptoException e) {
-            String msg = "Exception during encryption: " + e;
+            String msg = "Exception during encryption.";
             logger.error(msg);
             if (e.getErrorCode() == KmcCryptoErrorCode.INVALID_INPUT_VALUE) {
-                failureResponse(response, HttpServletResponse.SC_BAD_REQUEST, msg);
+                failureResponse(response, HttpServletResponse.SC_BAD_REQUEST, msg, e);
             } else {
-                failureResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, msg);
+                failureResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, msg, e);
             }
         }
     }
 
     private void failureResponse(final HttpServletResponse response, final int errorCode, final String msg)
             throws IOException {
+        failureResponse(response, errorCode, msg, null);
+    }
+
+    private void failureResponse(final HttpServletResponse response, final int errorCode, final String msg,
+            final Throwable cause) throws IOException {
         audit.info("EncryptService: Failure response: code " + errorCode + ", error: " + msg);
-        logger.error("failureResponse() HTTP code: {}, {}", errorCode, msg);
-        Status status = new Status(errorCode, msg);
+        // a null cause is ignored; otherwise the full cause chain is logged
+        logger.error("failureResponse() HTTP code: {}, {}", errorCode, msg, cause);
+        Status status = CryptoServiceUtilities.failureStatus(errorCode, msg, cause);
         CryptoServiceResponse res = new CryptoServiceResponse(status, null);
         response.setStatus(errorCode);
         response.getOutputStream().print(gson.toJson(res));

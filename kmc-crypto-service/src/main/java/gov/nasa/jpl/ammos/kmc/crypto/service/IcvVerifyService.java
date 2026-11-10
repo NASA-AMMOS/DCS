@@ -25,7 +25,6 @@ import gov.nasa.jpl.ammos.kmc.crypto.KmcCryptoException.KmcCryptoErrorCode;
 import gov.nasa.jpl.ammos.kmc.crypto.KmcCryptoManager;
 import gov.nasa.jpl.ammos.kmc.crypto.KmcCryptoManagerException;
 import gov.nasa.jpl.ammos.kmc.crypto.KmcCryptoManagerException.KmcCryptoManagerErrorCode;
-import gov.nasa.jpl.ammos.kmc.crypto.library.KmcKeyServiceClient;
 import gov.nasa.jpl.ammos.kmc.crypto.model.CryptoServiceResponse;
 import gov.nasa.jpl.ammos.kmc.crypto.model.IcvVerifyServiceResponse;
 import gov.nasa.jpl.ammos.kmc.crypto.model.Status;
@@ -72,8 +71,8 @@ public class IcvVerifyService extends HttpServlet {
             };
             cryptoManager = new KmcCryptoManager(args);
         } catch (KmcCryptoManagerException e) {
-            String msg = "IcvVerifyService: failed to create KmcCryptoManager: " + e;
-            failureResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, msg);
+            String msg = "IcvVerifyService: failed to create KmcCryptoManager.";
+            failureResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, msg, e);
             return;
         }
 
@@ -118,17 +117,17 @@ public class IcvVerifyService extends HttpServlet {
         try {
             icvVerifier = cryptoManager.createIcvVerifier();
         } catch (KmcCryptoManagerException e) {
-            String msg = "IcvVerifyService: " + e.getMessage();
+            String msg = "IcvVerifyService: failed to create IcvVerifier.";
             if (e.getErrorCode() == KmcCryptoManagerErrorCode.CRYPTO_KEY_ERROR) {
-                if (msg.contains(KmcKeyServiceClient.NO_KEY_SOURCE_ERROR_MSG)) {
+                if (CryptoServiceUtilities.isNoKeySource(e)) {
                     // no key source
-                    failureResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, msg);
+                    failureResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, msg, e);
                 } else {
                     // non-exist keyRef
-                    failureResponse(response, HttpServletResponse.SC_BAD_REQUEST, msg);
+                    failureResponse(response, HttpServletResponse.SC_BAD_REQUEST, msg, e);
                 }
             } else {
-                failureResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, msg);
+                failureResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, msg, e);
             }
             return;
         }
@@ -144,29 +143,35 @@ public class IcvVerifyService extends HttpServlet {
 
             audit.info("IcvVerifyService: User successfully verifed data of " + offset + " bytes with ICV");
         } catch (KmcCryptoException e) {
-            String msg = "IcvVerifyService: " + e.getMessage();
+            String msg = "IcvVerifyService: Exception during ICV verification.";
             if (e.getErrorCode() == KmcCryptoErrorCode.CRYPTO_KEY_ERROR) {
-                if (msg.contains(KmcKeyServiceClient.NO_KEY_SOURCE_ERROR_MSG)) {
+                if (CryptoServiceUtilities.isNoKeySource(e)) {
                     // no key source
-                    failureResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, msg);
+                    failureResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, msg, e);
                 } else {
                     // non-exist keyRef
-                    failureResponse(response, HttpServletResponse.SC_BAD_REQUEST, msg);
+                    failureResponse(response, HttpServletResponse.SC_BAD_REQUEST, msg, e);
                 }
             } else if (e.getErrorCode() == KmcCryptoErrorCode.CRYPTO_ALGORITHM_ERROR
                     || e.getErrorCode() == KmcCryptoErrorCode.CRYPTO_METADATA_ERROR) {
-                failureResponse(response, HttpServletResponse.SC_BAD_REQUEST, msg);
+                failureResponse(response, HttpServletResponse.SC_BAD_REQUEST, msg, e);
             } else {
-                failureResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, msg);
+                failureResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, msg, e);
             }
         }
     }
 
     private void failureResponse(final HttpServletResponse response, final int errorCode, final String msg)
             throws IOException {
+        failureResponse(response, errorCode, msg, null);
+    }
+
+    private void failureResponse(final HttpServletResponse response, final int errorCode, final String msg,
+            final Throwable cause) throws IOException {
         audit.info("IcvVerifyService: Failure response: code " + errorCode + ", error: " + msg);
-        logger.error(msg);
-        Status status = new Status(errorCode, msg);
+        // a null cause is ignored; otherwise the full cause chain is logged
+        logger.error(msg, cause);
+        Status status = CryptoServiceUtilities.failureStatus(errorCode, msg, cause);
         CryptoServiceResponse res = new CryptoServiceResponse(status, null);
         response.setStatus(errorCode);
         response.getOutputStream().print(gson.toJson(res));
