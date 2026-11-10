@@ -67,8 +67,8 @@ public class CryptoKeyService extends HttpServlet {
             };
             cryptoManager = new KmcCryptoManager(args);
         } catch (KmcCryptoManagerException e) {
-            String msg = "CryptoKeyService: Failed to get KmcCryptoManager: " + e;
-            failureResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, msg);
+            String msg = "CryptoKeyService: Failed to get KmcCryptoManager.";
+            failureResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, msg, e);
             return;
         }
 
@@ -99,9 +99,15 @@ public class CryptoKeyService extends HttpServlet {
 
     private void failureResponse(final HttpServletResponse response, final int errorCode, final String msg)
             throws IOException {
+        failureResponse(response, errorCode, msg, null);
+    }
+
+    private void failureResponse(final HttpServletResponse response, final int errorCode, final String msg,
+            final Throwable cause) throws IOException {
         audit.info("CryptoKeyService: Failure response: code " + errorCode + ", error: " + msg);
-        logger.error(msg);
-        Status status = new Status(errorCode, msg);
+        // a null cause is ignored; otherwise the full cause chain is logged
+        logger.error(msg, cause);
+        Status status = CryptoServiceUtilities.failureStatus(errorCode, msg, cause);
         CryptoKeyServiceResponse res = new CryptoKeyServiceResponse(status);
         response.setStatus(errorCode);
         response.getOutputStream().print(gson.toJson(res));
@@ -115,13 +121,8 @@ public class CryptoKeyService extends HttpServlet {
         try {
             keyClient = new KmcKeyServiceClient(cryptoManager);
         } catch (KmcCryptoException e) {
-            String msg = "CryptoKeyService: ";
-            if (e.getCause() == null) {
-                msg = msg + e.getMessage();
-            } else {
-                msg = msg + e.getCause().getMessage();
-            }
-            failureResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, msg);
+            String msg = "CryptoKeyService: failed to create KmcKeyServiceClient.";
+            failureResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, msg, e);
             return null;
         }
 
@@ -138,13 +139,13 @@ public class CryptoKeyService extends HttpServlet {
         } catch (KmcCryptoException e) {
             if (e.getErrorCode() == KmcCryptoErrorCode.CRYPTO_KEY_ERROR) {
                 String msg = "keyRef does not exist: " + keyRef;
-                failureResponse(response, HttpServletResponse.SC_BAD_REQUEST, msg);
+                failureResponse(response, HttpServletResponse.SC_BAD_REQUEST, msg, e);
             } else if (e.getErrorCode() == KmcCryptoErrorCode.INVALID_INPUT_VALUE) {
                 String msg = "keyRef does not exist: " + keyRef;
-                failureResponse(response, HttpServletResponse.SC_BAD_REQUEST, msg);
+                failureResponse(response, HttpServletResponse.SC_BAD_REQUEST, msg, e);
             } else {
-                String msg = "CryptoKeyService: Exception retrieving key " + keyRef + ": " + e;
-                failureResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, msg);
+                String msg = "CryptoKeyService: Exception retrieving key " + keyRef + ".";
+                failureResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, msg, e);
             }
             return null;
         }

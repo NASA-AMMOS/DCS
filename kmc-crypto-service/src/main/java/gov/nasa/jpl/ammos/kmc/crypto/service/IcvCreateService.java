@@ -24,7 +24,6 @@ import gov.nasa.jpl.ammos.kmc.crypto.KmcCryptoException;
 import gov.nasa.jpl.ammos.kmc.crypto.KmcCryptoManager;
 import gov.nasa.jpl.ammos.kmc.crypto.KmcCryptoManagerException;
 import gov.nasa.jpl.ammos.kmc.crypto.KmcCryptoManagerException.KmcCryptoManagerErrorCode;
-import gov.nasa.jpl.ammos.kmc.crypto.library.KmcKeyServiceClient;
 import gov.nasa.jpl.ammos.kmc.crypto.model.CryptoServiceResponse;
 import gov.nasa.jpl.ammos.kmc.crypto.model.IcvCreateServiceResponse;
 import gov.nasa.jpl.ammos.kmc.crypto.model.Status;
@@ -73,8 +72,8 @@ public class IcvCreateService extends HttpServlet {
             };
             cryptoManager = new KmcCryptoManager(args);
         } catch (KmcCryptoManagerException e) {
-            String msg = "IcvCreateService: failed to create KmcCryptoManager: " + e;
-            failureResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, msg);
+            String msg = "IcvCreateService: failed to create KmcCryptoManager.";
+            failureResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, msg, e);
             return;
         }
 
@@ -94,8 +93,8 @@ public class IcvCreateService extends HttpServlet {
             try {
                 cryptoManager.setMacLength(macLength);
             } catch (KmcCryptoManagerException e) {
-                String msg = "IcvCreateService: bad macLength parameter (" + macLength + "): " + e;
-                failureResponse(response, HttpServletResponse.SC_BAD_REQUEST, msg);
+                String msg = "IcvCreateService: bad macLength parameter (" + macLength + ").";
+                failureResponse(response, HttpServletResponse.SC_BAD_REQUEST, msg, e);
                 return;
             }
         }
@@ -142,8 +141,8 @@ public class IcvCreateService extends HttpServlet {
                     return;
                 }
             } catch (KmcCryptoManagerException e) {
-                String msg = "IcvCreateService: Exception in setting algorithm: " + e;
-                failureResponse(response, HttpServletResponse.SC_BAD_REQUEST, msg);
+                String msg = "IcvCreateService: Exception in setting algorithm (" + algorithm + ").";
+                failureResponse(response, HttpServletResponse.SC_BAD_REQUEST, msg, e);
                 return;
             }
         }
@@ -152,8 +151,8 @@ public class IcvCreateService extends HttpServlet {
             try {
                 cryptoManager.setMacLength(macLength);
             } catch (KmcCryptoManagerException e) {
-                String msg = "IcvCreateService: bad macLength parameter (" + macLength + "): " + e;
-                failureResponse(response, HttpServletResponse.SC_BAD_REQUEST, msg);
+                String msg = "IcvCreateService: bad macLength parameter (" + macLength + ").";
+                failureResponse(response, HttpServletResponse.SC_BAD_REQUEST, msg, e);
                 return;
             }
         }
@@ -166,24 +165,19 @@ public class IcvCreateService extends HttpServlet {
                 icvCreator = cryptoManager.createIcvCreator(keyRef);
             }
         } catch (KmcCryptoManagerException e) {
-            String msg = "IcvCreateService: ";
-            if (e.getCause() == null) {
-                msg = msg + e.getMessage();
-            } else {
-                msg = msg + e.getCause().getMessage();
-            }
+            String msg = "IcvCreateService: failed to create IcvCreator for keyRef " + keyRef + ".";
             if (e.getErrorCode() == KmcCryptoManagerErrorCode.CRYPTO_KEY_ERROR) {
-                if (msg.contains(KmcKeyServiceClient.NO_KEY_SOURCE_ERROR_MSG)) {
+                if (CryptoServiceUtilities.isNoKeySource(e)) {
                     // no key source
-                    failureResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, msg);
+                    failureResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, msg, e);
                 } else {
                     // non-exist keyRef
-                    failureResponse(response, HttpServletResponse.SC_BAD_REQUEST, msg);
+                    failureResponse(response, HttpServletResponse.SC_BAD_REQUEST, msg, e);
                 }
             } else if (e.getErrorCode() == KmcCryptoManagerErrorCode.CRYPTO_ALGORITHM_ERROR) {
-                failureResponse(response, HttpServletResponse.SC_BAD_REQUEST, msg);
+                failureResponse(response, HttpServletResponse.SC_BAD_REQUEST, msg, e);
             } else {
-                failureResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, msg);
+                failureResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, msg, e);
             }
             return;
         }
@@ -227,16 +221,22 @@ public class IcvCreateService extends HttpServlet {
 
             audit.info("IcvCreateService: User successfully created ICV for data of " + offset + " bytes using keyRef " + keyRef);
         } catch (KmcCryptoException e) {
-            String msg = "IcvCreateService: Exception during ICV Creation: " + e;
-            failureResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, msg);
+            String msg = "IcvCreateService: Exception during ICV Creation.";
+            failureResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, msg, e);
         }
     }
 
     private void failureResponse(final HttpServletResponse response, final int errorCode, final String msg)
             throws IOException {
+        failureResponse(response, errorCode, msg, null);
+    }
+
+    private void failureResponse(final HttpServletResponse response, final int errorCode, final String msg,
+            final Throwable cause) throws IOException {
         audit.info("IcvCreateService: Failure response: code " + errorCode + ", error: " + msg);
-        logger.error(msg);
-        Status status = new Status(errorCode, msg);
+        // a null cause is ignored; otherwise the full cause chain is logged
+        logger.error(msg, cause);
+        Status status = CryptoServiceUtilities.failureStatus(errorCode, msg, cause);
         CryptoServiceResponse res = new CryptoServiceResponse(status, null);
         response.setStatus(errorCode);
         response.getOutputStream().print(gson.toJson(res));
