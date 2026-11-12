@@ -356,8 +356,7 @@ public class SaController {
                             sa));
                     return ResponseEntity.badRequest().body(respBody);
                 }
-                SecAssnValidator.verifyArsn(idArsn.arsn, idArsn.arsnLen);
-                sa.setArsn(idArsn.arsn);
+                sa.setArsn(SecAssnValidator.verifyArsn(idArsn.arsn, idArsn.arsnLen));
                 sa.setArsnLen(idArsn.arsnLen);
                 sa.setArsnw(idArsn.arsnw);
                 dao.updateSa(sa);

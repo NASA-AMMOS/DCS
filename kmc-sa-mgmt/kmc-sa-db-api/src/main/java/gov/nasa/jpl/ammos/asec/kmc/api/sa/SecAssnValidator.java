@@ -307,13 +307,14 @@ public class SecAssnValidator {
     /**
      * Verify ARSN as set in a SecAssn object.
      * <p>
-     * The length of the ARSN byte array must match the declared length
+     * The length of the ARSN byte array must match the declared length. The normalized ARSN (empty when the length is
+     * 0) is set on the SA.
      *
      * @param sa security association
      * @throws KmcException ex
      */
     public static void verifyArsn(ISecAssn sa) throws KmcException {
-        verifyArsn(sa.getArsn(), sa.getArsnLen());
+        sa.setArsn(verifyArsn(sa.getArsn(), sa.getArsnLen()));
     }
 
     /**

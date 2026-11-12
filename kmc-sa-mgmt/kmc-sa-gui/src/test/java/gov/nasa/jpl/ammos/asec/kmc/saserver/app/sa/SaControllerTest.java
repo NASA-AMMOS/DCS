@@ -818,6 +818,41 @@ public class SaControllerTest extends BaseH2Test {
         csvUploadReq = new HttpEntity<>(csvBody, header);
         body = restTemplate.postForObject(getUrl() + CREATE_PATH, csvUploadReq, ObjectNode.class);
         assertEquals(SUCCESS, body.get(STATUS).asText());
+        // arsn_len 0 with an all-zero arsn is stored as the canonical empty array, arsn_len > 0 is unchanged
+        ISecAssn zero = dao.getSa(new SpiScid(1, (short) 46), FrameType.TC);
+        assertEquals(0, (short) zero.getArsnLen());
+        assertEquals(0, zero.getArsn().length);
+        ISecAssn four = dao.getSa(new SpiScid(5, (short) 46), FrameType.TC);
+        assertEquals(4, (short) four.getArsnLen());
+        assertArrayEquals(new byte[]{0, 0, 0, 1}, four.getArsn());
+    }
+
+    @Test
+    public void testZeroArsnNormalizedOnCreateAndUpdate() throws KmcException {
+        zeroArsnNormalizedOnCreateAndUpdate(FrameType.TC);
+        zeroArsnNormalizedOnCreateAndUpdate(FrameType.TM);
+        zeroArsnNormalizedOnCreateAndUpdate(FrameType.AOS);
+    }
+
+    public void zeroArsnNormalizedOnCreateAndUpdate(FrameType type) throws KmcException {
+        SpiScid    id   = new SpiScid(100, (short) 46);
+        String     zero = "00".repeat(20);
+        ObjectNode node = createSaJson();
+        node.put(TYPE, type.name()).put(ARSN, zero);
+        ResponseEntity<ObjectNode> resp = restTemplate.exchange(getUrl(), HttpMethod.PUT, new HttpEntity<>(node),
+                ObjectNode.class);
+        assertEquals(type.name(), HttpStatus.OK, resp.getStatusCode());
+        assertEquals(0, dao.getSa(id, type).getArsn().length);
+
+        // postSa: a changed all-zero arsn with arsn_len 0 is normalized too
+        node = createSaJson();
+        node.put(TYPE, type.name()).put(ARSN_LEN, 4).put(ARSN, "00000001");
+        restTemplate.postForObject(getUrl(), node, ObjectNode.class);
+        assertArrayEquals(new byte[]{0, 0, 0, 1}, dao.getSa(id, type).getArsn());
+        node.put(ARSN_LEN, 0).put(ARSN, zero);
+        restTemplate.postForObject(getUrl(), node, ObjectNode.class);
+        assertEquals(0, (short) dao.getSa(id, type).getArsnLen());
+        assertEquals(type.name(), 0, dao.getSa(id, type).getArsn().length);
     }
 
     @Test

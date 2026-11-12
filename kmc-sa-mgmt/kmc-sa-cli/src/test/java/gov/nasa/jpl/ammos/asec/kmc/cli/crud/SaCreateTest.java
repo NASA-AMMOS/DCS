@@ -838,6 +838,8 @@ public class SaCreateTest extends BaseCommandLineTest {
             ISecAssn sa = dao.getSa(new SpiScid(50, (short) 46), type);
             assertNotNull(type.name(), sa);
             assertEquals(0, (short) sa.getArsnLen());
+            // the all-zero arsn is normalized to the canonical empty array
+            assertEquals(type.name(), 0, sa.getArsn().length);
         } finally {
             java.nio.file.Files.deleteIfExists(csv);
         }
@@ -859,5 +861,33 @@ public class SaCreateTest extends BaseCommandLineTest {
         assertNotEquals(type.name(), 0, exitCode);
         assertFalse(type.name() + " console: " + o, o.toString().contains("created SA"));
         assertNull(type.name(), dao.getSa(new SpiScid(6, (short) 46), type));
+    }
+
+    @Test
+    public void testCreateBulkArsnLenPositiveStoredUnchanged() throws Exception {
+        testCreateBulkArsnLenPositiveStoredUnchanged(FrameType.TC);
+        testCreateBulkArsnLenPositiveStoredUnchanged(FrameType.TM);
+        testCreateBulkArsnLenPositiveStoredUnchanged(FrameType.AOS);
+    }
+
+    public void testCreateBulkArsnLenPositiveStoredUnchanged(FrameType type) throws Exception {
+        // row 5 of test-sas-h2.csv has arsn_len=4 and arsn 0x00000001; re-key it to a new SPI
+        java.util.List<String> lines = java.nio.file.Files.readAllLines(java.nio.file.Path.of(
+                getClass().getClassLoader().getResource("test-sas-h2.csv").toURI()));
+        assertTrue(lines.get(5).contains("\"4\",\"0x00000001\""));
+        java.nio.file.Path csv = java.nio.file.Files.createTempFile("arsn-pos", ".csv");
+        try {
+            java.nio.file.Files.writeString(csv, lines.get(0) + "\n" + lines.get(5).replaceFirst("^\"5\"", "\"51\"") +
+                    "\n");
+            CommandLine cmd = getCmd(new SaCreate(), true, null, null);
+            assertEquals(type.name(), 0, cmd.execute(String.format(FILE_FMT, csv), String.format(TYPE_FMT,
+                    type.name())));
+            ISecAssn sa = dao.getSa(new SpiScid(51, (short) 46), type);
+            assertNotNull(type.name(), sa);
+            assertEquals(4, (short) sa.getArsnLen());
+            assertArrayEquals(new byte[]{0, 0, 0, 1}, sa.getArsn());
+        } finally {
+            java.nio.file.Files.deleteIfExists(csv);
+        }
     }
 }
