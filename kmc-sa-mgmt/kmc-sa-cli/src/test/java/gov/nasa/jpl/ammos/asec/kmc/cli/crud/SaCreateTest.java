@@ -842,4 +842,22 @@ public class SaCreateTest extends BaseCommandLineTest {
             java.nio.file.Files.deleteIfExists(csv);
         }
     }
+
+    @Test
+    public void testCreateSaInvalidIvNeverReportsCreated() throws KmcException {
+        createSaInvalidIvNeverReportsCreated(FrameType.TC);
+        createSaInvalidIvNeverReportsCreated(FrameType.TM);
+        createSaInvalidIvNeverReportsCreated(FrameType.AOS);
+    }
+
+    public void createSaInvalidIvNeverReportsCreated(FrameType type) throws KmcException {
+        StringWriter o   = new StringWriter();
+        StringWriter w   = new StringWriter();
+        CommandLine  cmd = getCmd(new SaCreate(), true, new PrintWriter(o, true), new PrintWriter(w, true));
+        int exitCode = cmd.execute(TFVN_EQ_0, SCID_46, VCID_0, MAPID_0, SPI_EQ_6, "--iv=0x000000000000000000000001",
+                IVLEN_16, String.format(TYPE_FMT, type.name()));
+        assertNotEquals(type.name(), 0, exitCode);
+        assertFalse(type.name() + " console: " + o, o.toString().contains("created SA"));
+        assertNull(type.name(), dao.getSa(new SpiScid(6, (short) 46), type));
+    }
 }
