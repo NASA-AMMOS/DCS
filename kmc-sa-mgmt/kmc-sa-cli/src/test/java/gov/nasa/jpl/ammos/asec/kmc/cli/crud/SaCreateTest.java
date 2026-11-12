@@ -604,6 +604,45 @@ public class SaCreateTest extends BaseCommandLineTest {
     }
 
     @Test
+    public void testCreateVcidBounds() throws KmcException {
+        createVcidBounds(FrameType.TC, 63, 64, 6);
+        createVcidBounds(FrameType.AOS, 63, 64, 7);
+        createVcidBounds(FrameType.TM, 7, 8, 8);
+    }
+
+    public void createVcidBounds(FrameType type, int max, int tooBig, int spi) throws KmcException {
+        CommandLine cmd = getCmd(new SaCreate(), true, null, null);
+        int exitCode = cmd.execute(TFVN_EQ_0, SCID_46, "--vcid=" + tooBig, MAPID_0, "--spi=" + spi,
+                String.format(TYPE_FMT, type.name()));
+        assertNotEquals(0, exitCode);
+        assertNull(dao.getSa(new SpiScid(spi, (short) 46), type));
+        cmd = getCmd(new SaCreate(), true, null, null);
+        exitCode = cmd.execute(TFVN_EQ_0, SCID_46, "--vcid=" + max, MAPID_0, "--spi=" + spi,
+                String.format(TYPE_FMT, type.name()));
+        assertEquals(0, exitCode);
+    }
+
+    @Test
+    public void testCreateScidBounds() throws KmcException {
+        createScidBounds(FrameType.TC, 1023, 1024, 6);
+        createScidBounds(FrameType.TM, 1023, 1024, 7);
+        createScidBounds(FrameType.AOS, 255, 256, 8);
+    }
+
+    public void createScidBounds(FrameType type, int max, int tooBig, int spi) throws KmcException {
+        CommandLine cmd = getCmd(new SaCreate(), true, null, null);
+        int exitCode = cmd.execute(TFVN_EQ_0, "--scid=" + tooBig, VCID_0, MAPID_0, "--spi=" + spi,
+                String.format(TYPE_FMT, type.name()));
+        assertNotEquals(0, exitCode);
+        assertNull(dao.getSa(new SpiScid(spi, (short) tooBig), type));
+        cmd = getCmd(new SaCreate(), true, null, null);
+        exitCode = cmd.execute(TFVN_EQ_0, "--scid=" + max, VCID_0, MAPID_0, "--spi=" + spi,
+                String.format(TYPE_FMT, type.name()));
+        assertEquals(0, exitCode);
+        assertNotNull(dao.getSa(new SpiScid(spi, (short) max), type));
+    }
+
+    @Test
     public void testCreateSaArsnw() throws KmcException {
         createSaArsnw(FrameType.TC);
         createSaArsnw(FrameType.TM);
