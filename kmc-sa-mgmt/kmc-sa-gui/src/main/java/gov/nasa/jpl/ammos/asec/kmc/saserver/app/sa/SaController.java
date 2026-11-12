@@ -37,6 +37,7 @@ import java.io.Reader;
 import java.io.Serializable;
 import java.io.StringWriter;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -224,6 +225,18 @@ public class SaController {
         checkEncryption(sa);
         checkAuthentication(sa);
         ISecAssn original = dao.getSa(sa.getId(), sa.getType());
+        if (original == null) {
+            throw new KmcException(String.format("SA %s/%s does not exist", sa.getSpi(), sa.getScid()));
+        }
+        // only validate IV/ARSN when they changed, so legacy rows can still be edited for unrelated fields
+        if (!Arrays.equals(original.getIv(), sa.getIv()) || !Objects.equals(original.getIvLen(), sa.getIvLen())
+                || !Arrays.equals(original.getEcs(), sa.getEcs()) || !Objects.equals(original.getEst(), sa.getEst())) {
+            SecAssnValidator.verifyIv(sa);
+        }
+        if (!Arrays.equals(original.getArsn(), sa.getArsn()) || !Objects.equals(original.getArsnLen(),
+                sa.getArsnLen())) {
+            SecAssnValidator.verifyArsn(sa);
+        }
         try (IDbSession dbSession = dao.newSession()) {
             dbSession.beginTransaction();
             if (!Objects.equals(original.getSaState(), sa.getSaState())) {
@@ -325,6 +338,12 @@ public class SaController {
         ISecAssn   sa       = dao.getSa(idArsn.id, frameType);
         if (sa != null) {
             try {
+                if (idArsn.arsn == null || idArsn.arsnLen == null || idArsn.arsnw == null) {
+                    respBody.put(STATUS_KEY, ERROR_STATUS);
+                    respBody.withArray(MESSAGES_KEY).add(String.format("%s ARSN, ARSN length and ARSNW are required",
+                            sa));
+                    return ResponseEntity.badRequest().body(respBody);
+                }
                 if (idArsn.arsn.length < idArsn.arsnLen) {
                     int    diff    = idArsn.arsnLen - idArsn.arsn.length;
                     byte[] newArsn = new byte[idArsn.arsnLen];
@@ -338,7 +357,7 @@ public class SaController {
                             sa));
                     return ResponseEntity.badRequest().body(respBody);
                 }
-                sa.setArsn(idArsn.arsn);
+                sa.setArsn(SecAssnValidator.verifyArsn(idArsn.arsn, idArsn.arsnLen));
                 sa.setArsnLen(idArsn.arsnLen);
                 sa.setArsnw(idArsn.arsnw);
                 dao.updateSa(sa);
@@ -350,6 +369,10 @@ public class SaController {
             } catch (IllegalArgumentException e) {
                 respBody.put(STATUS_KEY, ERROR_STATUS);
                 respBody.withArray(MESSAGES_KEY).add("ARSN input not a valid hex string");
+            } catch (KmcException e) {
+                respBody.put(STATUS_KEY, ERROR_STATUS);
+                respBody.withArray(MESSAGES_KEY).add(e.getMessage());
+                return ResponseEntity.badRequest().body(respBody);
             }
         }
         respBody.put(STATUS_KEY, ERROR_STATUS);
@@ -473,6 +496,12 @@ public class SaController {
                 ISecAssn sa = dao.getSa(dbSession, idIv.id, frameType);
                 if (sa != null) {
                     try {
+                        if (idIv.iv == null || idIv.ivLen == null) {
+                            respBody.put(STATUS_KEY, ERROR_STATUS);
+                            respBody.withArray(MESSAGES_KEY).add(String.format("%s IV and IV length are required",
+                                    sa));
+                            return ResponseEntity.badRequest().body(respBody);
+                        }
                         if (idIv.iv.length < idIv.ivLen) {
                             int    diff  = idIv.ivLen - idIv.iv.length;
                             byte[] newIv = new byte[idIv.ivLen];
@@ -486,6 +515,8 @@ public class SaController {
                                     "bytes", sa));
                             return ResponseEntity.badRequest().body(respBody);
                         }
+                        // validate before mutating: sa is attached to the session and would be flushed on commit
+                        SecAssnValidator.verifyIv(idIv.iv, idIv.ivLen, sa.getEst(), sa.getEcs());
                         sa.setIv(idIv.iv);
                         sa.setIvLen(idIv.ivLen);
                         dao.updateSa(dbSession, sa);
@@ -498,6 +529,10 @@ public class SaController {
                         respBody.put(STATUS_KEY, ERROR_STATUS);
                         respBody.withArray(MESSAGES_KEY).add(String.format("%s IV input not a valid Base64 string",
                                 sa));
+                    } catch (KmcException e) {
+                        respBody.put(STATUS_KEY, ERROR_STATUS);
+                        respBody.withArray(MESSAGES_KEY).add(e.getMessage());
+                        return ResponseEntity.badRequest().body(respBody);
                     }
                 }
             } finally {
