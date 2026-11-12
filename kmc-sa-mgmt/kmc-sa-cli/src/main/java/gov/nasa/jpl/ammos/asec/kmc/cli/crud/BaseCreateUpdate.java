@@ -220,11 +220,11 @@ public abstract class BaseCreateUpdate extends BaseCliApp {
     protected void updateSa(final ISecAssn sa, IKmcDao dao, IDbSession session) throws KmcException {
         ISecAssn mutableSa   = sa;
         boolean  needsUpdate = false;
-        // validate before mutating anything. IV and IV length fall back to the stored record; the ECS-specific
-        // check only uses an ECS/ST supplied on the command line
+        // validate before mutating anything. Fields not supplied on the command line fall back to the stored record, so
+        // the stored ECS and service type are checked too (as the REST path does)
         if (ivBytes != null || ivLen != null || ecsBytes != null || st != null) {
             SecAssnValidator.verifyIv(ivBytes != null ? ivBytes : sa.getIv(), ivLen != null ? ivLen : sa.getIvLen(),
-                    st != null ? st.getEncryptionType() : null, ecsBytes);
+                    st != null ? st.getEncryptionType() : sa.getEst(), ecsBytes != null ? ecsBytes : sa.getEcs());
         }
         byte[] newArsn = null;
         Short  newArsnLen = null;
