@@ -208,8 +208,9 @@ export const resetArsn = (type, id, arsn, respCallback, errCallback) => {
  * @param setProgress progress function
  * @param respCallback response callback
  * @param errCallback error callback
+ * @param signal optional AbortSignal to cancel the request
  */
-export const bulkCreate = (type, data, setProgress, respCallback, errCallback) => {
+export const bulkCreate = (type, data, setProgress, respCallback, errCallback, signal) => {
     console.log(`creating multiple SAs via CSV upload`)
     axios({
         method: 'post',
@@ -218,6 +219,7 @@ export const bulkCreate = (type, data, setProgress, respCallback, errCallback) =
         },
         url: `api/sa/create/${type}`,
         data: data,
+        signal,
         onUploadProgress: (progressEvent) => {
             const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total)
             setProgress(progress)
