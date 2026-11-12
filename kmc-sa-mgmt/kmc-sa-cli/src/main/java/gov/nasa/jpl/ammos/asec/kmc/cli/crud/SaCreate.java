@@ -93,6 +93,8 @@ public class SaCreate extends BaseCreateUpdate {
             sa.setTfvn(tfvn);
             sa.setVcid(vcid);
             sa.setMapid(mapId);
+            // a new entity holds the defaults, so check the supplied values against them before persisting anything
+            validateIvArsn(sa);
             try (IDbSession session = dao.newSession()) {
                 session.beginTransaction();
                 try {

@@ -210,6 +210,28 @@ public abstract class BaseCreateUpdate extends BaseCliApp {
     }
 
     /**
+     * Validate the IV and ARSN options supplied on the command line against the SA they will be applied to (the
+     * stored record for an update, the entity defaults for a create). Options not supplied fall back to the SA, so
+     * the SA's ECS and service type are checked too, as the REST path does. Nothing is checked unless a related
+     * option was supplied, so unrelated updates on legacy rows are not newly rejected.
+     *
+     * @param sa SA the options will be applied to
+     * @return the ARSN to store, or null if no ARSN option was supplied
+     * @throws KmcException KMC ex
+     */
+    protected byte[] validateIvArsn(ISecAssn sa) throws KmcException {
+        if (ivBytes != null || ivLen != null || ecsBytes != null || st != null) {
+            SecAssnValidator.verifyIv(ivBytes != null ? ivBytes : sa.getIv(), ivLen != null ? ivLen : sa.getIvLen(),
+                    st != null ? st.getEncryptionType() : sa.getEst(), ecsBytes != null ? ecsBytes : sa.getEcs());
+        }
+        if (arsnBytes != null || arsnlen != null) {
+            return SecAssnValidator.verifyArsn(arsnBytes != null ? arsnBytes : (arsnlen != null && arsnlen == 0 ?
+                    new byte[0] : sa.getArsn()), arsnlen != null ? arsnlen : sa.getArsnLen());
+        }
+        return null;
+    }
+
+    /**
      * Update SA
      *
      * @param sa      SA
@@ -220,19 +242,9 @@ public abstract class BaseCreateUpdate extends BaseCliApp {
     protected void updateSa(final ISecAssn sa, IKmcDao dao, IDbSession session) throws KmcException {
         ISecAssn mutableSa   = sa;
         boolean  needsUpdate = false;
-        // validate before mutating anything. Fields not supplied on the command line fall back to the stored record, so
-        // the stored ECS and service type are checked too (as the REST path does)
-        if (ivBytes != null || ivLen != null || ecsBytes != null || st != null) {
-            SecAssnValidator.verifyIv(ivBytes != null ? ivBytes : sa.getIv(), ivLen != null ? ivLen : sa.getIvLen(),
-                    st != null ? st.getEncryptionType() : sa.getEst(), ecsBytes != null ? ecsBytes : sa.getEcs());
-        }
-        byte[] newArsn = null;
-        Short  newArsnLen = null;
-        if (arsnBytes != null || arsnlen != null) {
-            newArsnLen = arsnlen != null ? arsnlen : sa.getArsnLen();
-            newArsn = arsnBytes != null ? arsnBytes : (arsnlen != null && arsnlen == 0 ? new byte[0] : sa.getArsn());
-            SecAssnValidator.verifyArsn(newArsn, newArsnLen);
-        }
+        // validate before mutating anything
+        byte[] newArsn    = validateIvArsn(sa);
+        Short  newArsnLen = arsnlen != null ? arsnlen : sa.getArsnLen();
         if (updateEnc) {
             console(getUpdateMessage(user, "encryption key", frameType, mutableSa.getId()));
             dao.rekeySaEnc(session, mutableSa.getId(), ekid, ecsBytes, (short) 1, frameType);
