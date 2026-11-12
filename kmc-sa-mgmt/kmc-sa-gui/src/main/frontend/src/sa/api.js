@@ -208,8 +208,9 @@ export const resetArsn = (type, id, arsn, respCallback, errCallback) => {
  * @param setProgress progress function
  * @param respCallback response callback
  * @param errCallback error callback
+ * @param signal optional AbortSignal to cancel the request
  */
-export const bulkCreate = (type, data, setProgress, respCallback, errCallback) => {
+export const bulkCreate = (type, data, setProgress, respCallback, errCallback, signal) => {
     console.log(`creating multiple SAs via CSV upload`)
     axios({
         method: 'post',
@@ -218,6 +219,7 @@ export const bulkCreate = (type, data, setProgress, respCallback, errCallback) =
         },
         url: `api/sa/create/${type}`,
         data: data,
+        signal,
         onUploadProgress: (progressEvent) => {
             const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total)
             setProgress(progress)
@@ -275,10 +277,11 @@ export const createErrorCallback = (enqueueSnackbar) => {
         let txt
         if (e.response) {
             txt = `HTTP ${e.response.status}:`
-            if (e.response.data.messages.length > 1) {
-                txt += `${e.response.data.messages.length} error messages received, see console for details`
-            } else {
-                e.response.data.messages.forEach(m => txt += m)
+            const messages = e.response.data?.messages ?? []
+            if (messages.length > 1) {
+                txt += `${messages.length} error messages received, see console for details`
+            } else if (messages.length === 1) {
+                txt += messages[0]
             }
         } else if (e.request) {
             txt = `HTTP ${e.request.status}: Request failed`
@@ -287,7 +290,7 @@ export const createErrorCallback = (enqueueSnackbar) => {
         }
         console.log(e)
         console.log(txt)
-        console.log(e.response.data.messages)
+        console.log(e.response?.data?.messages)
         enqueueSnackbar(txt, {variant: "error"})
     }
 }

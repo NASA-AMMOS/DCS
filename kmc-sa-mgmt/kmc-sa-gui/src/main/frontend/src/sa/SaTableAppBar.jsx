@@ -51,7 +51,8 @@ import {
     Typography
 } from "@mui/material";
 import {Add, DeleteForever, FileDownload, Queue, Refresh} from "@mui/icons-material";
-import React, {useState} from "react";
+import React, {useRef, useState} from "react";
+import axios from "axios";
 import {bulkCreate, createErrorCallback, createResponseCallback, deleteSas, downloadCsv} from "./api";
 
 export default function SaTableAppBar({
@@ -123,6 +124,10 @@ export default function SaTableAppBar({
      * Upload CSV progress
      */
     const [progress, setProgress] = useState(0)
+    const [uploading, setUploading] = useState(false)
+    const abortRef = useRef(null)
+    // Once the body is fully sent the server finishes creating SAs regardless, so cancel is no longer possible
+    const processing = uploading && progress >= 100
 
     /**
      * Upload response callback
@@ -134,6 +139,8 @@ export default function SaTableAppBar({
             refreshTable,
             enqueueSnackbar)
         responseCallback(r)
+        abortRef.current = null
+        setUploading(false)
         setProgress(0)
         setSelectedFile(null)
     }
@@ -143,6 +150,11 @@ export default function SaTableAppBar({
      * @param e axios error
      */
     const errCallback = (e) => {
+        if (axios.isCancel(e)) {
+            return
+        }
+        abortRef.current = null
+        setUploading(false)
         const errorCallback = createErrorCallback(enqueueSnackbar)
         errorCallback(e)
         setProgress(0)
@@ -152,6 +164,27 @@ export default function SaTableAppBar({
     const [tmChecked, setTmChecked] = useState(true)
     const [tcChecked, setTcChecked] = useState(true)
     const [aosChecked, setAosChecked] = useState(true)
+    const [fileInputKey, setFileInputKey] = useState(0)
+
+    /**
+     * Close the bulk upload dialog and reset its state
+     */
+    const closeBulk = () => {
+        if (processing) {
+            return
+        }
+        abortRef.current?.abort()
+        abortRef.current = null
+        setUploading(false)
+        setBulkOpen(false)
+        setSelectedFile(null)
+        setProgress(0)
+        setReplaceExisting(false)
+        setTmChecked(true)
+        setTcChecked(true)
+        setAosChecked(true)
+        setFileInputKey(k => k + 1)
+    }
 
     /**
      * Upload CSV file
@@ -173,11 +206,21 @@ export default function SaTableAppBar({
             selectedFile.name)
         formData.append("force",
             replaceExisting)
+        const controller = new AbortController()
+        abortRef.current = controller
+        setUploading(true)
+        // ignore late callbacks from an upload that was canceled
+        const live = (fn) => (...args) => {
+            if (!controller.signal.aborted) {
+                fn(...args)
+            }
+        }
         bulkCreate(frameTypes,
             formData,
-            setProgress,
-            uploadRespCallback,
-            errCallback)
+            live(setProgress),
+            live(uploadRespCallback),
+            live(errCallback),
+            controller.signal)
     }
 
     /**
@@ -294,7 +337,7 @@ export default function SaTableAppBar({
                             onClick={() => setBulkOpen(true)}>
                         Bulk</Button>
                     <Dialog open={bulkOpen}
-                            onClose={() => setBulkOpen(false)}>
+                            onClose={closeBulk}>
                         <DialogTitle>Upload CSV</DialogTitle>
                         <DialogContent>Bulk creation of SAs by uploading a CSV file
                             <Table>
@@ -317,7 +360,7 @@ export default function SaTableAppBar({
                                 </Box>
                                 <Box sx={{minWidth: 35}}>
                                     <Typography variant={"body2"}
-                                                color={"text.secondary"}>{`${Math.round(progress)}`}%</Typography>
+                                                color={"text.secondary"}>{processing ? 'Processing…' : `${Math.round(progress)}%`}</Typography>
                                 </Box>
                             </Box>
                         </DialogContent>
@@ -325,13 +368,18 @@ export default function SaTableAppBar({
                             <Stack>
                                 <Container>
                                     <label htmlFor={"contained-button-file"}>
-                                        <Input accept={".csv"} id={"contained-button-file"}
+                                        <Input key={fileInputKey} accept={".csv"} id={"contained-button-file"}
                                                type={"file"}
                                                onChange={uploadFileChange}/>
                                         <Button variant={"contained"}
                                                 onClick={() => uploadCsv()}
-                                                disabled={selectedFile == null}
+                                                disabled={selectedFile == null || uploading}
                                         >Continue</Button>
+                                        <Button variant={"contained"}
+                                                onClick={closeBulk}
+                                                disabled={processing}>
+                                            Cancel
+                                        </Button>
                                     </label>
                                 </Container>
                                 <Container>

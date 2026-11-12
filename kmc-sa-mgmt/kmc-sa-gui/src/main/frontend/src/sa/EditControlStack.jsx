@@ -50,6 +50,7 @@ export default function EditControlStack({
                                              defaultValues,
                                              data,
                                              id,
+                                             type,
                                              saState,
                                              deleteAction,
                                              stopAction,
@@ -103,7 +104,7 @@ export default function EditControlStack({
                 if (values.iv !== resetFormik.initialValues.iv ||
                     values.ivLen !== resetFormik.initialValues.ivLen) {
                     console.log('updating iv')
-                    modifyIv(clone,
+                    modifyIv(type, clone,
                         (r) => {
                             setResetOpen(false)
                             refresh()
@@ -111,7 +112,7 @@ export default function EditControlStack({
                             enqueueSnackbar(`Updated IV on ${values.id.spi}/${values.id.scid}`, {variant: 'success'})
                         }, (e) => {
                             console.log(e)
-                            enqueueSnackbar(`${e.response.status}: ${e.message}`, {variant: 'error'})
+                            enqueueSnackbar(`${e.response?.status ?? 'Error'}: ${e.message}`, {variant: 'error'})
                         })
                 } else {
                     console.log("no change to iv")
@@ -120,14 +121,14 @@ export default function EditControlStack({
                     values.arsnLen !== resetFormik.initialValues.arsnLen ||
                     values.arsnw !== resetFormik.initialValues.arsnw) {
                     console.log('updating arsn')
-                    modifyArsn(clone, (r) => {
+                    modifyArsn(type, clone, (r) => {
                         setResetOpen(false)
                         refresh()
                         console.log(r)
                         enqueueSnackbar(`Updated ARSN on ${values.id.spi}/${values.id.scid}`, {variant: 'success'})
                     }, (e) => {
                         console.log(e)
-                        enqueueSnackbar(`${e.response.status}: ${e.message}`, {variant: 'error'})
+                        enqueueSnackbar(`${e.response?.status ?? 'Error'}: ${e.message}`, {variant: 'error'})
                     })
                 } else {
                     console.log("no change to arsn")
@@ -167,7 +168,7 @@ export default function EditControlStack({
                 rekey.acs = clone.acs
                 rekey.acsLen = clone.acsLen
             }
-            rekeySa(rekey,
+            rekeySa(type, rekey,
                 (r) => {
                     setRekeyOpen(false)
                     refresh()
@@ -175,7 +176,7 @@ export default function EditControlStack({
                     enqueueSnackbar(`Updated keys on ${values.id.spi}/${values.id.scid}`, {variant: 'success'})
                 }, (e) => {
                     console.log(e)
-                    enqueueSnackbar(`${e.response.status}: ${e.message}`, {variant: 'error'})
+                    enqueueSnackbar(`${e.response?.status ?? 'Error'}: ${e.message}`, {variant: 'error'})
                 })
         },
         enableReinitialize: true
