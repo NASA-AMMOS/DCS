@@ -1,5 +1,6 @@
 package gov.nasa.jpl.ammos.asec.kmc.cli;
 
+import gov.nasa.jpl.ammos.asec.kmc.format.Utilities;
 import gov.nasa.jpl.ammos.asec.kmc.cli.crud.SaCreate;
 import gov.nasa.jpl.ammos.asec.kmc.cli.crud.SaDelete;
 import gov.nasa.jpl.ammos.asec.kmc.cli.crud.SaExpire;
@@ -50,7 +51,7 @@ class PrintExceptionMessageHandler implements CommandLine.IExecutionExceptionHan
     @Override
     public int handleExecutionException(Exception ex, CommandLine commandLine, CommandLine.ParseResult parseResult) throws Exception {
         commandLine.getErr().println(commandLine.getColorScheme().errorText(ex.getMessage()));
-        LOG.error(ex.getMessage(), ex);
+        LOG.error(Utilities.sanitizeForLog(ex.getMessage()), ex);
         return 1;
     }
 }
