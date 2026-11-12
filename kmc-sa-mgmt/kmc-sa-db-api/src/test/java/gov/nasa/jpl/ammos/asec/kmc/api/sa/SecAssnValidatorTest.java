@@ -101,6 +101,19 @@ public class SecAssnValidatorTest {
         assertThrows(KmcException.class, () -> SecAssnValidator.verifyArsn(sa));
     }
 
+    @Test
+    public void verifyArsnSaNormalizesZeroArsn() throws KmcException {
+        ISecAssn sa = new SecAssn(new SpiScid(1, (short) 44));
+        sa.setArsnLen((short) 0);
+        sa.setArsn(new byte[20]);
+        SecAssnValidator.verifyArsn(sa);
+        assertArrayEquals(new byte[0], sa.getArsn());
+        sa.setArsnLen((short) 3);
+        sa.setArsn(new byte[]{0, 0, 1});
+        SecAssnValidator.verifyArsn(sa);
+        assertArrayEquals(new byte[]{0, 0, 1}, sa.getArsn());
+    }
+
     private static ISecAssn saWithIv(byte[] iv, short ivLen, short est, short ast) {
         ISecAssn sa = new SecAssn(new SpiScid(1, (short) 44));
         sa.setTfvn((byte) 0);
