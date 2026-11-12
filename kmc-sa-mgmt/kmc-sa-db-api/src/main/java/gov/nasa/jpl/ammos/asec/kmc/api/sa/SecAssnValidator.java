@@ -123,21 +123,6 @@ public class SecAssnValidator {
     /**
      * Verify IV
      *
-     * @param iv       initialization vectore
-     * @param ivLen    iv length
-     * @param est      EST
-     * @param ecsBytes ECS bytes
-     * @return iv byte array
-     * @throws KmcException ex
-     */
-    public static byte[] verifyIv(String iv, Short ivLen, Short est, String ecsBytes) throws KmcException {
-        return verifyIv(convertHexToBytes(iv, "iv must be a hex string", true), ivLen, est,
-                convertHexToBytes(ecsBytes, "ECS must be a hex string", true));
-    }
-
-    /**
-     * Verify IV
-     *
      * @param iv       IV
      * @param ivLen    IV length
      * @param est      encryption service type
@@ -315,22 +300,6 @@ public class SecAssnValidator {
      */
     public static void verifyArsn(ISecAssn sa) throws KmcException {
         sa.setArsn(verifyArsn(sa.getArsn(), sa.getArsnLen()));
-    }
-
-    /**
-     * Verify ARSN parameters.
-     * <p>
-     * If the ARSN length is null or 0, the ARSN must be null, empty or "0x". Otherwise the ARSN is required and its
-     * decoded byte length must equal the ARSN length.
-     *
-     * @param arsn    anti-replay sequence number
-     * @param arsnLen arsn length in bytes
-     * @return byte array
-     * @throws KmcException ex
-     */
-    public static byte[] verifyArsn(String arsn, Short arsnLen) throws KmcException {
-        boolean blank = arsn == null || arsn.isBlank();
-        return verifyArsn(blank ? new byte[0] : convertHexToBytes(arsn, "ARSN must be a hex string"), arsnLen);
     }
 
     /**

@@ -338,9 +338,10 @@ public class SaController {
         ISecAssn   sa       = dao.getSa(idArsn.id, frameType);
         if (sa != null) {
             try {
-                if (idArsn.arsn == null || idArsn.arsnLen == null) {
+                if (idArsn.arsn == null || idArsn.arsnLen == null || idArsn.arsnw == null) {
                     respBody.put(STATUS_KEY, ERROR_STATUS);
-                    respBody.withArray(MESSAGES_KEY).add(String.format("%s ARSN and ARSN length are required", sa));
+                    respBody.withArray(MESSAGES_KEY).add(String.format("%s ARSN, ARSN length and ARSNW are required",
+                            sa));
                     return ResponseEntity.badRequest().body(respBody);
                 }
                 if (idArsn.arsn.length < idArsn.arsnLen) {

@@ -49,43 +49,40 @@ public class SecAssnValidatorTest {
 
     @Test
     public void verifyArsnLenZero() throws KmcException {
-        assertArrayEquals(new byte[0], SecAssnValidator.verifyArsn((String) null, (short) 0));
-        assertArrayEquals(new byte[0], SecAssnValidator.verifyArsn("", (short) 0));
-        assertArrayEquals(new byte[0], SecAssnValidator.verifyArsn("0x", (short) 0));
-        assertArrayEquals(new byte[0], SecAssnValidator.verifyArsn((String) null, null));
+        assertArrayEquals(new byte[0], SecAssnValidator.verifyArsn((byte[]) null, (short) 0));
+        assertArrayEquals(new byte[0], SecAssnValidator.verifyArsn(new byte[0], (short) 0));
+        assertArrayEquals(new byte[0], SecAssnValidator.verifyArsn((byte[]) null, null));
     }
 
     @Test
     public void verifyArsnLenZeroWithZeroBytesTolerated() throws KmcException {
         assertArrayEquals(new byte[0], SecAssnValidator.verifyArsn(new byte[20], (short) 0));
-        assertArrayEquals(new byte[0], SecAssnValidator.verifyArsn("0x" + "00".repeat(20), (short) 0));
     }
 
     @Test
     public void verifyArsnLenZeroWithValueFails() {
-        assertThrows(KmcException.class, () -> SecAssnValidator.verifyArsn("0102", (short) 0));
-        assertThrows(KmcException.class, () -> SecAssnValidator.verifyArsn("0102", null));
+        assertThrows(KmcException.class, () -> SecAssnValidator.verifyArsn(new byte[]{1, 2}, (short) 0));
+        assertThrows(KmcException.class, () -> SecAssnValidator.verifyArsn(new byte[]{1, 2}, null));
         assertThrows(KmcException.class, () -> SecAssnValidator.verifyArsn(new byte[]{1}, (short) 0));
         assertThrows(KmcException.class, () -> SecAssnValidator.verifyArsn(new byte[]{0, 0, 1}, (short) 0));
     }
 
     @Test
     public void verifyArsnLenPositiveMismatchFails() {
-        assertThrows(KmcException.class, () -> SecAssnValidator.verifyArsn("010203", (short) 5));
-        assertThrows(KmcException.class, () -> SecAssnValidator.verifyArsn("010203", (short) 2));
-        assertThrows(KmcException.class, () -> SecAssnValidator.verifyArsn((String) null, (short) 5));
-        assertThrows(KmcException.class, () -> SecAssnValidator.verifyArsn("0x", (short) 5));
+        assertThrows(KmcException.class, () -> SecAssnValidator.verifyArsn(new byte[]{1, 2, 3}, (short) 5));
+        assertThrows(KmcException.class, () -> SecAssnValidator.verifyArsn(new byte[]{1, 2, 3}, (short) 2));
+        assertThrows(KmcException.class, () -> SecAssnValidator.verifyArsn((byte[]) null, (short) 5));
+        assertThrows(KmcException.class, () -> SecAssnValidator.verifyArsn(new byte[0], (short) 5));
     }
 
     @Test
     public void verifyArsnLenPositiveMatch() throws KmcException {
-        assertArrayEquals(new byte[]{1, 2, 3}, SecAssnValidator.verifyArsn("010203", (short) 3));
-        assertArrayEquals(new byte[]{1, 2, 3}, SecAssnValidator.verifyArsn("0x010203", (short) 3));
+        assertArrayEquals(new byte[]{1, 2, 3}, SecAssnValidator.verifyArsn(new byte[]{1, 2, 3}, (short) 3));
     }
 
     @Test
     public void verifyArsnNotHexFails() {
-        assertThrows(KmcException.class, () -> SecAssnValidator.verifyArsn("zz", (short) 1));
+        assertThrows(KmcException.class, () -> SecAssnValidator.convertHexToBytes("zz", "ARSN must be a hex string"));
     }
 
     @Test
