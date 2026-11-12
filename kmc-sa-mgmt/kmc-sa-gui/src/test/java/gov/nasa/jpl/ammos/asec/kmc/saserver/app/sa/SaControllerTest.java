@@ -962,6 +962,21 @@ public class SaControllerTest extends BaseH2Test {
     }
 
     @Test
+    public void testResetArsnMissingArsnwFails() throws KmcException {
+        createSaByType(FrameType.TC);
+        ObjectNode idArsn = mapper.createObjectNode();
+        idArsn.withObject(ID_PATH).put(SPI, 100).put(SCID, 46);
+        idArsn.put(ARSN_LEN, 8).put(ARSN, "0000000000000001");
+        ResponseEntity<ObjectNode> resp = restTemplate.postForEntity(getUrl() + ARSN_PATH, idArsn,
+                ObjectNode.class);
+        assertEquals(HttpStatus.BAD_REQUEST, resp.getStatusCode());
+        assertEquals(ERROR, resp.getBody().get(STATUS).asText());
+        // nothing was changed
+        assertEquals(0, (short) dao.getSa(new SpiScid(100, (short) 46), FrameType.TC).getArsnLen());
+        assertEquals(5, (short) dao.getSa(new SpiScid(100, (short) 46), FrameType.TC).getArsnw());
+    }
+
+    @Test
     public void testResetIvMismatchAndMissingFieldsFail() throws KmcException {
         createSaByType(FrameType.TC);
         // ECS 0x01 (AES-GCM) only accepts a 12 byte IV

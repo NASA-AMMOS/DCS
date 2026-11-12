@@ -343,10 +343,9 @@ public abstract class BaseCreateUpdate extends BaseCliApp {
      * @param iv       IV
      * @param ivLen    IV length
      * @param stStr    Service type string
-     * @param ecsBytes ECS bytes
      * @throws KmcException KMC ex
      */
-    protected void checkIvParams(String iv, Short ivLen, String stStr, String ecsBytes) throws KmcException {
+    protected void checkIvParams(String iv, Short ivLen, String stStr) throws KmcException {
         checkSt(stStr);
         // cross-field validation happens in updateSa against the stored record
         this.ivBytes = SecAssnValidator.convertHexToBytes(iv, "iv must be a hex string", true);
