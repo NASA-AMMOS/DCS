@@ -72,6 +72,9 @@ public enum ServiceType {
      * @return service type
      */
     public static ServiceType getServiceType(Short enc, Short auth) {
+        if (enc == null || auth == null) {
+            return UNKNOWN;
+        }
         if (enc == 0 && auth == 0) {
             return PLAINTEXT;
         } else if (enc == 1 && auth == 0) {

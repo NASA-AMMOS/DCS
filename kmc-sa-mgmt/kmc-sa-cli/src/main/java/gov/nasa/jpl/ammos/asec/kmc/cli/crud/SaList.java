@@ -22,6 +22,8 @@ public class SaList extends BaseCliApp {
     private Integer spi;
     @CommandLine.Option(names = "--scid", description = "Filter by spacecraft ID")
     private Short   scid;
+    @CommandLine.Option(names = "--vcid", description = "Filter by virtual channel ID")
+    private Byte    vcid;
 
     @CommandLine.ArgGroup(exclusive = true)
     private Output output;
@@ -59,10 +61,13 @@ public class SaList extends BaseCliApp {
                 sas = dao.getSas(frameType);
             }
             if (spi != null && sas != null) {
-                sas = sas.stream().filter(secAssn -> secAssn.getSpi().equals(spi)).toList();
+                sas = sas.stream().filter(secAssn -> spi.equals(secAssn.getSpi())).toList();
             }
             if (scid != null && sas != null) {
-                sas = sas.stream().filter(secAssn -> secAssn.getScid().equals(scid)).toList();
+                sas = sas.stream().filter(secAssn -> scid.equals(secAssn.getScid())).toList();
+            }
+            if (vcid != null && sas != null) {
+                sas = sas.stream().filter(secAssn -> vcid.equals(secAssn.getVcid())).toList();
             }
 
             IOutput out = getOutput();
