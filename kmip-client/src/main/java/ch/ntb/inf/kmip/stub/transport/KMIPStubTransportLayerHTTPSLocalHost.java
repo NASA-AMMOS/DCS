@@ -33,9 +33,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.Socket;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -68,7 +70,7 @@ import ch.ntb.inf.kmip.utils.KMIPUtils;
  */
 public class KMIPStubTransportLayerHTTPSLocalHost implements KMIPStubTransportLayerInterface{
 
-	private static final Logger logger = LoggerFactory.getLogger(KMIPStubTransportLayerHTTP.class);
+	private static final Logger logger = LoggerFactory.getLogger(KMIPStubTransportLayerHTTPSLocalHost.class);
 
 	static {
 	    // for localhost testing only
@@ -101,7 +103,7 @@ public class KMIPStubTransportLayerHTTPSLocalHost implements KMIPStubTransportLa
     	String kmipRequest = KMIPUtils.convertArrayListToHexString(al);
     	try {
     		// prepare Post-Parameter-String
-    		String parameter = "KMIPRequest="+URLEncoder.encode(kmipRequest,"UTF-8");
+    		String parameter = "KMIPRequest="+URLEncoder.encode(kmipRequest, StandardCharsets.UTF_8);
             // create key and trust managers
             KeyManager[] keyManagers = createKeyManagers(keyStoreFileName, keyStorePassword, alias);
             TrustManager[] trustManagers = createTrustManagers(trustStoreFileName, trustStorePassword);
@@ -118,21 +120,22 @@ public class KMIPStubTransportLayerHTTPSLocalHost implements KMIPStubTransportLa
 
     private static String executePost(final String targetURL, final String ssoCookie, final String urlParameters,
 		final SSLSocketFactory sslSocketFactory) throws Exception {
-        URL url = new URL(targetURL);
+        URL url = URI.create(targetURL).toURL();
         URLConnection connection = url.openConnection();
-        HttpsURLConnection httpsConnection = null;
+        HttpsURLConnection httpsConnection;
         if (connection instanceof HttpsURLConnection lConnection) {
         	httpsConnection = lConnection;
         }
         else{
         	logger.warn("Connection is no HttpsURLConnection!");
+        	throw new IOException("Connection is no HttpsURLConnection: " + targetURL);
         }
 
         try{
-        	httpsConnection.setSSLSocketFactory(sslSocketFactory);
+            httpsConnection.setSSLSocketFactory(sslSocketFactory);
         	httpsConnection.setRequestMethod("POST");
         	httpsConnection.setRequestProperty("Content-Type","application/x-www-form-urlencoded");
-        	httpsConnection.setRequestProperty("Content-Length","" + Integer.toString(urlParameters.getBytes().length));
+        	httpsConnection.setRequestProperty("Content-Length", Integer.toString(urlParameters.getBytes().length));
         	httpsConnection.setRequestProperty("Content-Language", "en-US");
         	httpsConnection.setRequestProperty("Cash-Control","no-cache");
 		if (ssoCookie != null) {
@@ -153,7 +156,7 @@ public class KMIPStubTransportLayerHTTPSLocalHost implements KMIPStubTransportLa
 			InputStream is = httpsConnection.getInputStream();
 			BufferedReader rd = new BufferedReader(new InputStreamReader(is));
 			String line;
-			StringBuffer response = new StringBuffer();
+			StringBuilder response = new StringBuilder();
 			while ((line = rd.readLine()) != null) {
 				response.append(line);
 				response.append('\r');
@@ -165,9 +168,7 @@ public class KMIPStubTransportLayerHTTPSLocalHost implements KMIPStubTransportLa
 			logger.error("executePost(): " + e);
 			throw e;
 		} finally {
-			if (httpsConnection != null) {
-				httpsConnection.disconnect();
-			}
+			httpsConnection.disconnect();
 		}
     }
 

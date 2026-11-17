@@ -327,14 +327,19 @@ public class KmcKey {
             // keystore key
             return this.algorithm;
         }
+        KeyBlock keyBlock = getKeyBlock();
+        if (keyBlock == null) {
+            logger.error("getKeyAlgorithm() key block is null");
+            return null;
+        }
         try {
-            CryptographicAlgorithm alg = getKeyBlock().getCryptographicAlgorithm();
+            CryptographicAlgorithm alg = keyBlock.getCryptographicAlgorithm();
             String value = alg.getValues()[0].getValueString();
             int algInt = Integer.parseInt(value);
             EnumCryptographicAlgorithm algEnum = new EnumCryptographicAlgorithm(algInt);
             return algEnum.getKey();
         } catch (Exception e) {
-            logger.error("getKeyAlgorithm() Exception getting key block: " + e);
+            logger.error("getKeyAlgorithm() Exception getting key block: {}", String.valueOf(e));
             return null;
         }
     }
@@ -353,12 +358,13 @@ public class KmcKey {
      * @return the key length of the key, or null if error in getting key length.
      */
     public final int getKeyLength() {
-        if (getKeyBlock() == null) {
+        KeyBlock keyBlock = getKeyBlock();
+        if (keyBlock == null) {
             // keystore key
             return this.keyLength;
         }
         try {
-            CryptographicLength len = getKeyBlock().getCryptographicLength();
+            CryptographicLength len = keyBlock.getCryptographicLength();
             String value = len.getValues()[0].getValueString();
             return Integer.parseInt(value);
         } catch (NullPointerException e) {
@@ -372,10 +378,15 @@ public class KmcKey {
      * @return the key material of the key, or null if error in getting key material.
      */
     public final byte[] getKeyMaterial() {
+        KeyBlock keyBlock = getKeyBlock();
+        if (keyBlock == null) {
+            logger.error("getKeyMaterial() key block is null");
+            return null;
+        }
         try {
-            return getKeyBlock().getKeyValue().getKeyMaterial().getKeyMaterialByteString().getValue();
+            return keyBlock.getKeyValue().getKeyMaterial().getKeyMaterialByteString().getValue();
         } catch (NullPointerException e) {
-            logger.error("getKeyMaterial() Exception getting key block: " + e);
+            logger.error("getKeyMaterial() Exception getting key block: {}", String.valueOf(e));
             return null;
         }
     }

@@ -33,9 +33,9 @@ import java.util.Hashtable;
 
 public class KMIPDecoderPool {
 
-	private Hashtable<KMIPDecoderInterface, Boolean> decoders = new Hashtable<KMIPDecoderInterface, Boolean>();
-	private String decoderPath;
-	private String defaultPath;
+	private final Hashtable<KMIPDecoderInterface, Boolean> decoders = new Hashtable<>();
+	private final String decoderPath;
+	private final String defaultPath;
 	
 	private int numberOfcreatedDecoders;
 	private final int maxDecoders = 1000;

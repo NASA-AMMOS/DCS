@@ -287,8 +287,13 @@ public class KmcKey {
      * @return the key algorithm of the key, or null if error in getting key algorithm.
      */
     public final String getKeyAlgorithm() {
+        KeyBlock keyBlock = getKeyBlock();
+        if (keyBlock == null) {
+            logger.error("getKeyAlgorithm() key block is null");
+            return null;
+        }
         try {
-            CryptographicAlgorithm alg = getKeyBlock().getCryptographicAlgorithm();
+            CryptographicAlgorithm alg = keyBlock.getCryptographicAlgorithm();
             String value = alg.getValues()[0].getValueString();
             int algInt = Integer.parseInt(value);
             EnumCryptographicAlgorithm algEnum = new EnumCryptographicAlgorithm(algInt);
@@ -313,8 +318,13 @@ public class KmcKey {
      * @return the key length of the key, or null if error in getting key length.
      */
     public final int getKeyLength() {
+        KeyBlock keyBlock = getKeyBlock();
+        if (keyBlock == null) {
+            logger.error("getKeyLength() key block is null");
+            return -1;
+        }
         try {
-            CryptographicLength len = getKeyBlock().getCryptographicLength();
+            CryptographicLength len = keyBlock.getCryptographicLength();
             String value = len.getValues()[0].getValueString();
             return Integer.parseInt(value);
         } catch (Exception e) {
@@ -328,8 +338,13 @@ public class KmcKey {
      * @return the key material of the key, or null if error in getting key material.
      */
     public final byte[] getKeyMaterial() {
+        KeyBlock keyBlock = getKeyBlock();
+        if (keyBlock == null) {
+            logger.error("getKeyMaterial() key block is null");
+            return null;
+        }
         try {
-            return getKeyBlock().getKeyValue().getKeyMaterial().getKeyMaterialByteString().getValue();
+            return keyBlock.getKeyValue().getKeyMaterial().getKeyMaterialByteString().getValue();
         } catch (Exception e) {
             logger.error("getKeyMaterial() Exception getting key block: " + e);
             return null;

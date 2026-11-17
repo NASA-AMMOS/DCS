@@ -79,7 +79,7 @@ public class SaControllerTest extends BaseH2Test {
     @Autowired
     private SaController sa;
 
-    private ObjectMapper mapper = new JsonMapper();
+    private final ObjectMapper mapper = new JsonMapper();
 
     @Test
     public void contextLoads() {
