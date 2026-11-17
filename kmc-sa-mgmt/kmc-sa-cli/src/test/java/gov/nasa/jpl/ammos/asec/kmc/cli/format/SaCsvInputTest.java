@@ -66,7 +66,7 @@ public class SaCsvInputTest {
         assertThrows(DecoderException.class, () -> {
             SaCsvInput i = new SaCsvInput();
             String hex = "0xG0";
-            byte[] val = i.parseHex(hex);
+            i.parseHex(hex);
         });
     }
 
@@ -75,7 +75,7 @@ public class SaCsvInputTest {
         assertThrows(DecoderException.class, () -> {
             SaCsvInput i = new SaCsvInput();
             String hex = "0";
-            byte[] val = i.parseHex(hex);
+            i.parseHex(hex);
         });
     }
 
