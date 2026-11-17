@@ -12,6 +12,7 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -338,12 +339,8 @@ public class KmcKey {
      * @return the key material of the key, or null if error in getting key material.
      */
     public final byte[] getKeyMaterial() {
-        KeyBlock keyBlock = getKeyBlock();
-        if (keyBlock == null) {
-            logger.error("getKeyMaterial() key block is null");
-            return null;
-        }
         try {
+            KeyBlock keyBlock = Objects.requireNonNull(getKeyBlock(), "key block is null");
             return keyBlock.getKeyValue().getKeyMaterial().getKeyMaterialByteString().getValue();
         } catch (Exception e) {
             logger.error("getKeyMaterial() Exception getting key block: " + e);

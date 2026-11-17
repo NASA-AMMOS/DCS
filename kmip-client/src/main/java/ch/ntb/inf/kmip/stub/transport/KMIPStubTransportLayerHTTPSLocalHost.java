@@ -75,15 +75,7 @@ public class KMIPStubTransportLayerHTTPSLocalHost implements KMIPStubTransportLa
 	static {
 	    // for localhost testing only
 	    javax.net.ssl.HttpsURLConnection.setDefaultHostnameVerifier(
-	    new javax.net.ssl.HostnameVerifier(){
- 	        @Override
-            public boolean verify(final String hostname, final javax.net.ssl.SSLSession sslSession) {
-	            if (hostname.equals("localhost")) {
-	                return true;
-	            }
-	            return false;
-	        }
-	    });
+	        (hostname, sslSession) -> hostname.equals("localhost"));
 	}
 
 	private String url;
