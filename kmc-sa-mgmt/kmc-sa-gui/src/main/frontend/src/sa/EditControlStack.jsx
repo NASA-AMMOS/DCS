@@ -42,7 +42,9 @@ import {hexString, SaTextField} from "./SaModalForm.jsx";
 import * as yup from "yup";
 import {useSnackbar} from "notistack";
 import {modifyArsn, modifyIv, rekeySa} from "./api";
-import {AUTHENTICATED_ENCRYPTION, AUTHENTICATION, ENCRYPTION} from "./utilities";
+import {AUTHENTICATED_ENCRYPTION, AUTHENTICATION, ENCRYPTION, hexToInt} from "./utilities";
+
+const isUnset = (v) => v === null || v === undefined || v === '' || !(hexToInt(String(v)) > 0)
 
 export default function EditControlStack({
                                              refresh,
@@ -98,40 +100,32 @@ export default function EditControlStack({
             },
             validationSchema: validationSchema,
             onSubmit: (values) => {
-                console.log('submitting')
                 const clone = structuredClone(values)
-                console.log(clone)
-                if (values.iv !== resetFormik.initialValues.iv ||
-                    values.ivLen !== resetFormik.initialValues.ivLen) {
-                    console.log('updating iv')
-                    modifyIv(type, clone,
-                        (r) => {
-                            setResetOpen(false)
-                            refresh()
-                            console.log(r)
-                            enqueueSnackbar(`Updated IV on ${values.id.spi}/${values.id.scid}`, {variant: 'success'})
-                        }, (e) => {
-                            console.log(e)
-                            enqueueSnackbar(`${e.response?.status ?? 'Error'}: ${e.message}`, {variant: 'error'})
-                        })
-                } else {
-                    console.log("no change to iv")
-                }
-                if (values.arsn !== resetFormik.initialValues.arsn ||
+                const ivChanged = values.iv !== resetFormik.initialValues.iv ||
+                    values.ivLen !== resetFormik.initialValues.ivLen
+                const arsnChanged = values.arsn !== resetFormik.initialValues.arsn ||
                     values.arsnLen !== resetFormik.initialValues.arsnLen ||
-                    values.arsnw !== resetFormik.initialValues.arsnw) {
-                    console.log('updating arsn')
-                    modifyArsn(type, clone, (r) => {
+                    values.arsnw !== resetFormik.initialValues.arsnw
+                const onError = (e) => {
+                    console.log(e)
+                    enqueueSnackbar(`${e.response?.status ?? 'Error'}: ${e.message}`, {variant: 'error'})
+                }
+                const updateArsn = () => modifyArsn(type, clone, (r) => {
+                    setResetOpen(false)
+                    refresh()
+                    console.log(r)
+                    enqueueSnackbar(`Updated ARSN on ${values.id.spi}/${values.id.scid}`, {variant: 'success'})
+                }, onError)
+                if (ivChanged) {
+                    modifyIv(type, clone, (r) => {
                         setResetOpen(false)
                         refresh()
                         console.log(r)
-                        enqueueSnackbar(`Updated ARSN on ${values.id.spi}/${values.id.scid}`, {variant: 'success'})
-                    }, (e) => {
-                        console.log(e)
-                        enqueueSnackbar(`${e.response?.status ?? 'Error'}: ${e.message}`, {variant: 'error'})
-                    })
-                } else {
-                    console.log("no change to arsn")
+                        enqueueSnackbar(`Updated IV on ${values.id.spi}/${values.id.scid}`, {variant: 'success'})
+                        if (arsnChanged) updateArsn()
+                    }, onError)
+                } else if (arsnChanged) {
+                    updateArsn()
                 }
             },
             enableReinitialize: true
@@ -173,7 +167,7 @@ export default function EditControlStack({
                     setRekeyOpen(false)
                     refresh()
                     console.log(r)
-                    enqueueSnackbar(`Updated keys on ${values.id.spi}/${values.id.scid}`, {variant: 'success'})
+                    enqueueSnackbar(`Updated keys on ${data.id.spi}/${data.id.scid}`, {variant: 'success'})
                 }, (e) => {
                     console.log(e)
                     enqueueSnackbar(`${e.response?.status ?? 'Error'}: ${e.message}`, {variant: 'error'})
@@ -233,14 +227,15 @@ export default function EditControlStack({
                     startIcon={<PlayArrow/>}
                     onClick={() => {
                         if (data.serviceType === AUTHENTICATION) {
-                            if (data.akid === null || data.akid === '' || data.acs === '00' || data.acs === '0x00' || data.acs === 0) {
+                            if (isUnset(data.akid) || isUnset(data.acs)) {
                                 enqueueSnackbar(`Unable to start ${data.spi}/${data.scid}, service type is ${data.serviceType} but AKID or ACS are not set.`)
                                 return
                             }
                         }
                         if (data.serviceType === ENCRYPTION || data.serviceType === AUTHENTICATED_ENCRYPTION) {
-                            if (data.ekid === null || data.ekid === '' || data.ecs === '00' || data.ecs === '0x00' || data.ecs === 0) {
+                            if (isUnset(data.ekid) || isUnset(data.ecs)) {
                                 enqueueSnackbar(`Unable to start ${data.spi}/${data.scid}, service type is ${data.serviceType} but EKID or ECS are not set.`)
+                                return
                             }
                         }
                         setStartOpen(true);
