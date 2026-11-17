@@ -2,9 +2,9 @@ name: DCS_Build
 
 on:
   pull_request:
-    branches: [main, dev]
+    branches: [ "main", "dev*" ]
   push:
-    branches: [ "main", "dev" ]
+    branches: [ "main", "dev*" ]
 
 permissions:
   packages: read
