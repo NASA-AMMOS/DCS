@@ -2,23 +2,28 @@ package gov.nasa.jpl.ammos.asec.kmc.cli.crud;
 
 import gov.nasa.jpl.ammos.asec.kmc.api.ex.KmcException;
 import gov.nasa.jpl.ammos.asec.kmc.api.sa.FrameType;
+import gov.nasa.jpl.ammos.asec.kmc.api.sa.ISecAssn;
+import gov.nasa.jpl.ammos.asec.kmc.api.sa.SpiScid;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import picocli.CommandLine;
 
+import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.file.Files;
+import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 /**
  * Tests for listing SAs
  */
 public class SaListTest extends BaseCommandLineTest {
+
+    @Rule
+    public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     public static final String TYPE_FMT = "--type=%s";
 
@@ -553,14 +558,14 @@ public class SaListTest extends BaseCommandLineTest {
 
     public void testCsvRoundTrip(FrameType type) throws Exception {
         // Normalize inconsistent seed data: seed row 1 has ecs=0x01 (AES_GCM) with DB default ivLen=0, but AES_GCM requires ivLen=12
-        for (gov.nasa.jpl.ammos.asec.kmc.api.sa.ISecAssn sa : dao.getSas(type)) {
+        for (ISecAssn sa : dao.getSas(type)) {
             if (sa.getEcs() != null && sa.getEcs().length > 0 && sa.getEcs()[0] == 0x01 && sa.getIvLen() == 0) {
                 sa.setIvLen((short) 12);
                 dao.updateSa(sa);
             }
         }
 
-        java.util.List<gov.nasa.jpl.ammos.asec.kmc.api.sa.ISecAssn> originalSas = dao.getSas(type);
+        List<ISecAssn> originalSas = dao.getSas(type);
         StringWriter listOut = new StringWriter();
         PrintWriter  listPw  = new PrintWriter(listOut);
         CommandLine  listCmd = getCmd(new SaList(), true, listPw, null);
@@ -568,37 +573,33 @@ public class SaListTest extends BaseCommandLineTest {
         assertEquals(0, exit);
         String csv = listOut.toString();
 
-        java.io.File tmpFile = java.io.File.createTempFile("sa-roundtrip-", ".csv");
-        try {
-            java.nio.file.Files.writeString(tmpFile.toPath(), csv);
+        File tmpFile = temporaryFolder.newFile("sa-roundtrip-" + type.name() + ".csv");
+        Files.writeString(tmpFile.toPath(), csv);
 
-            truncateTable(type);
-            assertEquals(0, dao.getSas(type).size());
+        truncateTable(type);
+        assertEquals(0, dao.getSas(type).size());
 
-            StringWriter createOut = new StringWriter();
-            PrintWriter  createPw  = new PrintWriter(createOut);
-            StringWriter createErr = new StringWriter();
-            PrintWriter  createErrPw = new PrintWriter(createErr);
-            CommandLine  createCmd = getCmd(new SaCreate(), true, createPw, createErrPw);
-            int createExit = createCmd.execute("--file=" + tmpFile.getAbsolutePath(), String.format(TYPE_FMT, type.name()));
-            String output = createOut.toString() + createErr.toString();
-            if (createExit != 0) {
-                fail("Create failed with exit " + createExit + ":\n" + output);
-            }
+        StringWriter createOut = new StringWriter();
+        PrintWriter  createPw  = new PrintWriter(createOut);
+        StringWriter createErr = new StringWriter();
+        PrintWriter  createErrPw = new PrintWriter(createErr);
+        CommandLine  createCmd = getCmd(new SaCreate(), true, createPw, createErrPw);
+        int createExit = createCmd.execute("--file=" + tmpFile.getAbsolutePath(), String.format(TYPE_FMT, type.name()));
+        String output = createOut + createErr.toString();
+        if (createExit != 0) {
+            fail("Create failed with exit " + createExit + ":\n" + output);
+        }
 
-            java.util.List<gov.nasa.jpl.ammos.asec.kmc.api.sa.ISecAssn> importedSas = dao.getSas(type);
-            assertEquals(originalSas.size(), importedSas.size());
+        List<ISecAssn> importedSas = dao.getSas(type);
+        assertEquals(originalSas.size(), importedSas.size());
 
-            for (gov.nasa.jpl.ammos.asec.kmc.api.sa.ISecAssn original : originalSas) {
-                gov.nasa.jpl.ammos.asec.kmc.api.sa.ISecAssn imported = dao.getSa(
-                    new gov.nasa.jpl.ammos.asec.kmc.api.sa.SpiScid(original.getSpi(), original.getScid()), type);
-                assertNotNull("SA " + original.getSpi() + "/" + original.getScid() + " not imported", imported);
-                assertEquals("SA " + original.getSpi() + " service type", original.getServiceType(), imported.getServiceType());
-                assertEquals("SA " + original.getSpi() + " est", original.getEst(), imported.getEst());
-                assertEquals("SA " + original.getSpi() + " ast", original.getAst(), imported.getAst());
-            }
-        } finally {
-            tmpFile.delete();
+        for (ISecAssn original : originalSas) {
+            ISecAssn imported = dao.getSa(
+                new SpiScid(original.getSpi(), original.getScid()), type);
+            assertNotNull("SA " + original.getSpi() + "/" + original.getScid() + " not imported", imported);
+            assertEquals("SA " + original.getSpi() + " service type", original.getServiceType(), imported.getServiceType());
+            assertEquals("SA " + original.getSpi() + " est", original.getEst(), imported.getEst());
+            assertEquals("SA " + original.getSpi() + " ast", original.getAst(), imported.getAst());
         }
     }
 
@@ -607,6 +608,7 @@ public class SaListTest extends BaseCommandLineTest {
             case TC -> truncateTc();
             case TM -> truncateTm();
             case AOS -> truncateAos();
+            case ALL, UNKNOWN -> throw new IllegalArgumentException("Cannot truncate table for frame type: " + type);
         }
     }
 }
