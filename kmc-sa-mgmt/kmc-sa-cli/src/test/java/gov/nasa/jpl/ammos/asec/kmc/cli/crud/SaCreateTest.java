@@ -6,11 +6,15 @@ import gov.nasa.jpl.ammos.asec.kmc.api.sa.ISecAssn;
 import gov.nasa.jpl.ammos.asec.kmc.api.sa.ServiceType;
 import gov.nasa.jpl.ammos.asec.kmc.api.sa.SpiScid;
 import gov.nasa.jpl.ammos.asec.kmc.sadb.KmcDao;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import picocli.CommandLine;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -20,6 +24,8 @@ import static org.junit.Assert.*;
  * Tests for creating an SA
  */
 public class SaCreateTest extends BaseCommandLineTest {
+    @Rule
+    public TemporaryFolder tempFolder = new TemporaryFolder();
 
     public static final String BULK_SA_FILE   = "kmc-all-SAs.csv";
     public static final String BULK_SA_FILE_2 = "kmc-all-SAs-type.csv";
@@ -825,24 +831,20 @@ public class SaCreateTest extends BaseCommandLineTest {
     // arsn_len=0 with 20 zero bytes is the real DB default, so it must still import
     public void testCreateBulkArsnLenZeroWithZeroArsn(FrameType type) throws Exception {
         // row 2 of test-sas-h2.csv has arsn_len=0 and a 20 zero byte arsn; re-key it to a new SPI
-        java.util.List<String> lines = java.nio.file.Files.readAllLines(java.nio.file.Path.of(
+        List<String> lines = Files.readAllLines(Path.of(
                 getClass().getClassLoader().getResource("test-sas-h2.csv").toURI()));
         assertTrue(lines.get(2).contains("\"0\",\"0x" + "00".repeat(20) + "\""));
-        java.nio.file.Path csv = java.nio.file.Files.createTempFile("arsn-zero", ".csv");
-        try {
-            java.nio.file.Files.writeString(csv, lines.get(0) + "\n" + lines.get(2).replaceFirst("^\"2\"", "\"50\"") +
-                    "\n");
-            CommandLine cmd = getCmd(new SaCreate(), true, null, null);
-            int exit = cmd.execute(String.format(FILE_FMT, csv), String.format(TYPE_FMT, type.name()));
-            assertEquals(type.name(), 0, exit);
-            ISecAssn sa = dao.getSa(new SpiScid(50, (short) 46), type);
-            assertNotNull(type.name(), sa);
-            assertEquals(0, (short) sa.getArsnLen());
-            // the all-zero arsn is normalized to the canonical empty array
-            assertEquals(type.name(), 0, sa.getArsn().length);
-        } finally {
-            java.nio.file.Files.deleteIfExists(csv);
-        }
+        Path csv = tempFolder.newFile("arsn-zero-" + type + ".csv").toPath();
+        Files.writeString(csv, lines.get(0) + "\n" + lines.get(2).replaceFirst("^\"2\"", "\"50\"") +
+                "\n");
+        CommandLine cmd = getCmd(new SaCreate(), true, null, null);
+        int exit = cmd.execute(String.format(FILE_FMT, csv), String.format(TYPE_FMT, type.name()));
+        assertEquals(type.name(), 0, exit);
+        ISecAssn sa = dao.getSa(new SpiScid(50, (short) 46), type);
+        assertNotNull(type.name(), sa);
+        assertEquals(0, (short) sa.getArsnLen());
+        // the all-zero arsn is normalized to the canonical empty array
+        assertEquals(type.name(), 0, sa.getArsn().length);
     }
 
     @Test
@@ -872,22 +874,18 @@ public class SaCreateTest extends BaseCommandLineTest {
 
     public void testCreateBulkArsnLenPositiveStoredUnchanged(FrameType type) throws Exception {
         // row 5 of test-sas-h2.csv has arsn_len=4 and arsn 0x00000001; re-key it to a new SPI
-        java.util.List<String> lines = java.nio.file.Files.readAllLines(java.nio.file.Path.of(
+        List<String> lines = Files.readAllLines(Path.of(
                 getClass().getClassLoader().getResource("test-sas-h2.csv").toURI()));
         assertTrue(lines.get(5).contains("\"4\",\"0x00000001\""));
-        java.nio.file.Path csv = java.nio.file.Files.createTempFile("arsn-pos", ".csv");
-        try {
-            java.nio.file.Files.writeString(csv, lines.get(0) + "\n" + lines.get(5).replaceFirst("^\"5\"", "\"51\"") +
-                    "\n");
-            CommandLine cmd = getCmd(new SaCreate(), true, null, null);
-            assertEquals(type.name(), 0, cmd.execute(String.format(FILE_FMT, csv), String.format(TYPE_FMT,
-                    type.name())));
-            ISecAssn sa = dao.getSa(new SpiScid(51, (short) 46), type);
-            assertNotNull(type.name(), sa);
-            assertEquals(4, (short) sa.getArsnLen());
-            assertArrayEquals(new byte[]{0, 0, 0, 1}, sa.getArsn());
-        } finally {
-            java.nio.file.Files.deleteIfExists(csv);
-        }
+        Path csv = tempFolder.newFile("arsn-pos-" + type + ".csv").toPath();
+        Files.writeString(csv, lines.get(0) + "\n" + lines.get(5).replaceFirst("^\"5\"", "\"51\"") +
+                "\n");
+        CommandLine cmd = getCmd(new SaCreate(), true, null, null);
+        assertEquals(type.name(), 0, cmd.execute(String.format(FILE_FMT, csv), String.format(TYPE_FMT,
+                type.name())));
+        ISecAssn sa = dao.getSa(new SpiScid(51, (short) 46), type);
+        assertNotNull(type.name(), sa);
+        assertEquals(4, (short) sa.getArsnLen());
+        assertArrayEquals(new byte[]{0, 0, 0, 1}, sa.getArsn());
     }
 }
