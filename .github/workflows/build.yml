@@ -37,6 +37,20 @@ jobs:
           name: compiled-classes
           path: DCS/build-output-for-sonar/
 
+      - name: Collect JaCoCo reports
+        run: |
+          mkdir -p coverage-reports
+          cd DCS
+          find . -name jacoco.xml -not -path './ammos-cryptolib/*' | while read -r report; do
+            cp "$report" "../coverage-reports/$(dirname "$report" | sed -e 's|^\./||' -e 's|/target/.*||' -e 's|/|_|g').xml"
+          done
+          ls -l ../coverage-reports/
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: coverage-reports
+          path: coverage-reports/
+
   # Build using rocky image
   dcs_build_rocky:
     runs-on: ubuntu-latest
@@ -174,6 +188,16 @@ jobs:
 
       - name: Verify downloaded SARIF files
         run: pwd; ls -R codeql-artifacts-for-sonar/
+
+      # Download JaCoCo reports for Sonar scan
+      - name: Download coverage reports
+        uses: actions/download-artifact@v5.0.0
+        with:
+          name: coverage-reports
+          path: coverage-reports/
+
+      - name: Verify downloaded coverage reports
+        run: ls -l coverage-reports/
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarqube-scan-action@v6.0.0
