@@ -596,7 +596,12 @@ public class SaController {
 
     @ExceptionHandler({KmcException.class, Exception.class})
     public ResponseEntity<Object> handleException(Exception e) {
-        LOG.error("An exception occurred", e);
+        if (e instanceof KmcException) {
+            LOG.warn("Request failed: {}", e.getMessage());
+            LOG.debug("Request failure details", e);
+        } else {
+            LOG.error("An exception occurred", e);
+        }
         ObjectNode node = mapper.createObjectNode();
         node.put(STATUS_KEY, ERROR_STATUS);
         node.withArray(MESSAGES_KEY).add(e.getMessage());
