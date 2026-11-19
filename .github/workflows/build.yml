@@ -44,6 +44,13 @@ jobs:
           find . -name jacoco.xml -not -path './ammos-cryptolib/*' | while read -r report; do
             cp "$report" "../coverage-reports/$(dirname "$report" | sed -e 's|^\./||' -e 's|/target/.*||' -e 's|/|_|g').xml"
           done
+          # vitest LCOV for the SA management GUI frontend
+          lcov=kmc-sa-mgmt/kmc-sa-gui/src/main/frontend/coverage/lcov.info
+          if [ -f "$lcov" ]; then
+            cp "$lcov" ../coverage-reports/kmc-sa-gui-frontend.lcov
+          else
+            echo "::warning::$lcov not found, frontend coverage will not be reported"
+          fi
           ls -l ../coverage-reports/
       - name: Upload coverage reports
         uses: actions/upload-artifact@v4.6.2

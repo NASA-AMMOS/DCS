@@ -12,9 +12,10 @@ export default defineConfig({
         // e2e/ is the Playwright suite, run with `yarn e2e`
         exclude: [...configDefaults.exclude, 'e2e/**'],
         coverage: {
-            include: ['src/**'],
+            include: ['src/**/*.{js,jsx}'],
             exclude: ['src/**/*.test.*', 'src/test/**', 'src/main.jsx'],
-            reporter: ['text', 'html'],
+            // lcov is imported by the Sonar scan; its paths must be relative to the kmc-sa-gui module directory
+            reporter: ['text', 'html', ['lcov', {projectRoot: '../../..'}]],
         },
         onConsoleLog: (log, type) => type === 'stderr',
     },
