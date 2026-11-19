@@ -124,3 +124,62 @@ test('the Columns chooser shows hidden columns, remembers the choice and resets 
     await page.keyboard.press('Escape')
     await expect(ivHeader).toHaveCount(0)
 })
+
+const selectFilter = async (page, header, option) => {
+    await page.locator('th').filter({hasText: new RegExp(`^${header}`)}).getByRole('button').first().click()
+    await page.getByRole('combobox').last().click()
+    const options = await page.getByRole('option').allInnerTexts()
+    await page.getByRole('option', {name: option, exact: true}).click()
+    await page.keyboard.press('Escape')
+    return options
+}
+
+test('filters by state, service type and cipher suite with readable options', async ({page, sadb}) => {
+    await sadb.create(sa(100, 46),
+        sa(101, 46, {saState: 2, serviceType: 'ENCRYPTION', ast: 0, ecs: '02', ivLen: 16, iv: '00000000000000000000000000000001'}),
+        sa(102, 46, {serviceType: 'PLAINTEXT', est: 0, ast: 0, ekid: null, ecs: '00'}))
+    await page.goto('./')
+    await expect(page.locator('tbody tr')).toHaveCount(3)
+
+    expect(await selectFilter(page, 'ECS', 'AES256-CBC')).toEqual(['All', 'None', 'AES256-GCM', 'AES256-CBC'])
+    await expect(page.locator('tbody tr')).toHaveCount(1)
+    await expect(row(page, 101)).toBeVisible()
+    await page.getByRole('button', {name: 'Reload'}).click()
+
+    // ENCRYPTION must not also match AUTHENTICATED_ENCRYPTION
+    expect(await selectFilter(page, 'Service Type', 'ENCRYPTION'))
+        .toEqual(['All', 'PLAINTEXT', 'ENCRYPTION', 'AUTHENTICATED_ENCRYPTION'])
+    await expect(page.locator('tbody tr')).toHaveCount(1)
+    await expect(row(page, 101)).toBeVisible()
+    await page.getByRole('button', {name: 'Reload'}).click()
+
+    expect(await selectFilter(page, 'State', 'Unkeyed | Expired')).toEqual(['All', 'Unkeyed | Expired', 'Keyed'])
+    await expect(page.locator('tbody tr')).toHaveCount(2)
+})
+
+test('select all deletes every SA on the tab', async ({page, sadb}) => {
+    await sadb.create(sa(100, 46), sa(101, 46), sa(102, 46), sa(7, 46, {type: 'TM'}))
+    await page.goto('./')
+    await expect(page.locator('tbody tr')).toHaveCount(3)
+    await page.locator('thead input[type=checkbox]').check()
+    await page.getByRole('button', {name: 'DELETE'}).click()
+    await dialog(page, 'Bulk Delete SAs').getByRole('button', {name: 'Continue'}).click()
+    await expect(toast(page, 'Deleted 3 SAs')).toBeVisible()
+    await expect(page.locator('tbody tr')).toHaveCount(0)
+    expect(await sadb.list('TC')).toEqual([])
+    expect(await sadb.list('TM')).toHaveLength(1)
+})
+
+test('shows the database as up and remembers the theme choice', async ({page}) => {
+    await page.goto('./')
+    // the production build has no icon test IDs; the tooltips label the status dot and the theme button
+    await expect(page.getByLabel('Database is up')).toBeVisible()
+    const background = () => page.evaluate(() => getComputedStyle(document.body).backgroundColor)
+    expect(await background()).toBe('rgb(18, 18, 18)')
+    await page.getByRole('button', {name: 'Switch to light theme'}).click()
+    await expect(page.getByRole('button', {name: 'Switch to dark theme'})).toBeVisible()
+    expect(await background()).toBe('rgb(255, 255, 255)')
+    await page.reload()
+    await expect(page.getByRole('button', {name: 'Switch to dark theme'})).toBeVisible()
+    expect(await background()).toBe('rgb(255, 255, 255)')
+})

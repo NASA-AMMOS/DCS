@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "test": "vitest run",
     "e2e": "vite build && playwright test",
-    "e2e:server": "bash e2e/start-server.sh"
+    "e2e:server": "bash e2e/start-server.sh",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@emotion/react": "11.14.0",
@@ -36,6 +37,7 @@
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.5",
     "@vitejs/plugin-react": "6.1.0",
+    "@vitest/coverage-v8": "4.1.11",
     "eslint": "10.9.1",
     "eslint-plugin-react-hooks": "7.1.1",
     "eslint-plugin-react-refresh": "0.5.5",

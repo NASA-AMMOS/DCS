@@ -160,4 +160,31 @@ describe('SaTable', () => {
         expect(headers()).not.toContain('IV Length')
         expect(JSON.parse(localStorage.getItem('hiddenCols'))).toContain('ivLen')
     })
+
+    const selectFilter = async (user, header) => {
+        const th = screen.getAllByRole('columnheader').find(h => h.textContent.startsWith(header))
+        await user.click(within(th).getAllByRole('button')[0])
+        await user.click(screen.getAllByRole('combobox').at(-1))
+        return within(screen.getByRole('listbox'))
+    }
+
+    it.each([
+        ['State', ['All', 'Unkeyed | Expired', 'Keyed', 'Operational'], 'Keyed', ['23']],
+        // ordered by service type number
+        ['Service Type', ['All', 'PLAINTEXT', 'ENCRYPTION', 'AUTHENTICATED_ENCRYPTION'], 'ENCRYPTION', ['23']],
+        ['ECS', ['All', 'None', 'AES256-GCM', 'AES256-CBC'], 'AES256-CBC', ['23']],
+        ['ACS', ['All', 'None', 'HMAC-SHA256'], 'HMAC-SHA256', ['24']],
+    ])('the %s filter lists readable options and filters on the chosen one', async (header, options, choice, expected) => {
+        const user = userEvent.setup()
+        serve(sa(22, {saState: 1}),
+            sa(23, {saState: 2, serviceType: 'ENCRYPTION', ast: 0, ecs: '02', ivLen: 16}),
+            sa(24, {saState: 3, serviceType: 'PLAINTEXT', est: 0, ast: 0, ekid: null, ecs: '00', acs: '02'}))
+        render(<SaTable type="TC"/>)
+        await waitFor(() => expect(spis()).toHaveLength(3))
+        const listbox = await selectFilter(user, header)
+        expect(listbox.getAllByRole('option').map(o => o.textContent)).toEqual(options)
+        await user.click(listbox.getByRole('option', {name: choice, exact: true}))
+        await user.keyboard('{Escape}')
+        expect(spis()).toEqual(expected)
+    })
 })

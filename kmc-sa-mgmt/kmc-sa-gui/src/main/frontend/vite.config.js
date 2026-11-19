@@ -11,6 +11,11 @@ export default defineConfig({
         setupFiles: ['./src/test/setup.js'],
         // e2e/ is the Playwright suite, run with `yarn e2e`
         exclude: [...configDefaults.exclude, 'e2e/**'],
+        coverage: {
+            include: ['src/**'],
+            exclude: ['src/**/*.test.*', 'src/test/**', 'src/main.jsx'],
+            reporter: ['text', 'html'],
+        },
         onConsoleLog: (log, type) => type === 'stderr',
     },
     server: {
