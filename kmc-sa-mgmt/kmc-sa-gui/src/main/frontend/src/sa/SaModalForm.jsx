@@ -399,11 +399,12 @@ export default function SaModalForm({
                                 onChange={handleEcsChange}
                                 helperText={`Encryption Cipher Suite: ${ENC_CYPHERS.NONE.name} = ${ENC_CYPHERS.NONE.value}, 
                             ${ENC_CYPHERS.AES256_GCM.name} = ${ENC_CYPHERS.AES256_GCM.value},
-                            ${ENC_CYPHERS.AES256_CBC} = ${ENC_CYPHERS.AES256_CBC.value}`}
+                            ${ENC_CYPHERS.AES256_CBC.name} = ${ENC_CYPHERS.AES256_CBC.value}`}
 
                             >
                                 <MenuItem value={0}>{ENC_CYPHERS.NONE.name}</MenuItem>
                                 <MenuItem value={1}>{ENC_CYPHERS.AES256_GCM.name}</MenuItem>
+                                <MenuItem value={2}>{ENC_CYPHERS.AES256_CBC.name}</MenuItem>
                             </SaSelectField>
                             <SaSelectField
                                 id={"acs"}
