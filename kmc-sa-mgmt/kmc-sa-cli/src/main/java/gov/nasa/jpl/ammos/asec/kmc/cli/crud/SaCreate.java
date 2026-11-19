@@ -93,6 +93,8 @@ public class SaCreate extends BaseCreateUpdate {
             sa.setTfvn(tfvn);
             sa.setVcid(vcid);
             sa.setMapid(mapId);
+            // a new entity holds the defaults, so check the supplied values against them before persisting anything
+            validateIvArsn(sa);
             try (IDbSession session = dao.newSession()) {
                 session.beginTransaction();
                 try {
@@ -132,6 +134,7 @@ public class SaCreate extends BaseCreateUpdate {
                 this.mode = Mode.SINGLE;
                 if (args.single.singleArgs != null) {
                     checkAndSetSpi(args.single.singleArgs.spi);
+                    SecAssnValidator.verifyScid(frameType, args.single.singleArgs.scid);
                     checkAndSetScid(args.single.singleArgs.scid);
                     checkAndSetTfvn(args.single.singleArgs.tfvn);
                     checkAndSetVcid(args.single.singleArgs.vcid);
@@ -141,7 +144,7 @@ public class SaCreate extends BaseCreateUpdate {
                         checkAuthParams(args.single.optionalArgs.akid, args.single.optionalArgs.acs);
                         checkSt(args.single.optionalArgs.st);
                         checkIvParams(args.single.optionalArgs.iv, args.single.optionalArgs.ivLen,
-                                args.single.optionalArgs.st, args.single.optionalArgs.ecs);
+                                args.single.optionalArgs.st);
                         checkArsnParams(args.single.optionalArgs.arsn, args.single.optionalArgs.arsnlen);
                         checkArsnWParams(args.single.optionalArgs.arsnw);
                         checkAbmParams(args.single.optionalArgs.abm, args.single.optionalArgs.abmLen);

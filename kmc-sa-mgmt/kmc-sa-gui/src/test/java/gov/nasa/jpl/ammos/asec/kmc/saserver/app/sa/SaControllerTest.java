@@ -76,6 +76,7 @@ public class SaControllerTest extends BaseH2Test {
     public static final String IV_PATH = "/iv";
     public static final String ARSN_PATH = "/arsn";
     public static final String IV_1 = "00000000000000000000000000000001";
+    public static final String IV_12 = "000000000000000000000001";
     @Autowired
     private SaController sa;
 
@@ -121,7 +122,7 @@ public class SaControllerTest extends BaseH2Test {
     private ObjectNode createSaJson() {
         ObjectNode node = mapper.createObjectNode();
         node.withObject(ID_PATH).put(SPI, 100).put(SCID, 46);
-        node.put(TFVN, 0).put("vcid", 20).put("mapid", 0).put(EKID, "kmc/test/key128").putNull(
+        node.put(TFVN, 0).put("vcid", 5).put("mapid", 0).put(EKID, "kmc/test/key128").putNull(
                 AKID).put(SA_STATE, 3).putNull("lpid").put(EST, 1).put(AST, 1).put("shivfLen", 12).put(
                 "shsnfLen", 0).put("shplfLen", 0).put("stmacfLen", 16).put("ecsLen", 1).put("ecs", "01").put(
                 IV_LEN, 12).put(IV, "000000000000000000000001").put("acsLen", 1).put(ACS, "00").put("abmLen",
@@ -613,18 +614,14 @@ public class SaControllerTest extends BaseH2Test {
         createSaByType(type);
         ObjectNode idIv = mapper.createObjectNode();
         idIv.withObject(ID_PATH).put(SPI, 100).put(SCID, 46);
-        idIv.put(IV, IV_1);
-        idIv.put(IV_LEN, 16);
+        idIv.put(IV, IV_12);
+        idIv.put(IV_LEN, 12);
         ObjectNode body = restTemplate.postForObject(getUrl() + IV_PATH + "/" + type.name(), idIv, ObjectNode.class);
         assertEquals(SUCCESS, body.get(STATUS).asString());
         ISecAssn iv = dao.getSa(new SpiScid(100, (short) 46), type);
         assertEquals(type, iv.getType());
-        assertEquals(16, (short) iv.getIvLen());
+        assertEquals(12, (short) iv.getIvLen());
         assertArrayEquals(new byte[]{0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
                 0x00,
                 0x00,
                 0x00,
@@ -653,10 +650,6 @@ public class SaControllerTest extends BaseH2Test {
                 0x00,
                 0x00,
                 0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
                 0x02}, iv.getIv());
 
         idIv.put(IV_LEN, 2);
@@ -670,17 +663,13 @@ public class SaControllerTest extends BaseH2Test {
         testCreateSa();
         ObjectNode idIv = mapper.createObjectNode();
         idIv.withObject(ID_PATH).put(SPI, 100).put(SCID, 46);
-        idIv.put(IV, IV_1);
-        idIv.put(IV_LEN, 16);
+        idIv.put(IV, IV_12);
+        idIv.put(IV_LEN, 12);
         ObjectNode body = restTemplate.postForObject(getUrl() + IV_PATH, idIv, ObjectNode.class);
         assertEquals(SUCCESS, body.get(STATUS).asString());
         ISecAssn iv = dao.getSa(new SpiScid(100, (short) 46), FrameType.TC);
-        assertEquals(16, (short) iv.getIvLen());
+        assertEquals(12, (short) iv.getIvLen());
         assertArrayEquals(new byte[]{0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
                 0x00,
                 0x00,
                 0x00,
@@ -698,10 +687,6 @@ public class SaControllerTest extends BaseH2Test {
         assertEquals(SUCCESS, body.get(STATUS).asString());
         iv = dao.getSa(new SpiScid(100, (short) 46), FrameType.TC);
         assertArrayEquals(new byte[]{0x00,
-                0x00,
-                0x00,
-                0x00,
-                0x00,
                 0x00,
                 0x00,
                 0x00,
@@ -837,6 +822,42 @@ public class SaControllerTest extends BaseH2Test {
         csvUploadReq = new HttpEntity<>(csvBody, header);
         body = restTemplate.postForObject(getUrl() + CREATE_PATH, csvUploadReq, ObjectNode.class);
         assertEquals(SUCCESS, body.get(STATUS).asString());
+        assertEquals(SUCCESS, body.get(STATUS).asString());
+        // arsn_len 0 with an all-zero arsn is stored as the canonical empty array, arsn_len > 0 is unchanged
+        ISecAssn zero = dao.getSa(new SpiScid(1, (short) 46), FrameType.TC);
+        assertEquals(0, (short) zero.getArsnLen());
+        assertEquals(0, zero.getArsn().length);
+        ISecAssn four = dao.getSa(new SpiScid(5, (short) 46), FrameType.TC);
+        assertEquals(4, (short) four.getArsnLen());
+        assertArrayEquals(new byte[]{0, 0, 0, 1}, four.getArsn());
+    }
+
+    @Test
+    public void testZeroArsnNormalizedOnCreateAndUpdate() throws KmcException {
+        zeroArsnNormalizedOnCreateAndUpdate(FrameType.TC);
+        zeroArsnNormalizedOnCreateAndUpdate(FrameType.TM);
+        zeroArsnNormalizedOnCreateAndUpdate(FrameType.AOS);
+    }
+
+    public void zeroArsnNormalizedOnCreateAndUpdate(FrameType type) throws KmcException {
+        SpiScid    id   = new SpiScid(100, (short) 46);
+        String     zero = "00".repeat(20);
+        ObjectNode node = createSaJson();
+        node.put(TYPE, type.name()).put(ARSN, zero);
+        ResponseEntity<ObjectNode> resp = restTemplate.exchange(getUrl(), HttpMethod.PUT, new HttpEntity<>(node),
+                ObjectNode.class);
+        assertEquals(HttpStatus.OK, resp.getStatusCode(), type.name());
+        assertEquals(0, dao.getSa(id, type).getArsn().length);
+
+        // postSa: a changed all-zero arsn with arsn_len 0 is normalized too
+        node = createSaJson();
+        node.put(TYPE, type.name()).put(ARSN_LEN, 4).put(ARSN, "00000001");
+        restTemplate.postForObject(getUrl(), node, ObjectNode.class);
+        assertArrayEquals(new byte[]{0, 0, 0, 1}, dao.getSa(id, type).getArsn());
+        node.put(ARSN_LEN, 0).put(ARSN, zero);
+        restTemplate.postForObject(getUrl(), node, ObjectNode.class);
+        assertEquals(0, (short) dao.getSa(id, type).getArsnLen());
+        assertEquals(0, dao.getSa(id, type).getArsn().length, type.name());
     }
 
     @Test
@@ -875,4 +896,200 @@ public class SaControllerTest extends BaseH2Test {
         assertNull(deleted);
     }
 
+    @Test
+    public void testUpdateSaIvLenMismatchFails() throws KmcException {
+        updateSaIvLenMismatchFails(FrameType.TC);
+        updateSaIvLenMismatchFails(FrameType.TM);
+        updateSaIvLenMismatchFails(FrameType.AOS);
+    }
+
+    public void updateSaIvLenMismatchFails(FrameType type) throws KmcException {
+        createSaByType(type);
+        // plaintext so the ECS-specific check is skipped; 12 byte IV with ivLen 16 must still be rejected
+        ObjectNode node = createSaJson();
+        node.put(TYPE, type.name());
+        node.put(EST, 0).put(AST, 0).put(SERVICE_TYPE, PLAINTEXT).put(IV_LEN, 16);
+        ResponseEntity<ObjectNode> resp = restTemplate.postForEntity(getUrl(), node, ObjectNode.class);
+        assertEquals(HttpStatus.BAD_REQUEST, resp.getStatusCode());
+        assertEquals(ERROR, resp.getBody().get(STATUS).asString());
+        ISecAssn unchanged = dao.getSa(new SpiScid(100, (short) 46), type);
+        assertEquals(12, (short) unchanged.getIvLen());
+    }
+
+    @Test
+    public void testUpdateNonexistentSaFails() {
+        ObjectNode node = createSaJson();
+        ResponseEntity<ObjectNode> resp = restTemplate.postForEntity(getUrl(), node, ObjectNode.class);
+        assertEquals(HttpStatus.BAD_REQUEST, resp.getStatusCode());
+        assertEquals(ERROR, resp.getBody().get(STATUS).asString());
+    }
+
+    @Test
+    public void testUpdateSaVcidOutOfBoundsFails() throws KmcException {
+        updateSaVcidOutOfBoundsFails(FrameType.TC, 64);
+        updateSaVcidOutOfBoundsFails(FrameType.AOS, 64);
+        updateSaVcidOutOfBoundsFails(FrameType.TM, 8);
+    }
+
+    public void updateSaVcidOutOfBoundsFails(FrameType type, int vcid) throws KmcException {
+        createSaByType(type);
+        ObjectNode node = createSaJson();
+        node.put(TYPE, type.name());
+        node.put("vcid", vcid);
+        ResponseEntity<ObjectNode> resp = restTemplate.postForEntity(getUrl(), node, ObjectNode.class);
+        assertEquals(HttpStatus.BAD_REQUEST, resp.getStatusCode());
+        assertEquals(ERROR, resp.getBody().get(STATUS).asString());
+    }
+
+    @Test
+    public void testCreateSaScidOutOfBoundsFails() throws KmcException {
+        createSaScidOutOfBoundsFails(FrameType.TC, 1024);
+        createSaScidOutOfBoundsFails(FrameType.TM, 1024);
+        createSaScidOutOfBoundsFails(FrameType.AOS, 256);
+    }
+
+    public void createSaScidOutOfBoundsFails(FrameType type, int scid) throws KmcException {
+        ObjectNode node = createSaJson();
+        node.put(TYPE, type.name());
+        node.put(SCID, scid);
+        node.withObject(ID_PATH).put(SCID, scid);
+        ResponseEntity<ObjectNode> resp = restTemplate.exchange(getUrl(), HttpMethod.PUT, new HttpEntity<>(node),
+                ObjectNode.class, new Object[0]);
+        assertEquals(HttpStatus.BAD_REQUEST, resp.getStatusCode());
+        assertEquals(ERROR, resp.getBody().get(STATUS).asString());
+        assertNull(dao.getSa(new SpiScid(100, (short) scid), type));
+    }
+
+    @Test
+    public void testUpdateSaArsnMismatchFails() throws KmcException {
+        createSaByType(FrameType.TC);
+        ObjectNode node = createSaJson();
+        node.put(ARSN_LEN, 5).put(ARSN, "010203");
+        ResponseEntity<ObjectNode> resp = restTemplate.postForEntity(getUrl(), node, ObjectNode.class);
+        assertEquals(HttpStatus.BAD_REQUEST, resp.getStatusCode());
+        assertEquals(ERROR, resp.getBody().get(STATUS).asString());
+        assertEquals(0, (short) dao.getSa(new SpiScid(100, (short) 46), FrameType.TC).getArsnLen());
+    }
+
+    @Test
+    public void testResetArsnTooLongFails() throws KmcException {
+        resetArsnTooLongFails(FrameType.TC);
+        resetArsnTooLongFails(FrameType.TM);
+        resetArsnTooLongFails(FrameType.AOS);
+    }
+
+    public void resetArsnTooLongFails(FrameType type) throws KmcException {
+        createSaByType(type);
+        ObjectNode idArsn = mapper.createObjectNode();
+        idArsn.withObject(ID_PATH).put(SPI, 100).put(SCID, 46);
+        idArsn.put(ARSN_LEN, 2).put(ARSN, "000102").put(ARSNW, 10);
+        ResponseEntity<ObjectNode> resp = restTemplate.postForEntity(getUrl() + ARSN_PATH + "/" + type.name(),
+                idArsn, ObjectNode.class);
+        assertEquals(HttpStatus.BAD_REQUEST, resp.getStatusCode());
+        assertEquals(ERROR, resp.getBody().get(STATUS).asString());
+        assertEquals(0, (short) dao.getSa(new SpiScid(100, (short) 46), type).getArsnLen());
+    }
+
+    @Test
+    public void testResetArsnMissingFieldsFails() throws KmcException {
+        createSaByType(FrameType.TC);
+        ObjectNode idArsn = mapper.createObjectNode();
+        idArsn.withObject(ID_PATH).put(SPI, 100).put(SCID, 46);
+        idArsn.put(ARSNW, 10);
+        ResponseEntity<ObjectNode> resp = restTemplate.postForEntity(getUrl() + ARSN_PATH, idArsn,
+                ObjectNode.class);
+        assertEquals(HttpStatus.BAD_REQUEST, resp.getStatusCode());
+        assertEquals(ERROR, resp.getBody().get(STATUS).asString());
+    }
+
+    @Test
+    public void testResetArsnMissingArsnwFails() throws KmcException {
+        createSaByType(FrameType.TC);
+        ObjectNode idArsn = mapper.createObjectNode();
+        idArsn.withObject(ID_PATH).put(SPI, 100).put(SCID, 46);
+        idArsn.put(ARSN_LEN, 8).put(ARSN, "0000000000000001");
+        ResponseEntity<ObjectNode> resp = restTemplate.postForEntity(getUrl() + ARSN_PATH, idArsn,
+                ObjectNode.class);
+        assertEquals(HttpStatus.BAD_REQUEST, resp.getStatusCode());
+        assertEquals(ERROR, resp.getBody().get(STATUS).asString());
+        // nothing was changed
+        assertEquals(0, (short) dao.getSa(new SpiScid(100, (short) 46), FrameType.TC).getArsnLen());
+        assertEquals(5, (short) dao.getSa(new SpiScid(100, (short) 46), FrameType.TC).getArsnw());
+    }
+
+    @Test
+    public void testResetIvMismatchAndMissingFieldsFail() throws KmcException {
+        createSaByType(FrameType.TC);
+        // ECS 0x01 (AES-GCM) only accepts a 12 byte IV
+        ObjectNode idIv = mapper.createObjectNode();
+        idIv.withObject(ID_PATH).put(SPI, 100).put(SCID, 46);
+        idIv.put(IV, IV_1).put(IV_LEN, 16);
+        ResponseEntity<ObjectNode> resp = restTemplate.postForEntity(getUrl() + IV_PATH, idIv, ObjectNode.class);
+        assertEquals(HttpStatus.BAD_REQUEST, resp.getStatusCode());
+        assertEquals(12, (short) dao.getSa(new SpiScid(100, (short) 46), FrameType.TC).getIvLen());
+
+        idIv.remove(IV_LEN);
+        resp = restTemplate.postForEntity(getUrl() + IV_PATH, idIv, ObjectNode.class);
+        assertEquals(HttpStatus.BAD_REQUEST, resp.getStatusCode());
+    }
+
+    @Test
+    public void testCreateSaDefaultsArsnLenZero() throws KmcException {
+        createSaDefaultsArsnLenZero(FrameType.TC);
+        createSaDefaultsArsnLenZero(FrameType.TM);
+        createSaDefaultsArsnLenZero(FrameType.AOS);
+    }
+
+    public void createSaDefaultsArsnLenZero(FrameType type) throws KmcException {
+        ObjectNode node = createSaJson();
+        node.remove(ARSN_LEN);
+        node.remove(ARSN);
+        node.put(TYPE, type.name());
+        ResponseEntity<ObjectNode> resp = restTemplate.exchange(getUrl(), HttpMethod.PUT, new HttpEntity<>(node),
+                ObjectNode.class);
+        assertEquals(HttpStatus.OK, resp.getStatusCode());
+        ISecAssn created = dao.getSa(new SpiScid(100, (short) 46), type);
+        assertEquals(0, (short) created.getArsnLen());
+        assertEquals(0, created.getArsn().length);
+    }
+
+    @Test
+    public void testStartStopExpireEndpoints() throws KmcException {
+        startStopExpireEndpoints(FrameType.TC);
+        startStopExpireEndpoints(FrameType.TM);
+        startStopExpireEndpoints(FrameType.AOS);
+    }
+
+    public void startStopExpireEndpoints(FrameType type) throws KmcException {
+        createSaByType(type);
+        SpiScid    id   = new SpiScid(100, (short) 46);
+        ObjectNode body = mapper.createObjectNode();
+        body.put(SPI, 100).put(SCID, 46);
+        String base = getUrl();
+        // create leaves the SA keyed (3 per fixture); stop -> 2, start -> 3, expire -> 1
+        ObjectNode resp = restTemplate.postForObject(base + STOP + "/" + type.name(), body, ObjectNode.class);
+        assertEquals(2, resp.get(SA_STATE).asInt());
+        assertEquals(2, (short) dao.getSa(id, type).getSaState());
+
+        resp = restTemplate.postForObject(base + START + "/" + type.name(), body, ObjectNode.class);
+        assertEquals(3, resp.get(SA_STATE).asInt());
+        assertEquals(3, (short) dao.getSa(id, type).getSaState());
+
+        resp = restTemplate.postForObject(base + EXPIRE + "/" + type.name(), body, ObjectNode.class);
+        assertEquals(1, resp.get(SA_STATE).asInt());
+        assertEquals(1, (short) dao.getSa(id, type).getSaState());
+    }
+
+    @Test
+    public void testStartStopExpireDefaultTypeIsTc() throws KmcException {
+        createSaByType(FrameType.TC);
+        ObjectNode body = mapper.createObjectNode();
+        body.put(SPI, 100).put(SCID, 46);
+        ObjectNode resp = restTemplate.postForObject(getUrl() + STOP, body, ObjectNode.class);
+        assertEquals(2, resp.get(SA_STATE).asInt());
+        resp = restTemplate.postForObject(getUrl() + START, body, ObjectNode.class);
+        assertEquals(3, resp.get(SA_STATE).asInt());
+        resp = restTemplate.postForObject(getUrl() + EXPIRE, body, ObjectNode.class);
+        assertEquals(1, resp.get(SA_STATE).asInt());
+    }
 }

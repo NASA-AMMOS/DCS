@@ -2,6 +2,8 @@ package gov.nasa.jpl.ammos.asec.kmc.cli.crud;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -13,10 +15,13 @@ import gov.nasa.jpl.ammos.asec.kmc.api.sa.ServiceType;
 import gov.nasa.jpl.ammos.asec.kmc.api.sa.SpiScid;
 import gov.nasa.jpl.ammos.asec.kmc.sadb.KmcDao;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import picocli.CommandLine;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -24,6 +29,8 @@ import java.util.List;
  * Tests for creating an SA
  */
 public class SaCreateTest extends BaseCommandLineTest {
+    @TempDir
+    Path tempFolder;
 
     public static final String BULK_SA_FILE   = "kmc-all-SAs.csv";
     public static final String BULK_SA_FILE_2 = "kmc-all-SAs-type.csv";
@@ -608,6 +615,45 @@ public class SaCreateTest extends BaseCommandLineTest {
     }
 
     @Test
+    public void testCreateVcidBounds() throws KmcException {
+        createVcidBounds(FrameType.TC, 63, 64, 6);
+        createVcidBounds(FrameType.AOS, 63, 64, 7);
+        createVcidBounds(FrameType.TM, 7, 8, 8);
+    }
+
+    public void createVcidBounds(FrameType type, int max, int tooBig, int spi) throws KmcException {
+        CommandLine cmd = getCmd(new SaCreate(), true, null, null);
+        int exitCode = cmd.execute(TFVN_EQ_0, SCID_46, "--vcid=" + tooBig, MAPID_0, "--spi=" + spi,
+                String.format(TYPE_FMT, type.name()));
+        assertNotEquals(0, exitCode);
+        assertNull(dao.getSa(new SpiScid(spi, (short) 46), type));
+        cmd = getCmd(new SaCreate(), true, null, null);
+        exitCode = cmd.execute(TFVN_EQ_0, SCID_46, "--vcid=" + max, MAPID_0, "--spi=" + spi,
+                String.format(TYPE_FMT, type.name()));
+        assertEquals(0, exitCode);
+    }
+
+    @Test
+    public void testCreateScidBounds() throws KmcException {
+        createScidBounds(FrameType.TC, 1023, 1024, 6);
+        createScidBounds(FrameType.TM, 1023, 1024, 7);
+        createScidBounds(FrameType.AOS, 255, 256, 8);
+    }
+
+    public void createScidBounds(FrameType type, int max, int tooBig, int spi) throws KmcException {
+        CommandLine cmd = getCmd(new SaCreate(), true, null, null);
+        int exitCode = cmd.execute(TFVN_EQ_0, "--scid=" + tooBig, VCID_0, MAPID_0, "--spi=" + spi,
+                String.format(TYPE_FMT, type.name()));
+        assertNotEquals(0, exitCode);
+        assertNull(dao.getSa(new SpiScid(spi, (short) tooBig), type));
+        cmd = getCmd(new SaCreate(), true, null, null);
+        exitCode = cmd.execute(TFVN_EQ_0, "--scid=" + max, VCID_0, MAPID_0, "--spi=" + spi,
+                String.format(TYPE_FMT, type.name()));
+        assertEquals(0, exitCode);
+        assertNotNull(dao.getSa(new SpiScid(spi, (short) max), type));
+    }
+
+    @Test
     public void testCreateSaArsnw() throws KmcException {
         createSaArsnw(FrameType.TC);
         createSaArsnw(FrameType.TM);
@@ -770,4 +816,120 @@ public class SaCreateTest extends BaseCommandLineTest {
         assertEquals(0, (short) sa.getAst());
     }
 
+    @Test
+    public void testCreateSaDefaultArsn() throws KmcException {
+        testCreateSaDefaultArsn(FrameType.TC);
+        testCreateSaDefaultArsn(FrameType.TM);
+        testCreateSaDefaultArsn(FrameType.AOS);
+    }
+
+    public void testCreateSaDefaultArsn(FrameType type) throws KmcException {
+        CommandLine cmd = getCmd(new SaCreate(), true, null, null);
+        int exitCode = cmd.execute(TFVN_EQ_0, SCID_46, VCID_0, MAPID_0, SPI_EQ_6, String.format(TYPE_FMT,
+                type.name()));
+        assertEquals(0, exitCode, type.name());
+        ISecAssn sa = dao.getSa(new SpiScid(6, (short) 46), type);
+        assertEquals(0, (short) sa.getArsnLen());
+        assertEquals(0, sa.getArsn().length);
+    }
+
+    @Test
+    public void testCreateSaArsnLenZeroAlone() throws KmcException {
+        testCreateSaArsnLenZeroAlone(FrameType.TC);
+        testCreateSaArsnLenZeroAlone(FrameType.TM);
+        testCreateSaArsnLenZeroAlone(FrameType.AOS);
+    }
+
+    public void testCreateSaArsnLenZeroAlone(FrameType type) throws KmcException {
+        CommandLine cmd = getCmd(new SaCreate(), true, null, null);
+        int exitCode = cmd.execute(TFVN_EQ_0, SCID_46, VCID_0, MAPID_0, SPI_EQ_6, "--arsnlen=0",
+                String.format(TYPE_FMT, type.name()));
+        assertEquals(0, exitCode, type.name());
+        ISecAssn sa = dao.getSa(new SpiScid(6, (short) 46), type);
+        assertEquals(0, (short) sa.getArsnLen());
+        assertEquals(0, sa.getArsn().length);
+    }
+
+    @Test
+    public void testCreateSaArsnLenMismatchFails() throws KmcException {
+        testCreateSaArsnLenMismatchFails(FrameType.TC);
+        testCreateSaArsnLenMismatchFails(FrameType.TM);
+        testCreateSaArsnLenMismatchFails(FrameType.AOS);
+    }
+
+    public void testCreateSaArsnLenMismatchFails(FrameType type) throws KmcException {
+        CommandLine cmd = getCmd(new SaCreate(), true, null, null);
+        int exitCode = cmd.execute(TFVN_EQ_0, SCID_46, VCID_0, MAPID_0, SPI_EQ_6, "--arsnlen=5", "--arsn=0x010203",
+                String.format(TYPE_FMT, type.name()));
+        assertNotEquals(0, exitCode, type.name());
+        assertNull(dao.getSa(new SpiScid(6, (short) 46), type));
+    }
+
+    @Test
+    public void testCreateBulkArsnLenZeroWithZeroArsn() throws Exception {
+        testCreateBulkArsnLenZeroWithZeroArsn(FrameType.TC);
+        testCreateBulkArsnLenZeroWithZeroArsn(FrameType.TM);
+        testCreateBulkArsnLenZeroWithZeroArsn(FrameType.AOS);
+    }
+
+    // arsn_len=0 with 20 zero bytes is the real DB default, so it must still import
+    public void testCreateBulkArsnLenZeroWithZeroArsn(FrameType type) throws Exception {
+        // row 2 of test-sas-h2.csv has arsn_len=0 and a 20 zero byte arsn; re-key it to a new SPI
+        List<String> lines = Files.readAllLines(Path.of(
+                getClass().getClassLoader().getResource("test-sas-h2.csv").toURI()));
+        assertTrue(lines.get(2).contains("\"0\",\"0x" + "00".repeat(20) + "\""));
+        Path csv = Files.createFile(tempFolder.resolve("arsn-zero-" + type + ".csv"));
+        Files.writeString(csv, lines.get(0) + "\n" + lines.get(2).replaceFirst("^\"2\"", "\"50\"") +
+                "\n");
+        CommandLine cmd = getCmd(new SaCreate(), true, null, null);
+        int exit = cmd.execute(String.format(FILE_FMT, csv), String.format(TYPE_FMT, type.name()));
+        assertEquals(0, exit, type.name());
+        ISecAssn sa = dao.getSa(new SpiScid(50, (short) 46), type);
+        assertNotNull(sa, type.name());
+        assertEquals(0, (short) sa.getArsnLen());
+        // the all-zero arsn is normalized to the canonical empty array
+        assertEquals(0, sa.getArsn().length, type.name());
+    }
+
+    @Test
+    public void testCreateSaInvalidIvNeverReportsCreated() throws KmcException {
+        createSaInvalidIvNeverReportsCreated(FrameType.TC);
+        createSaInvalidIvNeverReportsCreated(FrameType.TM);
+        createSaInvalidIvNeverReportsCreated(FrameType.AOS);
+    }
+
+    public void createSaInvalidIvNeverReportsCreated(FrameType type) throws KmcException {
+        StringWriter o   = new StringWriter();
+        StringWriter w   = new StringWriter();
+        CommandLine  cmd = getCmd(new SaCreate(), true, new PrintWriter(o, true), new PrintWriter(w, true));
+        int exitCode = cmd.execute(TFVN_EQ_0, SCID_46, VCID_0, MAPID_0, SPI_EQ_6, "--iv=0x000000000000000000000001",
+                IVLEN_16, String.format(TYPE_FMT, type.name()));
+        assertNotEquals(0, exitCode, type.name());
+        assertFalse(o.toString().contains("created SA"), type.name() + " console: " + o);
+        assertNull(dao.getSa(new SpiScid(6, (short) 46), type), type.name());
+    }
+
+    @Test
+    public void testCreateBulkArsnLenPositiveStoredUnchanged() throws Exception {
+        testCreateBulkArsnLenPositiveStoredUnchanged(FrameType.TC);
+        testCreateBulkArsnLenPositiveStoredUnchanged(FrameType.TM);
+        testCreateBulkArsnLenPositiveStoredUnchanged(FrameType.AOS);
+    }
+
+    public void testCreateBulkArsnLenPositiveStoredUnchanged(FrameType type) throws Exception {
+        // row 5 of test-sas-h2.csv has arsn_len=4 and arsn 0x00000001; re-key it to a new SPI
+        List<String> lines = Files.readAllLines(Path.of(
+                getClass().getClassLoader().getResource("test-sas-h2.csv").toURI()));
+        assertTrue(lines.get(5).contains("\"4\",\"0x00000001\""));
+        Path csv = Files.createFile(tempFolder.resolve("arsn-pos-" + type + ".csv"));
+        Files.writeString(csv, lines.get(0) + "\n" + lines.get(5).replaceFirst("^\"5\"", "\"51\"") +
+                "\n");
+        CommandLine cmd = getCmd(new SaCreate(), true, null, null);
+        assertEquals(0, cmd.execute(String.format(FILE_FMT, csv), String.format(TYPE_FMT,
+                type.name())), type.name());
+        ISecAssn sa = dao.getSa(new SpiScid(51, (short) 46), type);
+        assertNotNull(sa, type.name());
+        assertEquals(4, (short) sa.getArsnLen());
+        assertArrayEquals(new byte[]{0, 0, 0, 1}, sa.getArsn());
+    }
 }
