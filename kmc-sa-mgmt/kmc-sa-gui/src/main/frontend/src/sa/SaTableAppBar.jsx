@@ -269,7 +269,7 @@ export default function SaTableAppBar({
         <AppBar position={"static"}>
             <Toolbar>
                 <Box sx={{flexGrow: 1}}>
-                    <Button variant={"contained"} edge={"begin"}
+                    <Button variant={"contained"}
                             onClick={(e) => handlePopoverClick(e, "colSel")}>Columns</Button>
                     <Popover open={anchorElId === "colSel"}
                              id={"colSel"}
@@ -300,7 +300,7 @@ export default function SaTableAppBar({
                     </Popover>
                 </Box>
                 <Stack direction={"row"} spacing={1}>
-                    <Button variant={"contained"} color={"error"} edge={"end"} onClick={() => setDeleteOpen(true)}
+                    <Button variant={"contained"} color={"error"} onClick={() => setDeleteOpen(true)}
                             startIcon={<DeleteForever/>} disabled={selectedFlatRows.length === 0}>DELETE</Button>
                     <Dialog open={deleteOpen} onClose={() => setDeleteOpen(false)}>
                         <DialogTitle>Bulk Delete SAs</DialogTitle>
@@ -329,10 +329,9 @@ export default function SaTableAppBar({
                             </Button>
                         </DialogActions>
                     </Dialog>
-                    <Button edge={"end"} onClick={() => handleRowOpen(undefined, false)} startIcon={<Add/>}
+                    <Button onClick={() => handleRowOpen(undefined, false)} startIcon={<Add/>}
                             variant={"contained"}>Create</Button>
                     <Button variant={"contained"}
-                            edge={"end"}
                             startIcon={<Queue/>}
                             onClick={() => setBulkOpen(true)}>
                         Bulk</Button>
@@ -360,7 +359,7 @@ export default function SaTableAppBar({
                                 </Box>
                                 <Box sx={{minWidth: 35}}>
                                     <Typography variant={"body2"}
-                                                color={"text.secondary"}>{processing ? 'Processing…' : `${Math.round(progress)}%`}</Typography>
+                                                sx={{color: "text.secondary"}}>{processing ? 'Processing…' : `${Math.round(progress)}%`}</Typography>
                                 </Box>
                             </Box>
                         </DialogContent>
@@ -368,7 +367,7 @@ export default function SaTableAppBar({
                             <Stack>
                                 <Container>
                                     <label htmlFor={"contained-button-file"}>
-                                        <Input key={fileInputKey} accept={".csv"} id={"contained-button-file"}
+                                        <Input key={fileInputKey} slotProps={{input: {accept: ".csv"}}} id={"contained-button-file"}
                                                type={"file"}
                                                onChange={uploadFileChange}/>
                                         <Button variant={"contained"}
@@ -402,9 +401,9 @@ export default function SaTableAppBar({
                             </Stack>
                         </DialogActions>
                     </Dialog>
-                    <Button variant={"contained"} edge={"end"} startIcon={<FileDownload/>}
+                    <Button variant={"contained"} startIcon={<FileDownload/>}
                             onClick={download}>Export</Button>
-                    <Button variant={"contained"} edge={"end"} startIcon={<Refresh/>}
+                    <Button variant={"contained"} startIcon={<Refresh/>}
                             onClick={refreshTable}>Reload</Button>
                 </Stack>
             </Toolbar>

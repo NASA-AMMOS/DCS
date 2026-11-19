@@ -317,8 +317,7 @@ export default function EditControlStack({
                             InputProps={{
                                 startAdornment: <InputAdornment position="start"
                                                                 sx={{style: {fontFamily: 'Roboto Mono'}}}><Typography
-                                    color={'warning.main'} fontWeight={'bold'}
-                                    fontFamily={'Roboto Mono'}>0x</Typography></InputAdornment>
+                                    sx={{color: 'warning.main', fontWeight: 'bold', fontFamily: 'Roboto Mono'}}>0x</Typography></InputAdornment>
                             }}
                         />
                         <SaTextField
@@ -337,8 +336,7 @@ export default function EditControlStack({
                             InputProps={{
                                 startAdornment: <InputAdornment position="start"
                                                                 sx={{style: {fontFamily: 'Roboto Mono'}}}><Typography
-                                    color={'warning.main'} fontWeight={'bold'}
-                                    fontFamily={'Roboto Mono'}>0x</Typography></InputAdornment>
+                                    sx={{color: 'warning.main', fontWeight: 'bold', fontFamily: 'Roboto Mono'}}>0x</Typography></InputAdornment>
                             }}
                         />
                         <SaTextField
