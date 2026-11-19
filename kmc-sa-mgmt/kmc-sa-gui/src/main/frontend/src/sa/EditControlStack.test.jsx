@@ -128,4 +128,17 @@ describe('EditControlStack', () => {
         await user.click(screen.getByRole('button', {name: 'Start'}))
         expect(await screen.findByText('Start SA')).toBeTruthy()
     })
+    it.each([
+        ['ENCRYPTION', {ekid: 'kmc/test/key128', ecs: '01'}],
+        ['AUTHENTICATION', {akid: 'kmc/test/hmacsha256', acs: '02'}],
+        ['AUTHENTICATED_ENCRYPTION', {ekid: 'kmc/test/key128', ecs: '01', akid: null, acs: '00'}]
+    ])('opens the start dialog for a %s SA with non-hex key ids', async (serviceType, keys) => {
+        const user = userEvent.setup()
+        const d = {...data, spi: 1, scid: 2, serviceType, ...keys}
+        render(<EditControlStack type="tm" data={d} id={d.id} saState={1} defaultValues={d}
+                                 refresh={() => {}} setModalOpen={() => {}}/>)
+        await user.click(screen.getByRole('button', {name: 'Start'}))
+        expect(enqueueSnackbar).not.toHaveBeenCalled()
+        expect(await screen.findByText('Start SA')).toBeTruthy()
+    })
 })
