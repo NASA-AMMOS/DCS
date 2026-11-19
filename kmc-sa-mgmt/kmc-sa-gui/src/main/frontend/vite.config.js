@@ -1,5 +1,6 @@
 import {defineConfig} from 'vite'
 import react from '@vitejs/plugin-react'
+import {configDefaults} from 'vitest/config'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -7,6 +8,8 @@ export default defineConfig({
     base: "./",
     test: {
         environment: 'jsdom',
+        // e2e/ is the Playwright suite, run with `yarn e2e`
+        exclude: [...configDefaults.exclude, 'e2e/**'],
         onConsoleLog: (log, type) => type === 'stderr',
     },
     server: {
