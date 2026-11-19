@@ -124,7 +124,7 @@ export default function SaTable(props) {
     }, {
         Header: "Service Type",
         accessor: "serviceType",
-        Filter: SelectColumnFilter, filter: 'includes'
+        Filter: SelectColumnFilter, filter: 'exact'
     }, {
         Header: "EKID", accessor: "ekid"
     }, {
@@ -468,10 +468,10 @@ function SelectColumnFilter({
                         itemValue = stateLookupInt(option)
                         break
                     case 'ecs':
-                        itemValue = hexEncLookup(option).value
+                        itemValue = hexEncLookup(option).name
                         break
                     case 'acs':
-                        itemValue = hexAuthLookup(option).value
+                        itemValue = hexAuthLookup(option).name
                         break
                     default:
                         itemValue = option
