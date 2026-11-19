@@ -183,8 +183,8 @@ export default function SaModalForm({
             acs: "00",
             abmLen: 19,
             abm: "0000FC0000FFFF000000000000000000000000",
-            arsnLen: 20,
-            arsn: "0000000000000000000000000000000000000000",
+            arsnLen: 0,
+            arsn: "",
             arsnw: 0
         }
     }, [])

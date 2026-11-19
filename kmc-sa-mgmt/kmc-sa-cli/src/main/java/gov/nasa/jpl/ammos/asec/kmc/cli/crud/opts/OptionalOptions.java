@@ -40,8 +40,7 @@ public class OptionalOptions {
     /**
      * IV length opt
      */
-    @CommandLine.Option(names = "--ivlen", required = false, description = "initialization vector length, in bytes",
-            defaultValue = "12")
+    @CommandLine.Option(names = "--ivlen", required = false, description = "initialization vector length, in bytes")
     public Short ivLen;
 
     /**
