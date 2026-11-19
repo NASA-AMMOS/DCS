@@ -7,6 +7,7 @@ export default defineConfig({
     base: "./",
     test: {
         environment: 'jsdom',
+        onConsoleLog: (log, type) => type === 'stderr',
     },
     server: {
         port: 3001,
