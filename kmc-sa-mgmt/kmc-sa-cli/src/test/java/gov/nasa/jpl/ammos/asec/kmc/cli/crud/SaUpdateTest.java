@@ -1,19 +1,22 @@
 package gov.nasa.jpl.ammos.asec.kmc.cli.crud;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 import gov.nasa.jpl.ammos.asec.kmc.api.ex.KmcException;
 import gov.nasa.jpl.ammos.asec.kmc.api.sa.FrameType;
 import gov.nasa.jpl.ammos.asec.kmc.api.sa.ISecAssn;
 import gov.nasa.jpl.ammos.asec.kmc.api.sa.ServiceType;
 import gov.nasa.jpl.ammos.asec.kmc.api.sa.SpiScid;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import picocli.CommandLine;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-
-import static org.junit.Assert.*;
 
 /**
  * Tests for updating an SA
@@ -66,13 +69,13 @@ public class SaUpdateTest extends BaseCommandLineTest {
 
     public void testUpdateBulkNotExistType(FrameType type, int expect) throws KmcException {
         List<ISecAssn> sas = dao.getSas(type);
-        assertEquals(type.name(), expect, sas.size());
+        assertEquals(expect, sas.size(), type.name());
         CommandLine cli = getCmd(new SaUpdate(), true);
         int exit = cli.execute(String.format(FILE_FMT, getClass().getClassLoader().getResource(
                 BULK_SA_FILE_2).getFile()), String.format(TYPE_FMT, type.name()));
-        assertEquals(type.name(), 0, exit);
+        assertEquals(0, exit, type.name());
         sas = dao.getSas(type);
-        assertEquals(type.name(), expect, sas.size());
+        assertEquals(expect, sas.size(), type.name());
     }
 
     @Test
@@ -747,7 +750,7 @@ public class SaUpdateTest extends BaseCommandLineTest {
         assertEquals(0, (short) sa.getIvLen());
         assertNull(sa.getIv());
         int exit = cli.execute(SPI_1, SCID_46, "--ivlen=12", String.format(TYPE_FMT, type.name()));
-        assertEquals(type.name(), 0, exit);
+        assertEquals(0, exit, type.name());
         assertEquals(12, (short) dao.getSa(id, type).getIvLen());
     }
 
@@ -763,7 +766,7 @@ public class SaUpdateTest extends BaseCommandLineTest {
         SpiScid     id  = new SpiScid(2, (short) 46);
         assertEquals(12, dao.getSa(id, type).getIv().length);
         int exit = cli.execute("--spi=2", SCID_46, "--ivlen=16", String.format(TYPE_FMT, type.name()));
-        assertNotEquals(type.name(), 0, exit);
+        assertNotEquals(0, exit, type.name());
         assertEquals(12, (short) dao.getSa(id, type).getIvLen());
     }
 
@@ -779,7 +782,7 @@ public class SaUpdateTest extends BaseCommandLineTest {
         SpiScid     id  = new SpiScid(2, (short) 46);
         int exit = cli.execute("--spi=2", SCID_46, "--iv=0x000000000000000000000002", String.format(TYPE_FMT,
                 type.name()));
-        assertEquals(type.name(), 0, exit);
+        assertEquals(0, exit, type.name());
         assertArrayEquals(new byte[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2}, dao.getSa(id, type).getIv());
     }
 
@@ -795,7 +798,7 @@ public class SaUpdateTest extends BaseCommandLineTest {
         SpiScid     id  = new SpiScid(2, (short) 46);
         int exit = cli.execute("--spi=2", SCID_46, "--iv=0x00112233465566778899aabbccddeeff", String.format(TYPE_FMT,
                 type.name()));
-        assertNotEquals(type.name(), 0, exit);
+        assertNotEquals(0, exit, type.name());
         assertEquals(12, dao.getSa(id, type).getIv().length);
     }
 
@@ -811,7 +814,7 @@ public class SaUpdateTest extends BaseCommandLineTest {
         SpiScid     id  = new SpiScid(2, (short) 46);
         int exit = cli.execute("--spi=2", SCID_46, "--iv=0x000000000000000000000002", "--ivlen=16",
                 String.format(TYPE_FMT, type.name()));
-        assertNotEquals(type.name(), 0, exit);
+        assertNotEquals(0, exit, type.name());
         assertEquals(12, (short) dao.getSa(id, type).getIvLen());
         assertEquals(1, dao.getSa(id, type).getIv()[11]);
     }
@@ -828,7 +831,7 @@ public class SaUpdateTest extends BaseCommandLineTest {
         SpiScid     id  = new SpiScid(5, (short) 46);
         assertEquals(4, dao.getSa(id, type).getArsn().length);
         int exit = cli.execute(SPI_5, SCID_46, "--arsnlen=0", String.format(TYPE_FMT, type.name()));
-        assertEquals(type.name(), 0, exit);
+        assertEquals(0, exit, type.name());
         ISecAssn sa = dao.getSa(id, type);
         assertEquals(0, (short) sa.getArsnLen());
         assertEquals(0, sa.getArsn().length);
@@ -846,21 +849,21 @@ public class SaUpdateTest extends BaseCommandLineTest {
         String  iv12 = "--iv=0x000000000000000000000002";
         String  iv16 = "--iv=0x00112233465566778899aabbccddeeff";
         // stored AES-GCM (ECS 0x01, est 1): a 16 byte IV is rejected
-        assertNotEquals(type.name(), 0, getCmd(new SaUpdate(), true).execute("--spi=2", SCID_46, iv16, "--ivlen=16",
-                String.format(TYPE_FMT, type.name())));
+        assertNotEquals(0, getCmd(new SaUpdate(), true).execute("--spi=2", SCID_46, iv16, "--ivlen=16",
+                String.format(TYPE_FMT, type.name())), type.name());
         assertEquals(12, dao.getSa(id, type).getIv().length);
         // switch the stored record to AES-CBC
-        assertEquals(type.name(), 0, getCmd(new SaUpdate(), true).execute("--spi=2", SCID_46, "--ekid=130",
+        assertEquals(0, getCmd(new SaUpdate(), true).execute("--spi=2", SCID_46, "--ekid=130",
                 "--ecs=0x02", "--iv=0x00112233465566778899aabbccddeeff", "--ivlen=16",
-                String.format(TYPE_FMT, type.name())));
+                String.format(TYPE_FMT, type.name())), type.name());
         // stored AES-CBC: a 12 byte IV is rejected
-        assertNotEquals(type.name(), 0, getCmd(new SaUpdate(), true).execute("--spi=2", SCID_46, iv12, "--ivlen=12",
-                String.format(TYPE_FMT, type.name())));
+        assertNotEquals(0, getCmd(new SaUpdate(), true).execute("--spi=2", SCID_46, iv12, "--ivlen=12",
+                String.format(TYPE_FMT, type.name())), type.name());
         assertEquals(16, dao.getSa(id, type).getIv().length);
         assertEquals(16, (short) dao.getSa(id, type).getIvLen());
         // ... unless the ECS matching the IV is supplied too
-        assertEquals(type.name(), 0, getCmd(new SaUpdate(), true).execute("--spi=2", SCID_46, "--ekid=130",
-                "--ecs=0x01", iv12, "--ivlen=12", String.format(TYPE_FMT, type.name())));
+        assertEquals(0, getCmd(new SaUpdate(), true).execute("--spi=2", SCID_46, "--ekid=130",
+                "--ecs=0x01", iv12, "--ivlen=12", String.format(TYPE_FMT, type.name())), type.name());
         assertEquals(12, dao.getSa(id, type).getIv().length);
         assertEquals(12, (short) dao.getSa(id, type).getIvLen());
     }
@@ -876,12 +879,12 @@ public class SaUpdateTest extends BaseCommandLineTest {
         // SPI 4 is stored with est 0 and ECS 0x01
         SpiScid id = new SpiScid(4, (short) 46);
         assertEquals(0, (short) dao.getSa(id, type).getEst());
-        assertEquals(type.name(), 0, getCmd(new SaUpdate(), true).execute("--spi=4", SCID_46,
-                "--iv=0x00112233465566778899aabbccddeeff", "--ivlen=16", String.format(TYPE_FMT, type.name())));
+        assertEquals(0, getCmd(new SaUpdate(), true).execute("--spi=4", SCID_46,
+                "--iv=0x00112233465566778899aabbccddeeff", "--ivlen=16", String.format(TYPE_FMT, type.name())), type.name());
         assertEquals(16, dao.getSa(id, type).getIv().length);
         // length must still agree with ivlen
-        assertNotEquals(type.name(), 0, getCmd(new SaUpdate(), true).execute("--spi=4", SCID_46,
-                "--iv=0x0011223344", "--ivlen=16", String.format(TYPE_FMT, type.name())));
+        assertNotEquals(0, getCmd(new SaUpdate(), true).execute("--spi=4", SCID_46,
+                "--iv=0x0011223344", "--ivlen=16", String.format(TYPE_FMT, type.name())), type.name());
     }
 
 }

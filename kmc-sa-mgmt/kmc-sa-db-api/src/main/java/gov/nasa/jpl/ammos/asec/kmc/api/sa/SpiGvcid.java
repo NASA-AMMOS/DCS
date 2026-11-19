@@ -2,10 +2,12 @@ package gov.nasa.jpl.ammos.asec.kmc.api.sa;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.MapperFeature;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.Embedded;
+import tools.jackson.core.JacksonException;
 
 import java.io.Serializable;
 
@@ -15,7 +17,9 @@ import java.io.Serializable;
 @Embeddable
 public class SpiGvcid implements Serializable {
 
-    private static final ObjectMapper mapper = new ObjectMapper();
+    private static final ObjectMapper mapper = JsonMapper.builder()
+            .disable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)
+            .build();
 
     /**
      * SPI
@@ -63,7 +67,7 @@ public class SpiGvcid implements Serializable {
     public String toString() {
         try {
             return mapper.writeValueAsString(this);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new RuntimeException(e);
         }
     }

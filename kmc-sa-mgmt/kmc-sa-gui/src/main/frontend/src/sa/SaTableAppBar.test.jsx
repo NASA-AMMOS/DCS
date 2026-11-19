@@ -1,13 +1,16 @@
-import {afterEach, describe, expect, it, vi} from 'vitest'
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest'
 import axios from 'axios'
-import {act, cleanup, render, screen, waitFor} from '@testing-library/react'
+import {act, cleanup, render, screen, waitFor, within} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import SaTableAppBar from './SaTableAppBar'
-import {bulkCreate} from './api'
+import {bulkCreate, deleteSas, downloadCsv} from './api'
+import {expectNoStrayAttributes} from '../test/mui'
 
 vi.mock('./api', async (importOriginal) => ({
     ...(await importOriginal()),
-    bulkCreate: vi.fn()
+    bulkCreate: vi.fn(),
+    deleteSas: vi.fn(),
+    downloadCsv: vi.fn()
 }))
 
 describe('SaTableAppBar bulk upload dialog', () => {
@@ -49,6 +52,17 @@ describe('SaTableAppBar bulk upload dialog', () => {
         expect(screen.getByRole('button', {name: 'Continue'}).disabled).toBe(false)
     })
 
+    it('restricts the file picker to CSV and renders no stray MUI props', async () => {
+        const user = userEvent.setup()
+        render(<SaTableAppBar allColumns={[]} selectedFlatRows={[]} type="tc"
+                              resetDefaultCols={() => {}} hideColumn={() => {}} refreshTable={() => {}}
+                              enqueueSnackbar={() => {}} handleRowOpen={() => {}}/>)
+        await user.click(screen.getByRole('button', {name: /bulk/i}))
+        const input = document.getElementById('contained-button-file')
+        expect(input.getAttribute('accept')).toBe('.csv')
+        expect(input.parentElement.hasAttribute('accept')).toBe(false)
+        expectNoStrayAttributes(document.body)
+    })
     describe('cancelling an upload', () => {
         const setup = async (props = {}) => {
             const user = userEvent.setup()
@@ -95,6 +109,8 @@ describe('SaTableAppBar bulk upload dialog', () => {
             act(() => call.setProgress(100))
 
             expect(screen.getByText('Processing…')).toBeTruthy()
+            // text.secondary of MUI's default light palette
+            expect(getComputedStyle(screen.getByText('Processing…')).color).toBe('rgba(0, 0, 0, 0.6)')
             expect(screen.getByRole('button', {name: 'Cancel'}).disabled).toBe(true)
             await user.keyboard('{Escape}')
             expect(screen.getByRole('dialog')).toBeTruthy()
@@ -115,5 +131,148 @@ describe('SaTableAppBar bulk upload dialog', () => {
             expect(enqueueSnackbar).toHaveBeenCalledWith('Uploaded CSV', {variant: 'success'})
             expect(refreshTable).toHaveBeenCalledTimes(1)
         })
+    })
+})
+
+// ports of kmc-test SA_Management_Browser.robot checks that do not need a browser
+describe('SaTableAppBar toolbar', () => {
+    afterEach(() => {
+        cleanup()
+        vi.restoreAllMocks()
+    })
+
+    const columns = [{id: 'selection'}, {id: 'spi', Header: 'SPI'}, {id: 'ivLen', Header: 'IV Length'},
+        {id: 'abmLen', Header: 'ABM Length'}].map(c => ({...c, getToggleHiddenProps: () => ({checked: c.id === 'spi', onChange: () => {}})}))
+    const renderBar = (props = {}) => {
+        const handlers = {resetDefaultCols: vi.fn(), hideColumn: vi.fn(), refreshTable: vi.fn(), enqueueSnackbar: vi.fn(),
+            handleRowOpen: vi.fn()}
+        render(<SaTableAppBar allColumns={columns} selectedFlatRows={[]} type="TC" {...handlers} {...props}/>)
+        return handlers
+    }
+
+    it('shows the table controls, with DELETE disabled until rows are selected', () => {
+        renderBar()
+        for (const name of ['Columns', 'DELETE', 'Create', 'Bulk', 'Export', 'Reload']) {
+            expect(screen.getByRole('button', {name})).toBeTruthy()
+        }
+        expect(screen.getByRole('button', {name: 'DELETE'}).disabled).toBe(true)
+    })
+
+    it('lists every column except selection in the Columns chooser, with Reset', async () => {
+        const user = userEvent.setup()
+        const {resetDefaultCols, hideColumn} = renderBar()
+        await user.click(screen.getByRole('button', {name: 'Columns'}))
+        const chooser = document.getElementById('colSel')
+        expect(within(chooser).getAllByRole('checkbox').map(c => c.parentElement.textContent.trim()))
+            .toEqual(['SPI', 'IV Length', 'ABM Length'])
+        await user.click(within(chooser).getByLabelText('IV Length'))
+        expect(hideColumn).toHaveBeenCalledWith('ivLen', true)
+        await user.click(within(chooser).getByRole('button', {name: 'Reset'}))
+        expect(resetDefaultCols).toHaveBeenCalledTimes(1)
+    })
+
+    it('reloads the table', async () => {
+        const user = userEvent.setup()
+        const {refreshTable} = renderBar()
+        await user.click(screen.getByRole('button', {name: 'Reload'}))
+        expect(refreshTable).toHaveBeenCalledTimes(1)
+    })
+
+    it('downloads the CSV under the server-suggested name and confirms it', async () => {
+        const user = userEvent.setup()
+        downloadCsv.mockImplementation((ok) => ok({data: 'a,b', headers: {'x-suggested-filename': 'SADB_x.csv'}}))
+        window.URL.createObjectURL = vi.fn(() => 'blob:sadb')
+        const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function () {
+            this.dataset.clicked = this.getAttribute('download')
+        })
+        const {enqueueSnackbar} = renderBar()
+        await user.click(screen.getByRole('button', {name: 'Export'}))
+        expect(click).toHaveBeenCalledTimes(1)
+        expect(click.mock.contexts[0].getAttribute('download')).toBe('SADB_x.csv')
+        expect(click.mock.contexts[0].href).toBe('blob:sadb')
+        expect(enqueueSnackbar).toHaveBeenCalledWith('Downloaded CSV', {variant: 'success'})
+    })
+
+    it('reports a failed CSV download', async () => {
+        const user = userEvent.setup()
+        downloadCsv.mockImplementation((ok, err) => err(new Error('boom')))
+        const {enqueueSnackbar} = renderBar()
+        await user.click(screen.getByRole('button', {name: 'Export'}))
+        expect(enqueueSnackbar).toHaveBeenCalledWith('Error downloading CSV', {variant: 'error'})
+    })
+
+    it('closes the Bulk dialog when clicking outside it', async () => {
+        const user = userEvent.setup()
+        renderBar()
+        await user.click(screen.getByRole('button', {name: 'Bulk'}))
+        expect(screen.getByText(/Bulk creation of SAs by uploading a CSV file/)).toBeTruthy()
+        await user.click(document.querySelector('.MuiBackdrop-root'))
+        await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+    })
+})
+
+describe('SaTableAppBar bulk actions', () => {
+    beforeEach(() => vi.clearAllMocks())
+    afterEach(() => {
+        cleanup()
+        vi.restoreAllMocks()
+        vi.clearAllMocks()
+    })
+
+    const renderBar = (props = {}) => {
+        const handlers = {resetDefaultCols: vi.fn(), hideColumn: vi.fn(), refreshTable: vi.fn(), enqueueSnackbar: vi.fn(),
+            handleRowOpen: vi.fn()}
+        render(<SaTableAppBar allColumns={[]} selectedFlatRows={[]} type="TM" {...handlers} {...props}/>)
+        return handlers
+    }
+
+    const uploadWith = async (user, {uncheck = [], replace = false} = {}) => {
+        vi.spyOn(console, 'log').mockImplementation(() => {})
+        await user.click(screen.getByRole('button', {name: /bulk/i}))
+        await user.upload(document.getElementById('contained-button-file'), new File(['a,b'], 'sas.csv', {type: 'text/csv'}))
+        for (const type of uncheck) {
+            await user.click(screen.getByLabelText(type))
+        }
+        if (replace) {
+            await user.click(screen.getByLabelText('Replace existing'))
+        }
+        await user.click(screen.getByRole('button', {name: 'Continue', exact: true}))
+        await waitFor(() => expect(bulkCreate).toHaveBeenCalledTimes(1))
+        const [types, form] = bulkCreate.mock.calls[0]
+        return {types, file: form.get('file'), force: form.get('force')}
+    }
+
+    it('uploads for every frame type without replacing by default', async () => {
+        const user = userEvent.setup()
+        renderBar()
+        const sent = await uploadWith(user)
+        expect(sent.types).toEqual(['TM', 'TC', 'AOS'])
+        expect(sent.force).toBe('false')
+        expect(sent.file.name).toBe('sas.csv')
+    })
+
+    it('uploads only for the frame types left checked, replacing when asked', async () => {
+        const user = userEvent.setup()
+        renderBar()
+        const sent = await uploadWith(user, {uncheck: ['TM', 'AOS'], replace: true})
+        expect(sent.types).toEqual(['TC'])
+        expect(sent.force).toBe('true')
+    })
+
+    it('deletes the selected SAs for its frame type after confirmation', async () => {
+        const user = userEvent.setup()
+        vi.spyOn(console, 'log').mockImplementation(() => {})
+        deleteSas.mockImplementation((type, ids, ok) => ok({status: 200}))
+        const rows = [{original: {id: {spi: 7, scid: 46}, spi: 7, scid: 46}}, {original: {id: {spi: 8, scid: 46}, spi: 8, scid: 46}}]
+        const {refreshTable, enqueueSnackbar} = renderBar({selectedFlatRows: rows})
+        await user.click(screen.getByRole('button', {name: 'DELETE'}))
+        const dialog = screen.getByRole('dialog')
+        expect(within(dialog).getByText(/7\/46/)).toBeTruthy()
+        expect(within(dialog).getByText(/8\/46/)).toBeTruthy()
+        await user.click(within(dialog).getByRole('button', {name: 'Continue'}))
+        expect(deleteSas).toHaveBeenCalledWith('TM', [{spi: 7, scid: 46}, {spi: 8, scid: 46}], expect.any(Function),
+            expect.any(Function))
+        expect(enqueueSnackbar).toHaveBeenCalledWith('Deleted 2 SAs', {variant: 'success'})
+        expect(refreshTable).toHaveBeenCalled()
     })
 })

@@ -1,5 +1,7 @@
 package gov.nasa.jpl.ammos.kmc.keyclient;
 
+import java.io.Serial;
+
 /**
  * This exception is thrown by the ASEC DCS cryptographic API to indicate that
  * it was not initialized properly due to errors in the config file.
@@ -7,6 +9,7 @@ package gov.nasa.jpl.ammos.kmc.keyclient;
  *
  */
 public class KmcKeyClientException extends Exception {
+    @Serial
     private static final long serialVersionUID = 7713300322251991392L;
     private final KmcKeyOpsErrorCode errorCode;
 

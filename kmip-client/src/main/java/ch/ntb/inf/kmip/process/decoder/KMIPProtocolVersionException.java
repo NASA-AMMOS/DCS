@@ -28,9 +28,12 @@
 
 package ch.ntb.inf.kmip.process.decoder;
 
+import java.io.Serial;
+
 public class KMIPProtocolVersionException extends Exception {
 
-	private static final long serialVersionUID = -47240609487621862L;
+    @Serial
+    private static final long serialVersionUID = -47240609487621862L;
 
 	public KMIPProtocolVersionException(String message) {
 		super(message);

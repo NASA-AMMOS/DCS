@@ -28,9 +28,12 @@
 
 package ch.ntb.inf.kmip.process.decoder;
 
+import java.io.Serial;
+
 public class KMIPPaddingExpectedException extends Exception{
 
-	private static final long serialVersionUID = 850135123043470455L;
+    @Serial
+    private static final long serialVersionUID = 850135123043470455L;
 
 	public KMIPPaddingExpectedException(){
         super("Padding Bytes expected");

@@ -225,8 +225,8 @@ public class IcvVerifierLibrary implements IcvVerifier {
             throw e;
         }
         PublicKey publicKey;
-        if (key instanceof PublicKey) {
-            publicKey = (PublicKey) key;
+        if (key instanceof PublicKey publicKey1) {
+            publicKey = publicKey1;
         }  else {
             String msg = "The retrieved key (keyRef = " + keyRef + ") is not a RSA public key.";
             logger.error(msg);

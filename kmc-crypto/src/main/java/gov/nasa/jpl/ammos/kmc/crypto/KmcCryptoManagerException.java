@@ -1,5 +1,7 @@
 package gov.nasa.jpl.ammos.kmc.crypto;
 
+import java.io.Serial;
+
 /**
  * This exception is thrown by the ASEC KMC Crypto Manager to indicate that
  * errors in the KMC config file and for any other reasons.
@@ -7,6 +9,7 @@ package gov.nasa.jpl.ammos.kmc.crypto;
  *
  */
 public class KmcCryptoManagerException extends Exception {
+    @Serial
     private static final long serialVersionUID = 5316048143261131543L;
     /**
      * The error code of the KmcCryptoManagerException.

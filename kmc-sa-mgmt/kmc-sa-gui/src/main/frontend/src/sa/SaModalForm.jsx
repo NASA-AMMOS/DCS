@@ -399,11 +399,12 @@ export default function SaModalForm({
                                 onChange={handleEcsChange}
                                 helperText={`Encryption Cipher Suite: ${ENC_CYPHERS.NONE.name} = ${ENC_CYPHERS.NONE.value}, 
                             ${ENC_CYPHERS.AES256_GCM.name} = ${ENC_CYPHERS.AES256_GCM.value},
-                            ${ENC_CYPHERS.AES256_CBC} = ${ENC_CYPHERS.AES256_CBC.value}`}
+                            ${ENC_CYPHERS.AES256_CBC.name} = ${ENC_CYPHERS.AES256_CBC.value}`}
 
                             >
                                 <MenuItem value={0}>{ENC_CYPHERS.NONE.name}</MenuItem>
                                 <MenuItem value={1}>{ENC_CYPHERS.AES256_GCM.name}</MenuItem>
+                                <MenuItem value={2}>{ENC_CYPHERS.AES256_CBC.name}</MenuItem>
                             </SaSelectField>
                             <SaSelectField
                                 id={"acs"}
@@ -466,8 +467,7 @@ export default function SaModalForm({
                                 InputProps={{
                                     startAdornment: <InputAdornment position="start"
                                                                     sx={{style: {fontFamily: 'Roboto Mono'}}}><Typography
-                                        color={'warning.main'} fontWeight={'bold'}
-                                        fontFamily={'Roboto Mono'}>0x</Typography></InputAdornment>
+                                        sx={{color: 'warning.main', fontWeight: 'bold', fontFamily: 'Roboto Mono'}}>0x</Typography></InputAdornment>
                                 }}
                             />
                             <SaTextField
@@ -486,8 +486,7 @@ export default function SaModalForm({
                                 InputProps={{
                                     startAdornment: <InputAdornment position="start"
                                                                     sx={{style: {fontFamily: 'Roboto Mono'}}}><Typography
-                                        color={'warning.main'} fontWeight={'bold'}
-                                        fontFamily={'Roboto Mono'}>0x</Typography></InputAdornment>
+                                        sx={{color: 'warning.main', fontWeight: 'bold', fontFamily: 'Roboto Mono'}}>0x</Typography></InputAdornment>
                                 }}
                                 multiline
                             />
@@ -507,8 +506,7 @@ export default function SaModalForm({
                                 InputProps={{
                                     startAdornment: <InputAdornment position="start"
                                                                     sx={{style: {fontFamily: 'Roboto Mono'}}}><Typography
-                                        color={'warning.main'} fontWeight={'bold'}
-                                        fontFamily={'Roboto Mono'}>0x</Typography></InputAdornment>
+                                        sx={{color: 'warning.main', fontWeight: 'bold', fontFamily: 'Roboto Mono'}}>0x</Typography></InputAdornment>
                                 }}
                             />
                             <SaTextField
@@ -548,8 +546,7 @@ export function SaTextField({id, name, label, formik, onBlur, helperText, onChan
                 error={formik.touched[id] && Boolean(formik.errors[id])}
                 helperText={(formik.touched[id] && formik.errors[id]) || helperText}
                 disabled={disabled || false}
-                inputProps={{style: {fontFamily: 'Roboto Mono'}}}
-                InputProps={InputProps}
+                slotProps={{htmlInput: {style: {fontFamily: 'Roboto Mono'}}, input: InputProps}}
                 multiline={multiline || false}
                 rows={multiline ? 15 : ''}
             />
@@ -574,7 +571,7 @@ export function SaSelectField({children, id, name, label, formik, onChange, help
                 helperText={(formik.touched[id] && formik.errors[id]) ||
                     helperText}
                 select
-                SelectProps={{style: {fontFamily: 'Roboto Mono'}}}
+                slotProps={{select: {style: {fontFamily: 'Roboto Mono'}}}}
             >
                 {children}
             </TextField>

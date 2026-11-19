@@ -8,7 +8,10 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "vitest run"
+    "test": "vitest run",
+    "e2e": "vite build && playwright test",
+    "e2e:server": "bash e2e/start-server.sh",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@emotion/react": "11.14.0",
@@ -18,10 +21,8 @@
     "@mui/icons-material": "9.3.1",
     "@mui/material": "9.3.1",
     "axios": "1.20.0",
-    "form-data": "4.0.6",
     "formik": "2.4.9",
     "notistack": "3.0.2",
-    "postcss": "8.5.26",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "react-table": "7.8.0",
@@ -29,31 +30,37 @@
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
+    "@playwright/test": "1.65.0",
     "@testing-library/dom": "10.4.2",
     "@testing-library/react": "16.3.3",
     "@testing-library/user-event": "14.6.8",
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.5",
     "@vitejs/plugin-react": "6.1.0",
-    "@vitejs/plugin-react-oxc": "^0.4.3",
+    "@vitest/coverage-v8": "4.1.12",
     "eslint": "10.9.1",
     "eslint-plugin-react-hooks": "7.1.1",
     "eslint-plugin-react-refresh": "0.5.5",
     "globals": "17.11.0",
     "jsdom": "29.1.1",
-    "vite": "8.2.2",
-    "vitest": "4.1.11"
+    "vite": "8.2.6",
+    "vitest": "4.1.12"
   },
   "resolutions": {
+    "brace-expansion": "5.0.13",
     "browserslist": "4.28.7",
-    "js-yaml": "4.3.2",
-    "form-data": "4.0.6",
     "flatted": "3.4.4",
+    "follow-redirects": "1.16.3",
+    "form-data": "4.0.6",
+    "js-yaml": "4.3.2",
     "lodash": "4.18.1",
     "lodash-es": "4.18.1",
-    "minimatch": "10.2.6",
+    "minimatch": "11.0.8",
     "picomatch": "4.0.7",
     "rollup": "4.63.0",
-    "yaml": "1.10.3"
+    "source-map-js": "1.2.2",
+    "vite": "8.2.6",
+    "yaml": "1.10.3",
+    "zod": "4.6.7"
   }
 }

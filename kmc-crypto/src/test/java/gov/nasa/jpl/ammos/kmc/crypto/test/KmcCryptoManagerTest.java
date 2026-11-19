@@ -1,7 +1,7 @@
 package gov.nasa.jpl.ammos.kmc.crypto.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.lang.reflect.Field;
@@ -9,10 +9,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runners.MethodSorters;
-
+import org.junit.jupiter.api.MethodOrderer.MethodName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import gov.nasa.jpl.ammos.kmc.crypto.KmcCryptoManager;
 import gov.nasa.jpl.ammos.kmc.crypto.KmcCryptoManagerException;
 
@@ -21,7 +20,7 @@ import gov.nasa.jpl.ammos.kmc.crypto.KmcCryptoManagerException;
  *
  *
  */
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@TestMethodOrder(MethodName.class)
 public class KmcCryptoManagerTest {
 
     /**

@@ -1,5 +1,11 @@
 package gov.nasa.jpl.ammos.asec.kmc.sadb;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import gov.nasa.jpl.ammos.asec.kmc.api.ex.KmcException;
 import gov.nasa.jpl.ammos.asec.kmc.api.ex.KmcStartException;
 import gov.nasa.jpl.ammos.asec.kmc.api.sa.FrameType;
@@ -9,22 +15,22 @@ import gov.nasa.jpl.ammos.asec.kmc.api.sa.SecAssnAos;
 import gov.nasa.jpl.ammos.asec.kmc.api.sa.SecAssnTm;
 import gov.nasa.jpl.ammos.asec.kmc.api.sa.SpiScid;
 import gov.nasa.jpl.ammos.asec.kmc.api.sadb.IDbSession;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
-
-import static org.junit.Assert.*;
 
 /**
  * Tests for KMC DAO
  */
 public class KmcDaoTest extends BaseH2Test {
 
-    @Test(expected = KmcException.class)
-    public void testConnectionFail() throws KmcException {
-        try (KmcDao fail = new KmcDao()) {
-            fail.init();
-        }
+    @Test
+    public void testConnectionFail() {
+        assertThrows(KmcException.class, () -> {
+            try (KmcDao fail = new KmcDao()) {
+                fail.init();
+            }
+        });
     }
 
     public void createDeleteSa(FrameType type) throws KmcException {
@@ -130,19 +136,22 @@ public class KmcDaoTest extends BaseH2Test {
         dao.deleteSa(fake, type);
     }
 
-    @Test(expected = KmcException.class)
-    public void testDeleteDne() throws KmcException {
-        deleteDne(FrameType.TC);
+    @Test
+    public void testDeleteDne() {
+        assertThrows(KmcException.class, () ->
+            deleteDne(FrameType.TC));
     }
 
-    @Test(expected = KmcException.class)
-    public void testDeleteDneAos() throws KmcException {
-        deleteDne(FrameType.AOS);
+    @Test
+    public void testDeleteDneAos() {
+        assertThrows(KmcException.class, () ->
+            deleteDne(FrameType.AOS));
     }
 
-    @Test(expected = KmcException.class)
-    public void testDeleteDneTm() throws KmcException {
-        deleteDne(FrameType.TM);
+    @Test
+    public void testDeleteDneTm() {
+        assertThrows(KmcException.class, () ->
+            deleteDne(FrameType.TM));
     }
 
     public void startSa(FrameType type) throws KmcException {
@@ -180,19 +189,22 @@ public class KmcDaoTest extends BaseH2Test {
         assertEquals(KmcDao.SA_UNKEYED, (short) sa2.getSaState());
     }
 
-    @Test(expected = KmcStartException.class)
+    @Test
     public void testStartSaAlreadyActive() throws KmcException {
-        startSaAlreadyActive(FrameType.TC);
+        assertThrows(KmcStartException.class, () ->
+            startSaAlreadyActive(FrameType.TC));
     }
 
-    @Test(expected = KmcStartException.class)
+    @Test
     public void testStartSaAlreadyActiveAos() throws KmcException {
-        startSaAlreadyActive(FrameType.AOS);
+        assertThrows(KmcStartException.class, () ->
+            startSaAlreadyActive(FrameType.AOS));
     }
 
-    @Test(expected = KmcStartException.class)
+    @Test
     public void testStartSaAlreadyActiveTm() throws KmcException {
-        startSaAlreadyActive(FrameType.TM);
+        assertThrows(KmcStartException.class, () ->
+            startSaAlreadyActive(FrameType.TM));
     }
 
     public void createDupe(FrameType type) throws KmcException {
@@ -200,19 +212,22 @@ public class KmcDaoTest extends BaseH2Test {
         dao.createSa(8, (byte) 0, (short) 46, (byte) 1, (byte) 0, type);
     }
 
-    @Test(expected = KmcException.class)
-    public void testCreateDupe() throws KmcException {
-        createDupe(FrameType.TC);
+    @Test
+    public void testCreateDupe() {
+        assertThrows(KmcException.class, () ->
+            createDupe(FrameType.TC));
     }
 
-    @Test(expected = KmcException.class)
-    public void testCreateDupeAos() throws KmcException {
-        createDupe(FrameType.AOS);
+    @Test
+    public void testCreateDupeAos() {
+        assertThrows(KmcException.class, () ->
+            createDupe(FrameType.AOS));
     }
 
-    @Test(expected = KmcException.class)
-    public void testCreateDupeTm() throws KmcException {
-        createDupe(FrameType.TM);
+    @Test
+    public void testCreateDupeTm() {
+        assertThrows(KmcException.class, () ->
+            createDupe(FrameType.TM));
     }
 
     public void startSaDne(FrameType type) throws KmcException {
@@ -220,19 +235,22 @@ public class KmcDaoTest extends BaseH2Test {
         dao.startSa(fake, false, type);
     }
 
-    @Test(expected = KmcException.class)
-    public void testStartSaDne() throws KmcException {
-        startSaDne(FrameType.TC);
+    @Test
+    public void testStartSaDne() {
+        assertThrows(KmcException.class, () ->
+            startSaDne(FrameType.TC));
     }
 
-    @Test(expected = KmcException.class)
-    public void testStartSaDneAos() throws KmcException {
-        startSaDne(FrameType.AOS);
+    @Test
+    public void testStartSaDneAos() {
+        assertThrows(KmcException.class, () ->
+            startSaDne(FrameType.AOS));
     }
 
-    @Test(expected = KmcException.class)
-    public void testStartSaDneTm() throws KmcException {
-        startSaDne(FrameType.TM);
+    @Test
+    public void testStartSaDneTm() {
+        assertThrows(KmcException.class, () ->
+            startSaDne(FrameType.TM));
     }
 
     public void stopSaDne(FrameType type) throws KmcException {
@@ -240,19 +258,22 @@ public class KmcDaoTest extends BaseH2Test {
         dao.stopSa(fake, type);
     }
 
-    @Test(expected = KmcException.class)
-    public void testStopSaDne() throws KmcException {
-        stopSaDne(FrameType.TC);
+    @Test
+    public void testStopSaDne() {
+        assertThrows(KmcException.class, () ->
+            stopSaDne(FrameType.TC));
     }
 
-    @Test(expected = KmcException.class)
-    public void testStopSaDneAos() throws KmcException {
-        stopSaDne(FrameType.AOS);
+    @Test
+    public void testStopSaDneAos() {
+        assertThrows(KmcException.class, () ->
+            stopSaDne(FrameType.AOS));
     }
 
-    @Test(expected = KmcException.class)
-    public void testStopSaDneTm() throws KmcException {
-        stopSaDne(FrameType.TM);
+    @Test
+    public void testStopSaDneTm() {
+        assertThrows(KmcException.class, () ->
+            stopSaDne(FrameType.TM));
     }
 
     public void expireSaDne(FrameType type) throws KmcException {
@@ -260,19 +281,22 @@ public class KmcDaoTest extends BaseH2Test {
         dao.expireSa(fake, type);
     }
 
-    @Test(expected = KmcException.class)
-    public void testExpireSaDne() throws KmcException {
-        expireSaDne(FrameType.TC);
+    @Test
+    public void testExpireSaDne() {
+        assertThrows(KmcException.class, () ->
+            expireSaDne(FrameType.TC));
     }
 
-    @Test(expected = KmcException.class)
-    public void testExpireSaDneAos() throws KmcException {
-        expireSaDne(FrameType.AOS);
+    @Test
+    public void testExpireSaDneAos() {
+        assertThrows(KmcException.class, () ->
+            expireSaDne(FrameType.AOS));
     }
 
-    @Test(expected = KmcException.class)
-    public void testExpireSaDneTm() throws KmcException {
-        expireSaDne(FrameType.TM);
+    @Test
+    public void testExpireSaDneTm() {
+        assertThrows(KmcException.class, () ->
+            expireSaDne(FrameType.TM));
     }
 
     public void rekeyAuthSaDne(FrameType type) throws KmcException {
@@ -280,19 +304,22 @@ public class KmcDaoTest extends BaseH2Test {
         dao.rekeySaAuth(fake, "0", new byte[]{0x01}, (short) 2, type);
     }
 
-    @Test(expected = KmcException.class)
-    public void testRekeyAuthSaDne() throws KmcException {
-        rekeyAuthSaDne(FrameType.TC);
+    @Test
+    public void testRekeyAuthSaDne() {
+        assertThrows(KmcException.class, () ->
+            rekeyAuthSaDne(FrameType.TC));
     }
 
-    @Test(expected = KmcException.class)
-    public void testRekeyAuthSaDneAos() throws KmcException {
-        rekeyAuthSaDne(FrameType.AOS);
+    @Test
+    public void testRekeyAuthSaDneAos() {
+        assertThrows(KmcException.class, () ->
+            rekeyAuthSaDne(FrameType.AOS));
     }
 
-    @Test(expected = KmcException.class)
-    public void testRekeyAuthSaDneTm() throws KmcException {
-        rekeyAuthSaDne(FrameType.TM);
+    @Test
+    public void testRekeyAuthSaDneTm() {
+        assertThrows(KmcException.class, () ->
+            rekeyAuthSaDne(FrameType.TM));
     }
 
     public void rekeyEncSaDne(FrameType type) throws KmcException {
@@ -300,19 +327,22 @@ public class KmcDaoTest extends BaseH2Test {
         dao.rekeySaEnc(fake, "130", new byte[]{0x01}, (short) 1, type);
     }
 
-    @Test(expected = KmcException.class)
-    public void testRekeyEncSaDne() throws KmcException {
-        rekeyEncSaDne(FrameType.TC);
+    @Test
+    public void testRekeyEncSaDne() {
+        assertThrows(KmcException.class, () ->
+            rekeyEncSaDne(FrameType.TC));
     }
 
-    @Test(expected = KmcException.class)
-    public void testRekeyEncSaDneAos() throws KmcException {
-        rekeyEncSaDne(FrameType.AOS);
+    @Test
+    public void testRekeyEncSaDneAos() {
+        assertThrows(KmcException.class, () ->
+            rekeyEncSaDne(FrameType.AOS));
     }
 
-    @Test(expected = KmcException.class)
-    public void testRekeyEncSaDneTm() throws KmcException {
-        rekeyEncSaDne(FrameType.TM);
+    @Test
+    public void testRekeyEncSaDneTm() {
+        assertThrows(KmcException.class, () ->
+            rekeyEncSaDne(FrameType.TM));
     }
 
     public void stopSa(FrameType type) throws KmcException {

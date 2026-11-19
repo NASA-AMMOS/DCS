@@ -1,16 +1,16 @@
 package gov.nasa.jpl.ammos.asec.kmc.api.sa;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import static org.junit.Assert.assertTrue;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import org.junit.jupiter.api.Test;
 
 public class SpiGvcidTest {
     @Test
-    public void testToString() throws JsonProcessingException {
-        ObjectMapper mapper   = new ObjectMapper();
+    public void testToString() {
+        ObjectMapper mapper   = new JsonMapper();
         SpiGvcid     spiGvcid = new SpiGvcid(1, (byte) 0, (short) 44, (byte) 1, (byte) 0);
         JsonNode     got      = mapper.readTree(spiGvcid.toString());
         JsonNode expect = mapper.createObjectNode()

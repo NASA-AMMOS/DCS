@@ -1,5 +1,7 @@
 package gov.nasa.jpl.ammos.kmc.keyclient;
 
+import java.io.Serial;
+
 /**
  * This exception is thrown by the ASEC DCS Crypto Manager to indicate that
  * errors in the DCS config file and for any other reasons.  Unknown parameters
@@ -8,6 +10,7 @@ package gov.nasa.jpl.ammos.kmc.keyclient;
  *
  */
 public class KmcKeyClientManagerException extends Exception {
+    @Serial
     private static final long serialVersionUID = 5316048143261131543L;
     private final KmcKeyOpsManagerErrorCode errorCode;
 

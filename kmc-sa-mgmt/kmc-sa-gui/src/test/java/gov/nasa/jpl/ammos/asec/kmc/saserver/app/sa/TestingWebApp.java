@@ -8,8 +8,10 @@ import gov.nasa.jpl.ammos.asec.kmc.sadb.config.Config;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.boot.jackson.autoconfigure.JsonMapperBuilderCustomizer;
+import tools.jackson.databind.MapperFeature;
+import tools.jackson.databind.cfg.EnumFeature;
+import tools.jackson.databind.module.SimpleModule;
 
 @SpringBootApplication
 public class TestingWebApp {
@@ -27,12 +29,11 @@ public class TestingWebApp {
     }
 
     @Bean
-    public MappingJackson2HttpMessageConverter converter() {
-        MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
-        Jackson2ObjectMapperBuilder         builder   = new Jackson2ObjectMapperBuilder();
-        builder.deserializerByType(ISecAssn.class, new SecAssnDeserializer());
-        converter.setObjectMapper(builder.build());
-        return converter;
+    public JsonMapperBuilderCustomizer jsonMapperCustomizer() {
+        return builder -> builder
+                .disable(EnumFeature.WRITE_ENUMS_USING_TO_STRING)
+                .disable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)
+                .addModule(new SimpleModule().addDeserializer(ISecAssn.class, new SecAssnDeserializer()));
     }
 
 }

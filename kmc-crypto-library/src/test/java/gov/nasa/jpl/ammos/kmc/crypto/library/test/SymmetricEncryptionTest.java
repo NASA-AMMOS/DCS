@@ -1,10 +1,10 @@
 package gov.nasa.jpl.ammos.kmc.crypto.library.test;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -19,9 +19,8 @@ import java.security.Security;
 import java.util.Arrays;
 
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import gov.nasa.jpl.ammos.kmc.crypto.Decrypter;
 import gov.nasa.jpl.ammos.kmc.crypto.Encrypter;
 import gov.nasa.jpl.ammos.kmc.crypto.KmcCryptoException;
@@ -57,7 +56,7 @@ public class SymmetricEncryptionTest {
 
     private static KmcCryptoManager cryptoManager;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() throws KmcCryptoManagerException {
         Security.addProvider(new BouncyCastleFipsProvider());
         cryptoManager = new KmcCryptoManager(null);

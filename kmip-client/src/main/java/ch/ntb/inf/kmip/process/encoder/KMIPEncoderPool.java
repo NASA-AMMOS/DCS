@@ -34,9 +34,9 @@ import java.util.Hashtable;
 
 public class KMIPEncoderPool {
 
-	private Hashtable<KMIPEncoderInterface, Boolean> encoders = new Hashtable<KMIPEncoderInterface, Boolean>();
-	private String encoderPath;
-	private String defaultPath;
+	private final Hashtable<KMIPEncoderInterface, Boolean> encoders = new Hashtable<>();
+	private final String encoderPath;
+	private final String defaultPath;
 	
 	private int numberOfcreatedEncoders;
 	private final int maxEncoders = 5;
@@ -62,9 +62,9 @@ public class KMIPEncoderPool {
 			KMIPEncoderInterface encoder = null;		
 			try{
 				if(encoderPath != null){
-					encoder = (KMIPEncoderInterface) Class.forName(encoderPath).newInstance();
+					encoder = (KMIPEncoderInterface) Class.forName(encoderPath).getDeclaredConstructor().newInstance();
 				} else{
-					encoder = (KMIPEncoderInterface) Class.forName(defaultPath).newInstance();
+					encoder = (KMIPEncoderInterface) Class.forName(defaultPath).getDeclaredConstructor().newInstance();
 				}
 				numberOfcreatedEncoders++;
 				encoders.put(encoder, Boolean.TRUE);

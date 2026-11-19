@@ -27,10 +27,13 @@
  */
 package ch.ntb.inf.kmip.process.decoder;
 
+import java.io.Serial;
+
 
 public class KMIPDecoderPoolOverflowException extends Exception {
 
-	private static final long serialVersionUID = -3493942653446466119L;
+    @Serial
+    private static final long serialVersionUID = -3493942653446466119L;
 
 	KMIPDecoderPoolOverflowException(int max){
 		super("DecoderPoolOverflowException:: Max number ("+max+") reached! Wait until some get returned");

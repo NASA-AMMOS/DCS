@@ -1,10 +1,10 @@
 package gov.nasa.jpl.ammos.asec.kmc.api.sa;
 
 import gov.nasa.jpl.ammos.asec.kmc.api.ex.KmcException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class SecAssnValidatorTest {
     private static final byte[] GCM = ECSTYPE.AES_GCM.getValue();

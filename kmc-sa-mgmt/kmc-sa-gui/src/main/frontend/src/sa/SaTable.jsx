@@ -55,6 +55,9 @@ import {listSa} from "./api";
  * @returns {JSX.Element}
  * @constructor
  */
+// react-table's get*Props() include the key; React 19 warns when a key is spread into JSX, so pass it explicitly
+const withoutKey = ({key, ...props}) => props
+
 export default function SaTable(props) {
 
     /**
@@ -121,7 +124,7 @@ export default function SaTable(props) {
     }, {
         Header: "Service Type",
         accessor: "serviceType",
-        Filter: SelectColumnFilter, filter: 'includes'
+        Filter: SelectColumnFilter, filter: 'exact'
     }, {
         Header: "EKID", accessor: "ekid"
     }, {
@@ -325,13 +328,13 @@ export default function SaTable(props) {
                 type={props.type}
             />
             <TableContainer sx={{maxHeight: 1024}}>
-                <Table {...getTableProps()} stickyHeader sx={{minWidth: 650, ...getTableProps()}}
+                <Table {...getTableProps()} stickyHeader sx={{minWidth: 650}}
                        aria-label={"sticky table"}>
                     <TableHead key={"tablehead"}>
                         {headerGroups.map((headerGroup) => (
-                            <TableRow key={"header"} {...headerGroup.getHeaderGroupProps()}>
+                            <TableRow key={"header"} {...withoutKey(headerGroup.getHeaderGroupProps())}>
                                 {headerGroup.headers.map((column) => (<TableCell
-                                    key={column.id} {...column.getHeaderProps()}>
+                                    key={column.id} {...withoutKey(column.getHeaderProps())}>
                                     <Box sx={{
                                         whiteSpace: "nowrap",
                                         minWidth: "auto",
@@ -368,14 +371,13 @@ export default function SaTable(props) {
                     <TableBody {...getTableBodyProps()}>
                         {rows.map((row) => {
                             prepareRow(row)
-                            return (<TableRow key={row.original.spi + "-" + row.original.scid} {...row.getRowProps()}
+                            return (<TableRow key={row.original.spi + "-" + row.original.scid} {...withoutKey(row.getRowProps())}
                                               onClick={(e) => handleRowOpen(e, row.index, true)} hover
                                               role={"checkbox"}
-                                              sx={{...row.getRowProps()}}
                             >
                                 {row.cells.map((cell) => {
                                     return <TableCell
-                                        key={row.original.spi + "-" + row.original.scid + "-" + cell.column.id} {...cell.getCellProps()}>{cell.render("Cell")}</TableCell>
+                                        key={row.original.spi + "-" + row.original.scid + "-" + cell.column.id} {...withoutKey(cell.getCellProps())}>{cell.render("Cell")}</TableCell>
                                 })}
                             </TableRow>)
                         })}
@@ -466,10 +468,10 @@ function SelectColumnFilter({
                         itemValue = stateLookupInt(option)
                         break
                     case 'ecs':
-                        itemValue = hexEncLookup(option).value
+                        itemValue = hexEncLookup(option).name
                         break
                     case 'acs':
-                        itemValue = hexAuthLookup(option).value
+                        itemValue = hexAuthLookup(option).name
                         break
                     default:
                         itemValue = option

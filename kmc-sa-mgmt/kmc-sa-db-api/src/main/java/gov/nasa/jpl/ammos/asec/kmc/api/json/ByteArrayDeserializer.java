@@ -1,24 +1,21 @@
 package gov.nasa.jpl.ammos.asec.kmc.api.json;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonMappingException;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DeserializationContext;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
-
-import java.io.IOException;
+import tools.jackson.databind.ValueDeserializer;
 
 /**
  * Deserializes byte arrays to hex strings for JSON
  */
-public class ByteArrayDeserializer extends JsonDeserializer<byte[]> {
+public class ByteArrayDeserializer extends ValueDeserializer<byte[]> {
     @Override
-    public byte[] deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
+    public byte[] deserialize(JsonParser p, DeserializationContext ctxt) {
         try {
-            return Hex.decodeHex(p.getText());
+            return Hex.decodeHex(p.getString());
         } catch (DecoderException e) {
-            throw new JsonMappingException(p, "Cannot decode hex", e);
+            return (byte[]) ctxt.handleWeirdStringValue(byte[].class, p.getString(), "Cannot decode hex: %s", e.getMessage());
         }
     }
 }

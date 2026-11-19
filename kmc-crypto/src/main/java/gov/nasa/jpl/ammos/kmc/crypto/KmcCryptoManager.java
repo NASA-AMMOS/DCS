@@ -1072,8 +1072,8 @@ public class KmcCryptoManager {
             String errorMsg = "Failed to create " + className + " instance: ";
             if (cause == null) {
                 errorMsg = errorMsg + exception;
-            } else if (cause instanceof KmcCryptoException) {
-                KmcCryptoErrorCode code = ((KmcCryptoException) cause).getErrorCode();
+            } else if (cause instanceof KmcCryptoException cryptoException) {
+                KmcCryptoErrorCode code = cryptoException.getErrorCode();
                 if (code == KmcCryptoErrorCode.CRYPTO_KEY_ERROR) {
                     errorCode = KmcCryptoManagerErrorCode.CRYPTO_KEY_ERROR;
                 } else if (code == KmcCryptoErrorCode.CRYPTO_ALGORITHM_ERROR) {

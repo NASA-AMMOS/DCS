@@ -37,6 +37,27 @@ jobs:
           name: compiled-classes
           path: DCS/build-output-for-sonar/
 
+      - name: Collect JaCoCo reports
+        run: |
+          mkdir -p coverage-reports
+          cd DCS
+          find . -name jacoco.xml -not -path './ammos-cryptolib/*' | while read -r report; do
+            cp "$report" "../coverage-reports/$(dirname "$report" | sed -e 's|^\./||' -e 's|/target/.*||' -e 's|/|_|g').xml"
+          done
+          # vitest LCOV for the SA management GUI frontend
+          lcov=kmc-sa-mgmt/kmc-sa-gui/src/main/frontend/coverage/lcov.info
+          if [ -f "$lcov" ]; then
+            cp "$lcov" ../coverage-reports/kmc-sa-gui-frontend.lcov
+          else
+            echo "::warning::$lcov not found, frontend coverage will not be reported"
+          fi
+          ls -l ../coverage-reports/
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: coverage-reports
+          path: coverage-reports/
+
   # Build using rocky image
   dcs_build_rocky:
     runs-on: ubuntu-latest
@@ -91,6 +112,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
       # Initializes the CodeQL tools for scanning.
       - name: Initialize CodeQL
@@ -172,6 +195,16 @@ jobs:
 
       - name: Verify downloaded SARIF files
         run: pwd; ls -R codeql-artifacts-for-sonar/
+
+      # Download JaCoCo reports for Sonar scan
+      - name: Download coverage reports
+        uses: actions/download-artifact@v5.0.0
+        with:
+          name: coverage-reports
+          path: coverage-reports/
+
+      - name: Verify downloaded coverage reports
+        run: ls -l coverage-reports/
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarqube-scan-action@v6.0.0

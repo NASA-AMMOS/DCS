@@ -1,9 +1,9 @@
 package gov.nasa.jpl.ammos.kmc.keyclient.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -11,9 +11,8 @@ import java.security.UnrecoverableKeyException;
 
 import javax.crypto.SecretKey;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
-
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import gov.nasa.jpl.ammos.kmc.keyclient.KmcKey;
 import gov.nasa.jpl.ammos.kmc.keyclient.KmcKeyClient;
 import gov.nasa.jpl.ammos.kmc.keyclient.KmcKeyClientException;
@@ -58,7 +57,7 @@ public class KeystoreTest {
     private static KmcKeyClient keystoreService;
     private static String keystorePath;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() throws KmcKeyClientManagerException {
         manager = new KmcKeyClientManager(null);
         keystorePath = KEYSTORE_DIR;

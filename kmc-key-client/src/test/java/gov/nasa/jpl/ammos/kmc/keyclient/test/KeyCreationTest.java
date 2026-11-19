@@ -1,15 +1,14 @@
 package gov.nasa.jpl.ammos.kmc.keyclient.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import gov.nasa.jpl.ammos.kmc.keyclient.KmcKey;
 import gov.nasa.jpl.ammos.kmc.keyclient.KmcKeyClientException;
 import gov.nasa.jpl.ammos.kmc.keyclient.KmcKeyClientException.KmcKeyOpsErrorCode;
@@ -41,14 +40,14 @@ public class KeyCreationTest {
 
     private static KmcKmipKeyClient kmipClient;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() throws KmcKeyClientManagerException, KmcKeyClientException {
         KmcKeyClientManager manager = new KmcKeyClientManager(null);
         kmipClient = (KmcKmipKeyClient) manager.getKmcKmipKeyClient();
     }
 
     // in case keys were not destroyed when the tests failed
-    @AfterClass
+    @AfterAll
     public static void destroyKeys() throws KmcKeyClientException {
         for (int i = 0; i < AES_KEY_REFS.length; i++) {
             if (kmipClient.locateCryptoKey(AES_KEY_REFS[i]) != null) {

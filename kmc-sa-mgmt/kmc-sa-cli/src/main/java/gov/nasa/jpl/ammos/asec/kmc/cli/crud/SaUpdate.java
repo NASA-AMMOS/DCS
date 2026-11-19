@@ -10,7 +10,6 @@ import gov.nasa.jpl.ammos.asec.kmc.cli.crud.opts.OptionalOptions;
 import gov.nasa.jpl.ammos.asec.kmc.cli.crud.opts.SaUpdateSingle;
 import gov.nasa.jpl.ammos.asec.kmc.cli.misc.Version;
 import gov.nasa.jpl.ammos.asec.kmc.format.SaCsvInput;
-import org.checkerframework.checker.units.qual.K;
 import picocli.CommandLine;
 
 import java.io.File;

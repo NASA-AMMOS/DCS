@@ -1,15 +1,14 @@
 package gov.nasa.jpl.ammos.kmc.keyclient.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import ch.ntb.inf.kmip.kmipenum.EnumState;
 import gov.nasa.jpl.ammos.kmc.keyclient.KmcKey;
 import gov.nasa.jpl.ammos.kmc.keyclient.KmcKeyClientException;
@@ -32,20 +31,20 @@ public class KeyOperationTest {
     private static KmcKmipKeyClient kmipClient;
 
     // create kmipClient before the tests.
-    @BeforeClass
+    @BeforeAll
     public static void setUp() throws KmcKeyClientManagerException, KmcKeyClientException {
         KmcKeyClientManager manager = new KmcKeyClientManager(null);
         kmipClient = (KmcKmipKeyClient) manager.getKmcKmipKeyClient();
     }
 
     // destroy the keys before each test.
-    @Before
+    @BeforeEach
     public final void cleanUp() throws KmcKeyClientException {
         destroyKeys();
     }
 
     // in case the keys were not destroyed when the tests failed
-    @AfterClass
+    @AfterAll
     public static void tearDown() throws KmcKeyClientException {
         destroyKeys();
     }

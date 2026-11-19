@@ -29,9 +29,12 @@
 
 package ch.ntb.inf.kmip.process.decoder;
 
+import java.io.Serial;
+
 public class KMIPUnexpectedAttributeNameException extends Exception{
 
-	private static final long serialVersionUID = 8181697119724843906L;
+    @Serial
+    private static final long serialVersionUID = 8181697119724843906L;
 
 	public KMIPUnexpectedAttributeNameException(){
         super("Unexpected Attribute Name");

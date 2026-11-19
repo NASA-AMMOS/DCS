@@ -3,6 +3,7 @@ package gov.nasa.jpl.ammos.kmc.crypto.service;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serial;
 import java.util.Arrays;
 
 import jakarta.servlet.ServletConfig;
@@ -39,6 +40,7 @@ import gov.nasa.jpl.ammos.kmc.crypto.model.Status;
  */
 @WebServlet("/icv-verify")
 public class IcvVerifyService extends HttpServlet {
+    @Serial
     private static final long serialVersionUID = 4114402936011612851L;
 
     private static final Logger logger = LoggerFactory.getLogger(IcvVerifyService.class);

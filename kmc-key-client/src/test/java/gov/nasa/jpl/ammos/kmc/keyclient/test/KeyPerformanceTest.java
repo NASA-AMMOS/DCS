@@ -1,17 +1,18 @@
 package gov.nasa.jpl.ammos.kmc.keyclient.test;
 
-import static org.junit.Assert.assertNotNull;
-
 import java.util.Random;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import gov.nasa.jpl.ammos.kmc.keyclient.KmcKeyClient;
+
 import gov.nasa.jpl.ammos.kmc.keyclient.KmcKey;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import gov.nasa.jpl.ammos.kmc.keyclient.KmcKeyClientException;
 import gov.nasa.jpl.ammos.kmc.keyclient.KmcKeyClientManager;
 import gov.nasa.jpl.ammos.kmc.keyclient.KmcKeyClientManagerException;
@@ -42,14 +43,14 @@ public class KeyPerformanceTest {
 
     private static final Logger logger = LoggerFactory.getLogger(KeyPerformanceTest.class);
 
-    @BeforeClass
+    @BeforeAll
     public static final void setUp() throws KmcKeyClientManagerException, KmcKeyClientException  {
         manager = new KmcKeyClientManager(null);
         kmipClient =  manager.getKmcKmipKeyClient();
         random = new Random();
     }
 
-    @AfterClass
+    @AfterAll
     public static final void destroyKeys() throws KmcKeyClientException {
     }
 

@@ -1,14 +1,17 @@
 package gov.nasa.jpl.ammos.asec.kmc.api.sa;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import tools.jackson.databind.MapperFeature;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.annotation.JsonDeserialize;
+import tools.jackson.databind.annotation.JsonSerialize;
+import tools.jackson.databind.cfg.EnumFeature;
+import tools.jackson.databind.json.JsonMapper;
 import gov.nasa.jpl.ammos.asec.kmc.api.json.ByteArrayDeserializer;
 import gov.nasa.jpl.ammos.asec.kmc.api.json.ByteArraySerializer;
 import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.MappedSuperclass;
+import tools.jackson.core.JacksonException;
 
 import java.util.Objects;
 
@@ -17,7 +20,10 @@ import java.util.Objects;
  */
 @MappedSuperclass
 abstract class ASecAssn implements ISecAssn {
-    private static final ObjectMapper mapper    = new ObjectMapper();
+    private static final ObjectMapper mapper    = JsonMapper.builder()
+            .disable(EnumFeature.WRITE_ENUMS_USING_TO_STRING)
+            .disable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY)
+            .build();
     /**
      * SPI SCID
      */
@@ -133,7 +139,7 @@ abstract class ASecAssn implements ISecAssn {
     public String toJson() {
         try {
             return mapper.writeValueAsString(this);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new RuntimeException(e);
         }
     }

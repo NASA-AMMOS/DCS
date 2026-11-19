@@ -117,8 +117,8 @@ public class KMIPStubTransportLayerHTTPS implements KMIPStubTransportLayerInterf
 		final SSLSocketFactory sslSocketFactory) throws Exception {
         URLConnection connection = new URL(targetURL).openConnection();
         HttpsURLConnection httpsConnection = null;
-        if (connection instanceof HttpsURLConnection) {
-        	httpsConnection = (HttpsURLConnection) connection;
+        if (connection instanceof HttpsURLConnection lConnection) {
+        	httpsConnection = lConnection;
         }
         else{
         	logger.warn("Connection is no HttpsURLConnection!");

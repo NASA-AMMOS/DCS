@@ -1,24 +1,30 @@
 package gov.nasa.jpl.ammos.asec.kmc.saserver.app.sa;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 import gov.nasa.jpl.ammos.asec.kmc.api.ex.KmcException;
 import gov.nasa.jpl.ammos.asec.kmc.api.sa.FrameType;
 import gov.nasa.jpl.ammos.asec.kmc.api.sa.ISecAssn;
 import gov.nasa.jpl.ammos.asec.kmc.api.sa.ServiceType;
 import gov.nasa.jpl.ammos.asec.kmc.api.sa.SpiScid;
 import gov.nasa.jpl.ammos.asec.kmc.sadb.BaseH2Test;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureTestRestTemplate;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.resttestclient.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.*;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
@@ -28,9 +34,7 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.*;
-
-@RunWith(SpringRunner.class)
+@AutoConfigureTestRestTemplate
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class SaControllerTest extends BaseH2Test {
 
@@ -76,7 +80,7 @@ public class SaControllerTest extends BaseH2Test {
     @Autowired
     private SaController sa;
 
-    private ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper = new JsonMapper();
 
     @Test
     public void contextLoads() {
@@ -145,7 +149,7 @@ public class SaControllerTest extends BaseH2Test {
         ObjectNode body = resp.getBody();
         JsonNode statusNode = body.get(STATUS);
         if (statusNode != null) {
-            String status = statusNode.asText();
+            String status = statusNode.asString();
             assertNotEquals(ERROR, status);
         }
         assertEquals(100, body.get(SPI).asInt());
@@ -199,7 +203,7 @@ public class SaControllerTest extends BaseH2Test {
         ObjectNode body = resp.getBody();
         JsonNode statusNode = body.get(STATUS);
         if (statusNode != null) {
-            String status = statusNode.asText();
+            String status = statusNode.asString();
             assertNotEquals(ERROR, status);
         }
         assertEquals(100, body.get(SPI).asInt());
@@ -257,10 +261,10 @@ public class SaControllerTest extends BaseH2Test {
         ObjectNode body = restTemplate.postForObject(getUrl(), node, ObjectNode.class);
 
         assertEquals(1, body.get(TFVN).asInt());
-        assertEquals(PLAINTEXT, body.get(SERVICE_TYPE).asText());
+        assertEquals(PLAINTEXT, body.get(SERVICE_TYPE).asString());
         assertEquals(0, body.get(EST).asInt());
         assertEquals(0, body.get(AST).asInt());
-        assertEquals(type.name(), body.get(TYPE).asText());
+        assertEquals(type.name(), body.get(TYPE).asString());
 
         ISecAssn updated = dao.getSa(new SpiScid(100, (short) 46), type);
         assertEquals(1, updated.getTfvn().intValue());
@@ -300,7 +304,7 @@ public class SaControllerTest extends BaseH2Test {
         ObjectNode body = restTemplate.postForObject(getUrl(), node, ObjectNode.class);
 
         assertEquals(1, body.get(TFVN).asInt());
-        assertEquals(PLAINTEXT, body.get(SERVICE_TYPE).asText());
+        assertEquals(PLAINTEXT, body.get(SERVICE_TYPE).asString());
         assertEquals(0, body.get(EST).asInt());
         assertEquals(0, body.get(AST).asInt());
 
@@ -348,10 +352,10 @@ public class SaControllerTest extends BaseH2Test {
         ObjectNode body = restTemplate.postForObject(getUrl(), node, ObjectNode.class);
 
         assertEquals(1, body.get(TFVN).asInt());
-        assertEquals(ENCRYPTION, body.get(SERVICE_TYPE).asText());
+        assertEquals(ENCRYPTION, body.get(SERVICE_TYPE).asString());
         assertEquals(1, body.get(EST).asInt());
         assertEquals(0, body.get(AST).asInt());
-        assertEquals(type.name(), body.get(TYPE).asText());
+        assertEquals(type.name(), body.get(TYPE).asString());
 
         ISecAssn updated = dao.getSa(new SpiScid(100, (short) 46), type);
         assertEquals(type, updated.getType());
@@ -397,7 +401,7 @@ public class SaControllerTest extends BaseH2Test {
         ObjectNode body = restTemplate.postForObject(getUrl(), node, ObjectNode.class);
 
         assertEquals(1, body.get(TFVN).asInt());
-        assertEquals(ENCRYPTION, body.get(SERVICE_TYPE).asText());
+        assertEquals(ENCRYPTION, body.get(SERVICE_TYPE).asString());
         assertEquals(1, body.get(EST).asInt());
         assertEquals(0, body.get(AST).asInt());
 
@@ -453,10 +457,10 @@ public class SaControllerTest extends BaseH2Test {
         ObjectNode body = restTemplate.postForObject(getUrl(), node, ObjectNode.class);
 
         assertEquals(1, body.get(TFVN).asInt());
-        assertEquals(AUTHENTICATION, body.get(SERVICE_TYPE).asText());
+        assertEquals(AUTHENTICATION, body.get(SERVICE_TYPE).asString());
         assertEquals(0, body.get(EST).asInt());
         assertEquals(1, body.get(AST).asInt());
-        assertEquals(type.name(), body.get(TYPE).asText());
+        assertEquals(type.name(), body.get(TYPE).asString());
 
         ISecAssn updated = dao.getSa(new SpiScid(100, (short) 46), type);
         assertEquals(1, updated.getTfvn().intValue());
@@ -504,7 +508,7 @@ public class SaControllerTest extends BaseH2Test {
         ObjectNode body = restTemplate.postForObject(getUrl(), node, ObjectNode.class);
 
         assertEquals(1, body.get(TFVN).asInt());
-        assertEquals(AUTHENTICATION, body.get(SERVICE_TYPE).asText());
+        assertEquals(AUTHENTICATION, body.get(SERVICE_TYPE).asString());
         assertEquals(0, body.get(EST).asInt());
         assertEquals(1, body.get(AST).asInt());
 
@@ -556,7 +560,7 @@ public class SaControllerTest extends BaseH2Test {
         idArsn.put(ARSN_LEN, 8).put(ARSN, "0000000000000001").put(ARSNW, 10);
         idArsn.put(TYPE, type.name());
         ObjectNode body = restTemplate.postForObject(getUrl() + ARSN_PATH + "/" + type.name(), idArsn, ObjectNode.class);
-        assertEquals(SUCCESS, body.get(STATUS).asText());
+        assertEquals(SUCCESS, body.get(STATUS).asString());
         ISecAssn arsn = dao.getSa(new SpiScid(100, (short) 46), type);
         assertEquals(8, (short) arsn.getArsnLen());
         assertArrayEquals(new byte[]{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01}, arsn.getArsn());
@@ -565,13 +569,13 @@ public class SaControllerTest extends BaseH2Test {
 
         idArsn.put(ARSN, "02");
         body = restTemplate.postForObject(getUrl() + ARSN_PATH + "/" + type.name(), idArsn, ObjectNode.class);
-        assertEquals(SUCCESS, body.get(STATUS).asText());
+        assertEquals(SUCCESS, body.get(STATUS).asString());
         arsn = dao.getSa(new SpiScid(100, (short) 46), type);
         assertArrayEquals(new byte[]{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02}, arsn.getArsn());
 
         idArsn.put(ARSN, "000000000000000001");
         body = restTemplate.postForObject(getUrl() + ARSN_PATH + "/" + type.name(), idArsn, ObjectNode.class);
-        assertEquals(ERROR, body.get(STATUS).asText());
+        assertEquals(ERROR, body.get(STATUS).asString());
         arsn = dao.getSa(new SpiScid(100, (short) 46), type);
         assertArrayEquals(new byte[]{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02}, arsn.getArsn());
     }
@@ -584,7 +588,7 @@ public class SaControllerTest extends BaseH2Test {
         idArsn.withObject(ID_PATH).put(SPI, 100).put(SCID, 46);
         idArsn.put(ARSN_LEN, 8).put(ARSN, "0000000000000001").put(ARSNW, 10);
         ObjectNode body = restTemplate.postForObject(getUrl() + ARSN_PATH, idArsn, ObjectNode.class);
-        assertEquals(SUCCESS, body.get(STATUS).asText());
+        assertEquals(SUCCESS, body.get(STATUS).asString());
         ISecAssn arsn = dao.getSa(new SpiScid(100, (short) 46), FrameType.TC);
         assertEquals(8, (short) arsn.getArsnLen());
         assertArrayEquals(new byte[]{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01}, arsn.getArsn());
@@ -592,11 +596,11 @@ public class SaControllerTest extends BaseH2Test {
 
         idArsn.put(ARSN, "01");
         body = restTemplate.postForObject(getUrl() + ARSN_PATH, idArsn, ObjectNode.class);
-        assertEquals(SUCCESS, body.get(STATUS).asText());
+        assertEquals(SUCCESS, body.get(STATUS).asString());
 
         idArsn.put(ARSN, "000000000000000001");
         body = restTemplate.postForObject(getUrl() + ARSN_PATH, idArsn, ObjectNode.class);
-        assertEquals(ERROR, body.get(STATUS).asText());
+        assertEquals(ERROR, body.get(STATUS).asString());
     }
 
     @Test
@@ -613,7 +617,7 @@ public class SaControllerTest extends BaseH2Test {
         idIv.put(IV, IV_12);
         idIv.put(IV_LEN, 12);
         ObjectNode body = restTemplate.postForObject(getUrl() + IV_PATH + "/" + type.name(), idIv, ObjectNode.class);
-        assertEquals(SUCCESS, body.get(STATUS).asText());
+        assertEquals(SUCCESS, body.get(STATUS).asString());
         ISecAssn iv = dao.getSa(new SpiScid(100, (short) 46), type);
         assertEquals(type, iv.getType());
         assertEquals(12, (short) iv.getIvLen());
@@ -632,7 +636,7 @@ public class SaControllerTest extends BaseH2Test {
 
         idIv.put(IV, "02");
         body = restTemplate.postForObject(getUrl() + IV_PATH + "/" + type.name(), idIv, ObjectNode.class);
-        assertEquals(SUCCESS, body.get(STATUS).asText());
+        assertEquals(SUCCESS, body.get(STATUS).asString());
         iv = dao.getSa(new SpiScid(100, (short) 46), type);
         assertEquals(type, iv.getType());
         assertArrayEquals(new byte[]{0x00,
@@ -651,7 +655,7 @@ public class SaControllerTest extends BaseH2Test {
         idIv.put(IV_LEN, 2);
         idIv.put(IV, "00000001");
         body = restTemplate.postForObject(getUrl() + IV_PATH + "/" + type.name(), idIv, ObjectNode.class);
-        assertEquals(ERROR, body.get(STATUS).asText());
+        assertEquals(ERROR, body.get(STATUS).asString());
     }
 
     @Test
@@ -662,7 +666,7 @@ public class SaControllerTest extends BaseH2Test {
         idIv.put(IV, IV_12);
         idIv.put(IV_LEN, 12);
         ObjectNode body = restTemplate.postForObject(getUrl() + IV_PATH, idIv, ObjectNode.class);
-        assertEquals(SUCCESS, body.get(STATUS).asText());
+        assertEquals(SUCCESS, body.get(STATUS).asString());
         ISecAssn iv = dao.getSa(new SpiScid(100, (short) 46), FrameType.TC);
         assertEquals(12, (short) iv.getIvLen());
         assertArrayEquals(new byte[]{0x00,
@@ -680,7 +684,7 @@ public class SaControllerTest extends BaseH2Test {
 
         idIv.put(IV, "02");
         body = restTemplate.postForObject(getUrl() + IV_PATH, idIv, ObjectNode.class);
-        assertEquals(SUCCESS, body.get(STATUS).asText());
+        assertEquals(SUCCESS, body.get(STATUS).asString());
         iv = dao.getSa(new SpiScid(100, (short) 46), FrameType.TC);
         assertArrayEquals(new byte[]{0x00,
                 0x00,
@@ -698,7 +702,7 @@ public class SaControllerTest extends BaseH2Test {
         idIv.put(IV_LEN, 2);
         idIv.put(IV, "00000001");
         body = restTemplate.postForObject(getUrl() + IV_PATH, idIv, ObjectNode.class);
-        assertEquals(ERROR, body.get(STATUS).asText());
+        assertEquals(ERROR, body.get(STATUS).asString());
     }
 
     @Test
@@ -714,14 +718,14 @@ public class SaControllerTest extends BaseH2Test {
         rekey.withObject(ID_PATH).put(SPI, 100).put(SCID, 46);
         rekey.put(EKID, BOGUS_EKID);
         ObjectNode body = restTemplate.postForObject(getUrl() + KEY_PATH + "/" + type.name(), rekey, ObjectNode.class);
-        assertEquals(SUCCESS, body.get(STATUS).asText());
+        assertEquals(SUCCESS, body.get(STATUS).asString());
         ISecAssn keyed = dao.getSa(new SpiScid(100, (short) 46), type);
         assertEquals(type, keyed.getType());
         assertEquals(BOGUS_EKID, keyed.getEkid());
         rekey.put(AKID, BOGUS_AKID);
         rekey.put(EKID, "");
         body = restTemplate.postForObject(getUrl() + KEY_PATH + "/" + type.name(), rekey, ObjectNode.class);
-        assertEquals(SUCCESS, body.get(STATUS).asText());
+        assertEquals(SUCCESS, body.get(STATUS).asString());
         keyed = dao.getSa(new SpiScid(100, (short) 46), type);
         assertEquals(type, keyed.getType());
         assertEquals(BOGUS_AKID, keyed.getAkid());
@@ -729,7 +733,7 @@ public class SaControllerTest extends BaseH2Test {
         rekey.put(AKID, BOGUS_AKID_2);
         rekey.put(EKID, BOGUS_EKID_2);
         body = restTemplate.postForObject(getUrl() + KEY_PATH + "/" + type.name(), rekey, ObjectNode.class);
-        assertEquals(SUCCESS, body.get(STATUS).asText());
+        assertEquals(SUCCESS, body.get(STATUS).asString());
         keyed = dao.getSa(new SpiScid(100, (short) 46), type);
         assertEquals(type, keyed.getType());
         assertEquals(BOGUS_AKID_2, keyed.getAkid());
@@ -743,20 +747,20 @@ public class SaControllerTest extends BaseH2Test {
         rekey.withObject(ID_PATH).put(SPI, 100).put(SCID, 46);
         rekey.put(EKID, BOGUS_EKID);
         ObjectNode body = restTemplate.postForObject(getUrl() + KEY_PATH, rekey, ObjectNode.class);
-        assertEquals(SUCCESS, body.get(STATUS).asText());
+        assertEquals(SUCCESS, body.get(STATUS).asString());
         ISecAssn keyed = dao.getSa(new SpiScid(100, (short) 46), FrameType.TC);
         assertEquals(BOGUS_EKID, keyed.getEkid());
         rekey.put(AKID, BOGUS_AKID);
         rekey.put(EKID, "");
         body = restTemplate.postForObject(getUrl() + KEY_PATH, rekey, ObjectNode.class);
-        assertEquals(SUCCESS, body.get(STATUS).asText());
+        assertEquals(SUCCESS, body.get(STATUS).asString());
         keyed = dao.getSa(new SpiScid(100, (short) 46), FrameType.TC);
         assertEquals(BOGUS_AKID, keyed.getAkid());
         assertEquals("", keyed.getEkid());
         rekey.put(AKID, BOGUS_AKID_2);
         rekey.put(EKID, BOGUS_EKID_2);
         body = restTemplate.postForObject(getUrl() + KEY_PATH, rekey, ObjectNode.class);
-        assertEquals(SUCCESS, body.get(STATUS).asText());
+        assertEquals(SUCCESS, body.get(STATUS).asString());
         keyed = dao.getSa(new SpiScid(100, (short) 46), FrameType.TC);
         assertEquals(BOGUS_AKID_2, keyed.getAkid());
         assertEquals(BOGUS_EKID_2, keyed.getEkid());
@@ -810,14 +814,15 @@ public class SaControllerTest extends BaseH2Test {
 
         // this should fail with an error response, the SAs already exist
         ObjectNode body = restTemplate.postForObject(getUrl() + CREATE_PATH, csvUploadReq, ObjectNode.class);
-        assertEquals(ERROR, body.get(STATUS).asText());
+        assertEquals(ERROR, body.get(STATUS).asString());
         assertEquals(6, body.get("messages").size());
 
         // this forces creation for existing, which should succeed
         csvBody.add(FORCE, "true");
         csvUploadReq = new HttpEntity<>(csvBody, header);
         body = restTemplate.postForObject(getUrl() + CREATE_PATH, csvUploadReq, ObjectNode.class);
-        assertEquals(SUCCESS, body.get(STATUS).asText());
+        assertEquals(SUCCESS, body.get(STATUS).asString());
+        assertEquals(SUCCESS, body.get(STATUS).asString());
         // arsn_len 0 with an all-zero arsn is stored as the canonical empty array, arsn_len > 0 is unchanged
         ISecAssn zero = dao.getSa(new SpiScid(1, (short) 46), FrameType.TC);
         assertEquals(0, (short) zero.getArsnLen());
@@ -841,7 +846,7 @@ public class SaControllerTest extends BaseH2Test {
         node.put(TYPE, type.name()).put(ARSN, zero);
         ResponseEntity<ObjectNode> resp = restTemplate.exchange(getUrl(), HttpMethod.PUT, new HttpEntity<>(node),
                 ObjectNode.class);
-        assertEquals(type.name(), HttpStatus.OK, resp.getStatusCode());
+        assertEquals(HttpStatus.OK, resp.getStatusCode(), type.name());
         assertEquals(0, dao.getSa(id, type).getArsn().length);
 
         // postSa: a changed all-zero arsn with arsn_len 0 is normalized too
@@ -852,7 +857,7 @@ public class SaControllerTest extends BaseH2Test {
         node.put(ARSN_LEN, 0).put(ARSN, zero);
         restTemplate.postForObject(getUrl(), node, ObjectNode.class);
         assertEquals(0, (short) dao.getSa(id, type).getArsnLen());
-        assertEquals(type.name(), 0, dao.getSa(id, type).getArsn().length);
+        assertEquals(0, dao.getSa(id, type).getArsn().length, type.name());
     }
 
     @Test
@@ -906,7 +911,7 @@ public class SaControllerTest extends BaseH2Test {
         node.put(EST, 0).put(AST, 0).put(SERVICE_TYPE, PLAINTEXT).put(IV_LEN, 16);
         ResponseEntity<ObjectNode> resp = restTemplate.postForEntity(getUrl(), node, ObjectNode.class);
         assertEquals(HttpStatus.BAD_REQUEST, resp.getStatusCode());
-        assertEquals(ERROR, resp.getBody().get(STATUS).asText());
+        assertEquals(ERROR, resp.getBody().get(STATUS).asString());
         ISecAssn unchanged = dao.getSa(new SpiScid(100, (short) 46), type);
         assertEquals(12, (short) unchanged.getIvLen());
     }
@@ -916,7 +921,7 @@ public class SaControllerTest extends BaseH2Test {
         ObjectNode node = createSaJson();
         ResponseEntity<ObjectNode> resp = restTemplate.postForEntity(getUrl(), node, ObjectNode.class);
         assertEquals(HttpStatus.BAD_REQUEST, resp.getStatusCode());
-        assertEquals(ERROR, resp.getBody().get(STATUS).asText());
+        assertEquals(ERROR, resp.getBody().get(STATUS).asString());
     }
 
     @Test
@@ -933,7 +938,7 @@ public class SaControllerTest extends BaseH2Test {
         node.put("vcid", vcid);
         ResponseEntity<ObjectNode> resp = restTemplate.postForEntity(getUrl(), node, ObjectNode.class);
         assertEquals(HttpStatus.BAD_REQUEST, resp.getStatusCode());
-        assertEquals(ERROR, resp.getBody().get(STATUS).asText());
+        assertEquals(ERROR, resp.getBody().get(STATUS).asString());
     }
 
     @Test
@@ -951,7 +956,7 @@ public class SaControllerTest extends BaseH2Test {
         ResponseEntity<ObjectNode> resp = restTemplate.exchange(getUrl(), HttpMethod.PUT, new HttpEntity<>(node),
                 ObjectNode.class, new Object[0]);
         assertEquals(HttpStatus.BAD_REQUEST, resp.getStatusCode());
-        assertEquals(ERROR, resp.getBody().get(STATUS).asText());
+        assertEquals(ERROR, resp.getBody().get(STATUS).asString());
         assertNull(dao.getSa(new SpiScid(100, (short) scid), type));
     }
 
@@ -962,7 +967,7 @@ public class SaControllerTest extends BaseH2Test {
         node.put(ARSN_LEN, 5).put(ARSN, "010203");
         ResponseEntity<ObjectNode> resp = restTemplate.postForEntity(getUrl(), node, ObjectNode.class);
         assertEquals(HttpStatus.BAD_REQUEST, resp.getStatusCode());
-        assertEquals(ERROR, resp.getBody().get(STATUS).asText());
+        assertEquals(ERROR, resp.getBody().get(STATUS).asString());
         assertEquals(0, (short) dao.getSa(new SpiScid(100, (short) 46), FrameType.TC).getArsnLen());
     }
 
@@ -981,7 +986,7 @@ public class SaControllerTest extends BaseH2Test {
         ResponseEntity<ObjectNode> resp = restTemplate.postForEntity(getUrl() + ARSN_PATH + "/" + type.name(),
                 idArsn, ObjectNode.class);
         assertEquals(HttpStatus.BAD_REQUEST, resp.getStatusCode());
-        assertEquals(ERROR, resp.getBody().get(STATUS).asText());
+        assertEquals(ERROR, resp.getBody().get(STATUS).asString());
         assertEquals(0, (short) dao.getSa(new SpiScid(100, (short) 46), type).getArsnLen());
     }
 
@@ -994,7 +999,7 @@ public class SaControllerTest extends BaseH2Test {
         ResponseEntity<ObjectNode> resp = restTemplate.postForEntity(getUrl() + ARSN_PATH, idArsn,
                 ObjectNode.class);
         assertEquals(HttpStatus.BAD_REQUEST, resp.getStatusCode());
-        assertEquals(ERROR, resp.getBody().get(STATUS).asText());
+        assertEquals(ERROR, resp.getBody().get(STATUS).asString());
     }
 
     @Test
@@ -1006,7 +1011,7 @@ public class SaControllerTest extends BaseH2Test {
         ResponseEntity<ObjectNode> resp = restTemplate.postForEntity(getUrl() + ARSN_PATH, idArsn,
                 ObjectNode.class);
         assertEquals(HttpStatus.BAD_REQUEST, resp.getStatusCode());
-        assertEquals(ERROR, resp.getBody().get(STATUS).asText());
+        assertEquals(ERROR, resp.getBody().get(STATUS).asString());
         // nothing was changed
         assertEquals(0, (short) dao.getSa(new SpiScid(100, (short) 46), FrameType.TC).getArsnLen());
         assertEquals(5, (short) dao.getSa(new SpiScid(100, (short) 46), FrameType.TC).getArsnw());

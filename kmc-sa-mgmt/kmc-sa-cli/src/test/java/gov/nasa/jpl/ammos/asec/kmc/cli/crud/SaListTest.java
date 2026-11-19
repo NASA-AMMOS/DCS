@@ -4,26 +4,29 @@ import gov.nasa.jpl.ammos.asec.kmc.api.ex.KmcException;
 import gov.nasa.jpl.ammos.asec.kmc.api.sa.FrameType;
 import gov.nasa.jpl.ammos.asec.kmc.api.sa.ISecAssn;
 import gov.nasa.jpl.ammos.asec.kmc.api.sa.SpiScid;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import picocli.CommandLine;
 
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Tests for listing SAs
  */
 public class SaListTest extends BaseCommandLineTest {
 
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+    @TempDir
+    Path temporaryFolder;
 
     public static final String TYPE_FMT = "--type=%s";
 
@@ -573,7 +576,7 @@ public class SaListTest extends BaseCommandLineTest {
         assertEquals(0, exit);
         String csv = listOut.toString();
 
-        File tmpFile = temporaryFolder.newFile("sa-roundtrip-" + type.name() + ".csv");
+        File tmpFile = Files.createFile(temporaryFolder.resolve("sa-roundtrip-" + type.name() + ".csv")).toFile();
         Files.writeString(tmpFile.toPath(), csv);
 
         truncateTable(type);
@@ -596,10 +599,10 @@ public class SaListTest extends BaseCommandLineTest {
         for (ISecAssn original : originalSas) {
             ISecAssn imported = dao.getSa(
                 new SpiScid(original.getSpi(), original.getScid()), type);
-            assertNotNull("SA " + original.getSpi() + "/" + original.getScid() + " not imported", imported);
-            assertEquals("SA " + original.getSpi() + " service type", original.getServiceType(), imported.getServiceType());
-            assertEquals("SA " + original.getSpi() + " est", original.getEst(), imported.getEst());
-            assertEquals("SA " + original.getSpi() + " ast", original.getAst(), imported.getAst());
+            assertNotNull(imported, "SA " + original.getSpi() + "/" + original.getScid() + " not imported");
+            assertEquals(original.getServiceType(), imported.getServiceType(), "SA " + original.getSpi() + " service type");
+            assertEquals(original.getEst(), imported.getEst(), "SA " + original.getSpi() + " est");
+            assertEquals(original.getAst(), imported.getAst(), "SA " + original.getSpi() + " ast");
         }
     }
 

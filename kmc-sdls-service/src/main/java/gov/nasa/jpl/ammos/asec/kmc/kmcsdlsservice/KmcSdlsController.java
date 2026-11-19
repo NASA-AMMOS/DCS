@@ -4,7 +4,9 @@ import gov.nasa.jpl.ammos.asec.kmc.SDLS_TC_TransferFrame;
 import org.apache.commons.codec.DecoderException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.codec.binary.Hex;
@@ -26,7 +28,7 @@ public class KmcSdlsController {
     private static final Logger LOG = LoggerFactory.getLogger(KmcSdlsController.class);
     private final KmcSdlsService kmcSdlsService = KmcSdlsService.getInstance();
 
-    @RequestMapping(value = "/apply_security", method = RequestMethod.POST)
+    @PostMapping("/apply_security")
     public byte[] applySecurity(HttpServletRequest request) {
         byte[] transferFrameData = new byte[0];
         try {
@@ -61,7 +63,7 @@ public class KmcSdlsController {
         }
     }
 
-    @RequestMapping(value = "/process_security", method = RequestMethod.POST)
+    @PostMapping("/process_security")
     public SDLS_TC_TransferFrame processSecurity(HttpServletRequest request) {
         byte[] sdlsTransferFrameData;
         try {
@@ -88,7 +90,7 @@ public class KmcSdlsController {
         return processSecurityResult;
     }
 
-    @RequestMapping(value = "/status", method = RequestMethod.GET)
+    @GetMapping("/status")
     public String status() {
         int engineStatus = this.kmcSdlsService.getKmcSdlsEngine().getEngineStatus();
         if(engineStatus != 0) {
@@ -99,7 +101,7 @@ public class KmcSdlsController {
         return this.kmcSdlsService.getKmcSdlsEngine().getCryptoLibErrorCodeEnum(engineStatus)+"\n";
     }
 
-    @RequestMapping(value = "/health", method = RequestMethod.GET)
+    @GetMapping("/health")
     public String health() {
         // This method will simply return HTTP 200 status with the following string
         return "Service is UP\n";

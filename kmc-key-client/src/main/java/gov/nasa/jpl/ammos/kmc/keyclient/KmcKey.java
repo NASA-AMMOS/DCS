@@ -12,6 +12,7 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -287,8 +288,13 @@ public class KmcKey {
      * @return the key algorithm of the key, or null if error in getting key algorithm.
      */
     public final String getKeyAlgorithm() {
+        KeyBlock keyBlock = getKeyBlock();
+        if (keyBlock == null) {
+            logger.error("getKeyAlgorithm() key block is null");
+            return null;
+        }
         try {
-            CryptographicAlgorithm alg = getKeyBlock().getCryptographicAlgorithm();
+            CryptographicAlgorithm alg = keyBlock.getCryptographicAlgorithm();
             String value = alg.getValues()[0].getValueString();
             int algInt = Integer.parseInt(value);
             EnumCryptographicAlgorithm algEnum = new EnumCryptographicAlgorithm(algInt);
@@ -313,8 +319,13 @@ public class KmcKey {
      * @return the key length of the key, or null if error in getting key length.
      */
     public final int getKeyLength() {
+        KeyBlock keyBlock = getKeyBlock();
+        if (keyBlock == null) {
+            logger.error("getKeyLength() key block is null");
+            return -1;
+        }
         try {
-            CryptographicLength len = getKeyBlock().getCryptographicLength();
+            CryptographicLength len = keyBlock.getCryptographicLength();
             String value = len.getValues()[0].getValueString();
             return Integer.parseInt(value);
         } catch (Exception e) {
@@ -329,7 +340,8 @@ public class KmcKey {
      */
     public final byte[] getKeyMaterial() {
         try {
-            return getKeyBlock().getKeyValue().getKeyMaterial().getKeyMaterialByteString().getValue();
+            KeyBlock keyBlock = Objects.requireNonNull(getKeyBlock(), "key block is null");
+            return keyBlock.getKeyValue().getKeyMaterial().getKeyMaterialByteString().getValue();
         } catch (Exception e) {
             logger.error("getKeyMaterial() Exception getting key block: " + e);
             return null;
@@ -396,12 +408,12 @@ public class KmcKey {
     }
 
     private KeyBlock getKeyBlock() {
-        if (cryptoObject instanceof SymmetricKey) {
-            return ((SymmetricKey) cryptoObject).getKeyBlock();
-        } else if (cryptoObject instanceof ch.ntb.inf.kmip.objects.managed.PrivateKey) {
-            return ((ch.ntb.inf.kmip.objects.managed.PrivateKey) cryptoObject).getKeyBlock();
-        } else if (cryptoObject instanceof ch.ntb.inf.kmip.objects.managed.PublicKey) {
-            return ((ch.ntb.inf.kmip.objects.managed.PublicKey) cryptoObject).getKeyBlock();
+        if (cryptoObject instanceof SymmetricKey key2) {
+            return key2.getKeyBlock();
+        } else if (cryptoObject instanceof ch.ntb.inf.kmip.objects.managed.PrivateKey key1) {
+            return key1.getKeyBlock();
+        } else if (cryptoObject instanceof ch.ntb.inf.kmip.objects.managed.PublicKey key) {
+            return key.getKeyBlock();
         } else {
             return null;
         }

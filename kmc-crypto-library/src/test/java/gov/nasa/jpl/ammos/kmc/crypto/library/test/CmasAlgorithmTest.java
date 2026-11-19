@@ -1,7 +1,5 @@
 package gov.nasa.jpl.ammos.kmc.crypto.library.test;
 
-import static org.junit.Assert.assertArrayEquals;
-
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -13,9 +11,11 @@ import javax.crypto.ShortBufferException;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider;
+
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import org.bouncycastle.util.encoders.Hex;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 
 /**
@@ -26,7 +26,7 @@ import org.junit.Test;
 public class CmasAlgorithmTest {
     private static final String BCFIPS_PROVIDER = "org.bouncycastle.jcajce.provider.BouncyCastleFipsProvider";
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() throws ClassNotFoundException, InstantiationException, IllegalAccessException {
         Class<?>  providerClass = Class.forName(BCFIPS_PROVIDER);
         Provider provider = (Provider) providerClass.newInstance();

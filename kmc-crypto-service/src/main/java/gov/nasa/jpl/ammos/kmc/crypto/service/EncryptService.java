@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serial;
 import java.util.Arrays;
 
 import jakarta.servlet.ServletConfig;
@@ -40,6 +41,7 @@ import gov.nasa.jpl.ammos.kmc.crypto.model.Status;
  */
 @WebServlet("/encrypt")
 public class EncryptService extends HttpServlet {
+    @Serial
     private static final long serialVersionUID = 3114402936011612850L;
 
     private static final Logger logger = LoggerFactory.getLogger(EncryptService.class);

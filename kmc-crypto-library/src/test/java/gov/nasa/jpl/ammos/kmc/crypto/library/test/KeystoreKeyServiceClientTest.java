@@ -1,9 +1,9 @@
 package gov.nasa.jpl.ammos.kmc.crypto.library.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -13,9 +13,8 @@ import java.security.UnrecoverableKeyException;
 
 import javax.crypto.SecretKey;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
-
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import gov.nasa.jpl.ammos.kmc.crypto.KmcCryptoException;
 import gov.nasa.jpl.ammos.kmc.crypto.KmcCryptoException.KmcCryptoErrorCode;
 import gov.nasa.jpl.ammos.kmc.crypto.KmcCryptoManagerException;
@@ -47,7 +46,7 @@ public class KeystoreKeyServiceClientTest {
     private static final String ASYMMETRIC_ALGORITHM = "RSA";
 
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() throws KmcCryptoManagerException {
         ClassLoader loader = KeystoreKeyServiceClientTest.class.getClassLoader();
         SYMMETRIC_KEYSTORE = loader.getResource("symmetric-keys.jck").getFile();

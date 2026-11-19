@@ -3,6 +3,7 @@ import {cleanup, render, screen, waitFor} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import EditControlStack from './EditControlStack'
 import {modifyArsn, modifyIv, rekeySa} from './api'
+import {expectHexPrefixesStyled, expectNoStrayAttributes} from '../test/mui'
 
 const enqueueSnackbar = vi.hoisted(() => vi.fn())
 vi.mock('notistack', () => ({useSnackbar: () => ({enqueueSnackbar})}))
@@ -59,6 +60,27 @@ describe('EditControlStack', () => {
         await user.type(screen.getByLabelText('IV'), '11')
         await user.click(screen.getByRole('button', {name: 'Continue'}))
         await waitFor(() => expect(modifyIv).toHaveBeenCalled())
+    })
+    it('shows the server message when an IV reset is rejected', async () => {
+        const user = userEvent.setup()
+        const msg = 'ivLen of 16 is invalid for the current ECS; AES_GCM accepts only ivLen 12'
+        modifyIv.mockImplementationOnce((type, d, ok, err) => err(Object.assign(
+            new Error('Request failed with status code 400'), {response: {status: 400, data: {messages: [msg]}}})))
+        renderStack()
+        await user.click(screen.getByRole('button', {name: /IV\/ARSN/}))
+        await user.type(screen.getByLabelText('IV'), '11')
+        await user.click(screen.getByRole('button', {name: 'Continue'}))
+        await waitFor(() => expect(enqueueSnackbar).toHaveBeenCalledWith(`HTTP 400:${msg}`, {variant: 'error'}))
+    })
+    it('shows the server message when a rekey is rejected', async () => {
+        const user = userEvent.setup()
+        rekeySa.mockImplementationOnce((type, d, ok, err) => err(Object.assign(
+            new Error('Request failed with status code 400'), {response: {status: 400, data: {messages: ['bad key']}}})))
+        renderStack()
+        await user.click(screen.getByRole('button', {name: /\(Re\)key/}))
+        await user.type(screen.getByLabelText('EKID'), '9')
+        await user.click(screen.getByRole('button', {name: 'Continue'}))
+        await waitFor(() => expect(enqueueSnackbar).toHaveBeenCalledWith('HTTP 400:bad key', {variant: 'error'}))
     })
     it('calls modifyArsn only after modifyIv succeeds', async () => {
         const user = userEvent.setup()
@@ -127,5 +149,120 @@ describe('EditControlStack', () => {
                                  refresh={() => {}} setModalOpen={() => {}}/>)
         await user.click(screen.getByRole('button', {name: 'Start'}))
         expect(await screen.findByText('Start SA')).toBeTruthy()
+    })
+    it.each([
+        ['ENCRYPTION', {ekid: 'kmc/test/key128', ecs: '01'}],
+        ['AUTHENTICATION', {akid: 'kmc/test/hmacsha256', acs: '02'}],
+        ['AUTHENTICATED_ENCRYPTION', {ekid: 'kmc/test/key128', ecs: '01', akid: null, acs: '00'}]
+    ])('opens the start dialog for a %s SA with non-hex key ids', async (serviceType, keys) => {
+        const user = userEvent.setup()
+        const d = {...data, spi: 1, scid: 2, serviceType, ...keys}
+        render(<EditControlStack type="tm" data={d} id={d.id} saState={1} defaultValues={d}
+                                 refresh={() => {}} setModalOpen={() => {}}/>)
+        await user.click(screen.getByRole('button', {name: 'Start'}))
+        expect(enqueueSnackbar).not.toHaveBeenCalled()
+        expect(await screen.findByText('Start SA')).toBeTruthy()
+    })
+    it('styles the IV/ARSN dialog: bold warning-colored 0x prefixes and Roboto Mono inputs', async () => {
+        const user = userEvent.setup()
+        renderStack()
+        await user.click(screen.getByRole('button', {name: /IV\/ARSN/}))
+        const dialog = screen.getByRole('dialog')
+        expectHexPrefixesStyled(dialog, 2)
+        for (const id of ['iv', 'ivLen', 'arsn', 'arsnLen', 'arsnw']) {
+            expect(getComputedStyle(document.getElementById(id)).fontFamily).toBe('"Roboto Mono"')
+        }
+        expectNoStrayAttributes(document.body)
+    })
+    it('deletes the SA after confirmation and closes the edit dialog', async () => {
+        const user = userEvent.setup()
+        const deleteAction = vi.fn()
+        const setModalOpen = vi.fn()
+        render(<EditControlStack type="tm" data={data} id={data.id} saState={1} defaultValues={data}
+                                 refresh={() => {}} setModalOpen={setModalOpen} deleteAction={deleteAction}/>)
+        await user.click(screen.getByRole('button', {name: 'Delete'}))
+        expect(screen.getByText(/This action will permanently delete\s+SA 1\/2/)).toBeTruthy()
+        await user.click(screen.getByRole('button', {name: 'Cancel'}))
+        await waitFor(() => expect(screen.queryByText(/This action will permanently delete/)).toBeNull())
+        expect(deleteAction).not.toHaveBeenCalled()
+        await user.click(screen.getByRole('button', {name: 'Delete'}))
+        await user.click(screen.getByRole('button', {name: 'Continue'}))
+        expect(deleteAction).toHaveBeenCalledWith(data.id)
+        expect(setModalOpen).toHaveBeenCalledWith(false)
+    })
+
+    // Start shows unless Operational, Stop only when Operational, Expire unless Unkeyed | Expired
+    it.each([
+        [1, {Start: true, Stop: false, Expire: false}],
+        [2, {Start: true, Stop: false, Expire: true}],
+        [3, {Start: false, Stop: true, Expire: true}],
+    ])('shows the lifecycle buttons that apply to state %i', (saState, shown) => {
+        render(<EditControlStack type="tm" data={data} id={data.id} saState={saState} defaultValues={data}
+                                 refresh={() => {}} setModalOpen={() => {}}/>)
+        for (const [name, visible] of Object.entries(shown)) {
+            // hidden buttons have no accessible name, so find them by text
+            const button = [...document.querySelectorAll('button')].find(b => b.textContent === name)
+            expect(getComputedStyle(button).display, name)
+                .toBe(visible ? 'flex' : 'none')
+        }
+    })
+
+    it.each([
+        ['Start', 'Start SA', 'startAction', 2, /setting it to\s+OPERATIONAL state\. This will replace any currently operational/],
+        ['Stop', 'Stop SA', 'stopAction', 3, /returning it\s+to\s+the KEYED state/],
+        ['Expire', 'Expire SA', 'expireAction', 3, /setting it to the "Unkeyed \| Expired" state/],
+    ])('%s asks for confirmation and only then acts on the SA', async (button, title, action, saState, text) => {
+        const user = userEvent.setup()
+        const actions = {startAction: vi.fn(), stopAction: vi.fn(), expireAction: vi.fn()}
+        render(<EditControlStack type="tm" data={{...data, serviceType: 'PLAINTEXT'}} id={data.id} saState={saState}
+                                 defaultValues={data} refresh={() => {}} setModalOpen={() => {}} {...actions}/>)
+        await user.click(screen.getByRole('button', {name: button}))
+        expect(screen.getByText(title)).toBeTruthy()
+        expect(screen.getByRole('dialog').textContent).toMatch(text)
+        await user.click(screen.getByRole('button', {name: 'Cancel'}))
+        await waitFor(() => expect(screen.queryByText(title)).toBeNull())
+        expect(actions[action]).not.toHaveBeenCalled()
+        await user.click(screen.getByRole('button', {name: button}))
+        await user.click(screen.getByRole('button', {name: 'Continue'}))
+        expect(actions[action]).toHaveBeenCalledWith(data.id)
+        await waitFor(() => expect(screen.queryByText(title)).toBeNull())
+    })
+
+    it('keeps Continue disabled in the IV/ARSN dialog until something changes', async () => {
+        const user = userEvent.setup()
+        renderStack()
+        await user.click(screen.getByRole('button', {name: /IV\/ARSN/}))
+        const cont = screen.getByRole('button', {name: 'Continue'})
+        expect(cont.disabled).toBe(true)
+        await user.type(screen.getByLabelText('ARSN'), '11')
+        expect(cont.disabled).toBe(false)
+    })
+
+    it('resets only the ARSN when only ARSN fields change', async () => {
+        const user = userEvent.setup()
+        modifyArsn.mockImplementationOnce((type, d, ok) => ok({}))
+        renderStack()
+        await user.click(screen.getByRole('button', {name: /IV\/ARSN/}))
+        await user.clear(screen.getByLabelText('ARSN'))
+        await user.type(screen.getByLabelText('ARSN'), '0102')
+        await user.clear(screen.getByLabelText('ARSN Length'))
+        await user.type(screen.getByLabelText('ARSN Length'), '2')
+        await user.click(screen.getByRole('button', {name: 'Continue'}))
+        await waitFor(() => expect(modifyArsn).toHaveBeenCalledTimes(1))
+        expect(modifyIv).not.toHaveBeenCalled()
+        expect(modifyArsn.mock.calls[0][0]).toBe('tm')
+        expect(modifyArsn.mock.calls[0][1]).toMatchObject({id: data.id, arsn: '0102', arsnLen: '2', iv: '00'})
+        await waitFor(() => expect(enqueueSnackbar).toHaveBeenCalledWith('Updated ARSN on 1/2', {variant: 'success'}))
+    })
+
+    it('sends only the key ID that changed when rekeying', async () => {
+        const user = userEvent.setup()
+        renderStack()
+        await user.click(screen.getByRole('button', {name: /\(Re\)key/}))
+        await user.clear(screen.getByLabelText('AKID'))
+        await user.type(screen.getByLabelText('AKID'), 'kmc/test/hmac')
+        await user.click(screen.getByRole('button', {name: 'Continue'}))
+        await waitFor(() => expect(rekeySa).toHaveBeenCalledTimes(1))
+        expect(rekeySa.mock.calls[0][1]).toEqual({id: data.id, akid: 'kmc/test/hmac', acs: undefined, acsLen: undefined})
     })
 })

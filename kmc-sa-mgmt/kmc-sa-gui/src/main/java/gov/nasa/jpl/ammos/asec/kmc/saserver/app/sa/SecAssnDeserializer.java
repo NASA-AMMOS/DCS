@@ -1,35 +1,31 @@
 package gov.nasa.jpl.ammos.asec.kmc.saserver.app.sa;
 
-import com.fasterxml.jackson.core.JacksonException;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.exc.InvalidFormatException;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.exc.InvalidFormatException;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ObjectNode;
 import gov.nasa.jpl.ammos.asec.kmc.api.sa.FrameType;
 import gov.nasa.jpl.ammos.asec.kmc.api.sa.ISecAssn;
+import tools.jackson.databind.ValueDeserializer;
 
-import java.io.IOException;
-
-public class SecAssnDeserializer extends JsonDeserializer<ISecAssn> {
+public class SecAssnDeserializer extends ValueDeserializer<ISecAssn> {
     private static ObjectMapper M;
 
     static {
-        M = new ObjectMapper();
-        M.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        M = new JsonMapper();
     }
 
     @Override
-    public ISecAssn deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JacksonException {
+    public ISecAssn deserialize(JsonParser p, DeserializationContext ctxt) {
         ObjectNode root = p.readValueAs(ObjectNode.class);
         FrameType  type;
         if (root.has("type")) {
-            type = FrameType.fromString(root.get("type").asText());
+            type = FrameType.fromString(root.get("type").asString());
             if (type == FrameType.UNKNOWN) {
                 throw new InvalidFormatException(p, String.format("Frame type %s is invalid",
-                        root.get("type").asText()), root, ISecAssn.class);
+                        root.get("type").asString()), root, ISecAssn.class);
             }
         } else {
             type = FrameType.TC;

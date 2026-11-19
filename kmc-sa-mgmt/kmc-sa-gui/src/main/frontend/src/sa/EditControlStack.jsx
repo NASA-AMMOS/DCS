@@ -41,10 +41,11 @@ import {useFormik} from "formik";
 import {hexString, SaTextField} from "./SaModalForm.jsx";
 import * as yup from "yup";
 import {useSnackbar} from "notistack";
-import {modifyArsn, modifyIv, rekeySa} from "./api";
+import {createErrorCallback, modifyArsn, modifyIv, rekeySa} from "./api";
 import {AUTHENTICATED_ENCRYPTION, AUTHENTICATION, ENCRYPTION, hexToInt} from "./utilities";
 
-const isUnset = (v) => v === null || v === undefined || v === '' || !(hexToInt(String(v)) > 0)
+const isUnsetKey = (v) => v === null || v === undefined || String(v).trim() === ''
+const isUnsetSuite = (v) => isUnsetKey(v) || !(hexToInt(String(v)) > 0)
 
 export default function EditControlStack({
                                              refresh,
@@ -106,10 +107,7 @@ export default function EditControlStack({
                 const arsnChanged = values.arsn !== resetFormik.initialValues.arsn ||
                     values.arsnLen !== resetFormik.initialValues.arsnLen ||
                     values.arsnw !== resetFormik.initialValues.arsnw
-                const onError = (e) => {
-                    console.log(e)
-                    enqueueSnackbar(`${e.response?.status ?? 'Error'}: ${e.message}`, {variant: 'error'})
-                }
+                const onError = createErrorCallback(enqueueSnackbar)
                 const updateArsn = () => modifyArsn(type, clone, (r) => {
                     setResetOpen(false)
                     refresh()
@@ -168,10 +166,7 @@ export default function EditControlStack({
                     refresh()
                     console.log(r)
                     enqueueSnackbar(`Updated keys on ${data.id.spi}/${data.id.scid}`, {variant: 'success'})
-                }, (e) => {
-                    console.log(e)
-                    enqueueSnackbar(`${e.response?.status ?? 'Error'}: ${e.message}`, {variant: 'error'})
-                })
+                }, createErrorCallback(enqueueSnackbar))
         },
         enableReinitialize: true
     })
@@ -227,13 +222,13 @@ export default function EditControlStack({
                     startIcon={<PlayArrow/>}
                     onClick={() => {
                         if (data.serviceType === AUTHENTICATION) {
-                            if (isUnset(data.akid) || isUnset(data.acs)) {
+                            if (isUnsetKey(data.akid) || isUnsetSuite(data.acs)) {
                                 enqueueSnackbar(`Unable to start ${data.spi}/${data.scid}, service type is ${data.serviceType} but AKID or ACS are not set.`)
                                 return
                             }
                         }
                         if (data.serviceType === ENCRYPTION || data.serviceType === AUTHENTICATED_ENCRYPTION) {
-                            if (isUnset(data.ekid) || isUnset(data.ecs)) {
+                            if (isUnsetKey(data.ekid) || isUnsetSuite(data.ecs)) {
                                 enqueueSnackbar(`Unable to start ${data.spi}/${data.scid}, service type is ${data.serviceType} but EKID or ECS are not set.`)
                                 return
                             }
@@ -317,8 +312,7 @@ export default function EditControlStack({
                             InputProps={{
                                 startAdornment: <InputAdornment position="start"
                                                                 sx={{style: {fontFamily: 'Roboto Mono'}}}><Typography
-                                    color={'warning.main'} fontWeight={'bold'}
-                                    fontFamily={'Roboto Mono'}>0x</Typography></InputAdornment>
+                                    sx={{color: 'warning.main', fontWeight: 'bold', fontFamily: 'Roboto Mono'}}>0x</Typography></InputAdornment>
                             }}
                         />
                         <SaTextField
@@ -337,8 +331,7 @@ export default function EditControlStack({
                             InputProps={{
                                 startAdornment: <InputAdornment position="start"
                                                                 sx={{style: {fontFamily: 'Roboto Mono'}}}><Typography
-                                    color={'warning.main'} fontWeight={'bold'}
-                                    fontFamily={'Roboto Mono'}>0x</Typography></InputAdornment>
+                                    sx={{color: 'warning.main', fontWeight: 'bold', fontFamily: 'Roboto Mono'}}>0x</Typography></InputAdornment>
                             }}
                         />
                         <SaTextField
