@@ -60,6 +60,27 @@ describe('EditControlStack', () => {
         await user.click(screen.getByRole('button', {name: 'Continue'}))
         await waitFor(() => expect(modifyIv).toHaveBeenCalled())
     })
+    it('shows the server message when an IV reset is rejected', async () => {
+        const user = userEvent.setup()
+        const msg = 'ivLen of 16 is invalid for the current ECS; AES_GCM accepts only ivLen 12'
+        modifyIv.mockImplementationOnce((type, d, ok, err) => err(Object.assign(
+            new Error('Request failed with status code 400'), {response: {status: 400, data: {messages: [msg]}}})))
+        renderStack()
+        await user.click(screen.getByRole('button', {name: /IV\/ARSN/}))
+        await user.type(screen.getByLabelText('IV'), '11')
+        await user.click(screen.getByRole('button', {name: 'Continue'}))
+        await waitFor(() => expect(enqueueSnackbar).toHaveBeenCalledWith(`HTTP 400:${msg}`, {variant: 'error'}))
+    })
+    it('shows the server message when a rekey is rejected', async () => {
+        const user = userEvent.setup()
+        rekeySa.mockImplementationOnce((type, d, ok, err) => err(Object.assign(
+            new Error('Request failed with status code 400'), {response: {status: 400, data: {messages: ['bad key']}}})))
+        renderStack()
+        await user.click(screen.getByRole('button', {name: /\(Re\)key/}))
+        await user.type(screen.getByLabelText('EKID'), '9')
+        await user.click(screen.getByRole('button', {name: 'Continue'}))
+        await waitFor(() => expect(enqueueSnackbar).toHaveBeenCalledWith('HTTP 400:bad key', {variant: 'error'}))
+    })
     it('calls modifyArsn only after modifyIv succeeds', async () => {
         const user = userEvent.setup()
         renderStack()

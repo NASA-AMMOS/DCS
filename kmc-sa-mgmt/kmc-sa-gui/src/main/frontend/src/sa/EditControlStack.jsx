@@ -41,7 +41,7 @@ import {useFormik} from "formik";
 import {hexString, SaTextField} from "./SaModalForm.jsx";
 import * as yup from "yup";
 import {useSnackbar} from "notistack";
-import {modifyArsn, modifyIv, rekeySa} from "./api";
+import {createErrorCallback, modifyArsn, modifyIv, rekeySa} from "./api";
 import {AUTHENTICATED_ENCRYPTION, AUTHENTICATION, ENCRYPTION, hexToInt} from "./utilities";
 
 const isUnsetKey = (v) => v === null || v === undefined || String(v).trim() === ''
@@ -107,10 +107,7 @@ export default function EditControlStack({
                 const arsnChanged = values.arsn !== resetFormik.initialValues.arsn ||
                     values.arsnLen !== resetFormik.initialValues.arsnLen ||
                     values.arsnw !== resetFormik.initialValues.arsnw
-                const onError = (e) => {
-                    console.log(e)
-                    enqueueSnackbar(`${e.response?.status ?? 'Error'}: ${e.message}`, {variant: 'error'})
-                }
+                const onError = createErrorCallback(enqueueSnackbar)
                 const updateArsn = () => modifyArsn(type, clone, (r) => {
                     setResetOpen(false)
                     refresh()
@@ -169,10 +166,7 @@ export default function EditControlStack({
                     refresh()
                     console.log(r)
                     enqueueSnackbar(`Updated keys on ${data.id.spi}/${data.id.scid}`, {variant: 'success'})
-                }, (e) => {
-                    console.log(e)
-                    enqueueSnackbar(`${e.response?.status ?? 'Error'}: ${e.message}`, {variant: 'error'})
-                })
+                }, createErrorCallback(enqueueSnackbar))
         },
         enableReinitialize: true
     })
