@@ -30,8 +30,11 @@ const choose = async (user, label, option) => {
 }
 
 const fill = async (user, id, value) => {
-    await user.clear(document.getElementById(id))
-    await user.type(document.getElementById(id), value)
+    const input = document.getElementById(id)
+    await user.clear(input)
+    // paste instead of typing: every keystroke re-renders and revalidates the whole form, which is slow on CI
+    await user.click(input)
+    await user.paste(value)
 }
 
 const submit = (user, name = 'Create') => user.click(screen.getByRole('button', {name, exact: true}))

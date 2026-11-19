@@ -9,6 +9,8 @@ export default defineConfig({
     test: {
         environment: 'jsdom',
         setupFiles: ['./src/test/setup.js'],
+        // the form and dialog tests re-render large MUI trees; CI runs them with coverage on shared runners
+        testTimeout: 30000,
         // e2e/ is the Playwright suite, run with `yarn e2e`
         exclude: [...configDefaults.exclude, 'e2e/**'],
         coverage: {
