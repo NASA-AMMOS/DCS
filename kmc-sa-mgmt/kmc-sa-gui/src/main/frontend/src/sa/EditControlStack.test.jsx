@@ -3,6 +3,7 @@ import {cleanup, render, screen, waitFor} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import EditControlStack from './EditControlStack'
 import {modifyArsn, modifyIv, rekeySa} from './api'
+import {expectHexPrefixesStyled, expectNoStrayAttributes} from '../test/mui'
 
 const enqueueSnackbar = vi.hoisted(() => vi.fn())
 vi.mock('notistack', () => ({useSnackbar: () => ({enqueueSnackbar})}))
@@ -161,5 +162,16 @@ describe('EditControlStack', () => {
         await user.click(screen.getByRole('button', {name: 'Start'}))
         expect(enqueueSnackbar).not.toHaveBeenCalled()
         expect(await screen.findByText('Start SA')).toBeTruthy()
+    })
+    it('styles the IV/ARSN dialog: bold warning-colored 0x prefixes and Roboto Mono inputs', async () => {
+        const user = userEvent.setup()
+        renderStack()
+        await user.click(screen.getByRole('button', {name: /IV\/ARSN/}))
+        const dialog = screen.getByRole('dialog')
+        expectHexPrefixesStyled(dialog, 2)
+        for (const id of ['iv', 'ivLen', 'arsn', 'arsnLen', 'arsnw']) {
+            expect(getComputedStyle(document.getElementById(id)).fontFamily).toBe('"Roboto Mono"')
+        }
+        expectNoStrayAttributes(document.body)
     })
 })

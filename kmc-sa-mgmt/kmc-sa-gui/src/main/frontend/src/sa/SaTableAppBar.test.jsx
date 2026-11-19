@@ -4,6 +4,7 @@ import {act, cleanup, render, screen, waitFor} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import SaTableAppBar from './SaTableAppBar'
 import {bulkCreate} from './api'
+import {expectNoStrayAttributes} from '../test/mui'
 
 vi.mock('./api', async (importOriginal) => ({
     ...(await importOriginal()),
@@ -49,6 +50,17 @@ describe('SaTableAppBar bulk upload dialog', () => {
         expect(screen.getByRole('button', {name: 'Continue'}).disabled).toBe(false)
     })
 
+    it('restricts the file picker to CSV and renders no stray MUI props', async () => {
+        const user = userEvent.setup()
+        render(<SaTableAppBar allColumns={[]} selectedFlatRows={[]} type="tc"
+                              resetDefaultCols={() => {}} hideColumn={() => {}} refreshTable={() => {}}
+                              enqueueSnackbar={() => {}} handleRowOpen={() => {}}/>)
+        await user.click(screen.getByRole('button', {name: /bulk/i}))
+        const input = document.getElementById('contained-button-file')
+        expect(input.getAttribute('accept')).toBe('.csv')
+        expect(input.parentElement.hasAttribute('accept')).toBe(false)
+        expectNoStrayAttributes(document.body)
+    })
     describe('cancelling an upload', () => {
         const setup = async (props = {}) => {
             const user = userEvent.setup()
@@ -95,6 +107,8 @@ describe('SaTableAppBar bulk upload dialog', () => {
             act(() => call.setProgress(100))
 
             expect(screen.getByText('Processing…')).toBeTruthy()
+            // text.secondary of MUI's default light palette
+            expect(getComputedStyle(screen.getByText('Processing…')).color).toBe('rgba(0, 0, 0, 0.6)')
             expect(screen.getByRole('button', {name: 'Cancel'}).disabled).toBe(true)
             await user.keyboard('{Escape}')
             expect(screen.getByRole('dialog')).toBeTruthy()

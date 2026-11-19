@@ -8,6 +8,7 @@ export default defineConfig({
     base: "./",
     test: {
         environment: 'jsdom',
+        setupFiles: ['./src/test/setup.js'],
         // e2e/ is the Playwright suite, run with `yarn e2e`
         exclude: [...configDefaults.exclude, 'e2e/**'],
         onConsoleLog: (log, type) => type === 'stderr',

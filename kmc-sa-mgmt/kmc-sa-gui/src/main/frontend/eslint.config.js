@@ -32,6 +32,13 @@ export default [
     },
   },
   {
+    // vitest runs in node with jsdom
+    files: ['src/**/*.test.{js,jsx}', 'src/test/**/*.js'],
+    languageOptions: {
+      globals: {...globals.browser, ...globals.node},
+    },
+  },
+  {
     files: ['e2e/**/*.js', 'playwright.config.js'],
     languageOptions: {
       globals: {...globals.browser, ...globals.node},

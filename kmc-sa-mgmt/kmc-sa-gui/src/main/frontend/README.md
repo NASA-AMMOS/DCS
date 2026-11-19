@@ -23,6 +23,14 @@ yarn test
 
 Component and helper tests in `src/**/*.test.{js,jsx}`, run in jsdom. These also run in the Maven build.
 
+- A test fails if anything logs through `console.error` or `console.warn` (`src/test/setup.js`). That is how React
+  and MUI report unknown or removed props, out-of-range select values and spread keys, which otherwise render
+  silently wrong. Fix the warning rather than silencing it.
+- `api.requests.test.js` checks every `api.js` call against the routes declared in `SaController.java`, so update
+  both sides together.
+- `src/test/mui.js` has helpers for the styling MUI does not check for you (hex prefixes, stray DOM attributes).
+- Prefer realistic data in tests, e.g. key IDs like `kmc/test/key128`; `'1'` hid a bug because it is valid hex.
+
 ### Browser tests (Playwright)
 
 ```
