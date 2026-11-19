@@ -118,7 +118,7 @@ public class SaControllerTest extends BaseH2Test {
     private ObjectNode createSaJson() {
         ObjectNode node = mapper.createObjectNode();
         node.withObject(ID_PATH).put(SPI, 100).put(SCID, 46);
-        node.put(TFVN, 0).put("vcid", 20).put("mapid", 0).put(EKID, "kmc/test/key128").putNull(
+        node.put(TFVN, 0).put("vcid", 5).put("mapid", 0).put(EKID, "kmc/test/key128").putNull(
                 AKID).put(SA_STATE, 3).putNull("lpid").put(EST, 1).put(AST, 1).put("shivfLen", 12).put(
                 "shsnfLen", 0).put("shplfLen", 0).put("stmacfLen", 16).put("ecsLen", 1).put("ecs", "01").put(
                 IV_LEN, 12).put(IV, "000000000000000000000001").put("acsLen", 1).put(ACS, "00").put("abmLen",
@@ -917,6 +917,42 @@ public class SaControllerTest extends BaseH2Test {
         ResponseEntity<ObjectNode> resp = restTemplate.postForEntity(getUrl(), node, ObjectNode.class);
         assertEquals(HttpStatus.BAD_REQUEST, resp.getStatusCode());
         assertEquals(ERROR, resp.getBody().get(STATUS).asText());
+    }
+
+    @Test
+    public void testUpdateSaVcidOutOfBoundsFails() throws KmcException {
+        updateSaVcidOutOfBoundsFails(FrameType.TC, 64);
+        updateSaVcidOutOfBoundsFails(FrameType.AOS, 64);
+        updateSaVcidOutOfBoundsFails(FrameType.TM, 8);
+    }
+
+    public void updateSaVcidOutOfBoundsFails(FrameType type, int vcid) throws KmcException {
+        createSaByType(type);
+        ObjectNode node = createSaJson();
+        node.put(TYPE, type.name());
+        node.put("vcid", vcid);
+        ResponseEntity<ObjectNode> resp = restTemplate.postForEntity(getUrl(), node, ObjectNode.class);
+        assertEquals(HttpStatus.BAD_REQUEST, resp.getStatusCode());
+        assertEquals(ERROR, resp.getBody().get(STATUS).asText());
+    }
+
+    @Test
+    public void testCreateSaScidOutOfBoundsFails() throws KmcException {
+        createSaScidOutOfBoundsFails(FrameType.TC, 1024);
+        createSaScidOutOfBoundsFails(FrameType.TM, 1024);
+        createSaScidOutOfBoundsFails(FrameType.AOS, 256);
+    }
+
+    public void createSaScidOutOfBoundsFails(FrameType type, int scid) throws KmcException {
+        ObjectNode node = createSaJson();
+        node.put(TYPE, type.name());
+        node.put(SCID, scid);
+        node.withObject(ID_PATH).put(SCID, scid);
+        ResponseEntity<ObjectNode> resp = restTemplate.exchange(getUrl(), HttpMethod.PUT, new HttpEntity<>(node),
+                ObjectNode.class, new Object[0]);
+        assertEquals(HttpStatus.BAD_REQUEST, resp.getStatusCode());
+        assertEquals(ERROR, resp.getBody().get(STATUS).asText());
+        assertNull(dao.getSa(new SpiScid(100, (short) scid), type));
     }
 
     @Test

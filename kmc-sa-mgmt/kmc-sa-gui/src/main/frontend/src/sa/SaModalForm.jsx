@@ -64,7 +64,7 @@ import ErrorBoundary from "./ErrorBoundary.jsx";
 
 export const hexString = yup.string().matches(/^([\da-fA-F]{2})*$/, 'Must be a hex string that contains an even number of hex digits')
 
-const validationSchema = yup.object({
+const baseValidationSchema = yup.object({
     spi: yup.number().integer('must be an integer').min(0).required('SPI is required'),
     scid: yup.number().integer('must be an integer').min(0).required('SCID is required'),
     vcid: yup.number().integer('must be an integer').min(0).required('VCID is required'),
@@ -108,6 +108,23 @@ const validationSchema = yup.object({
     arsnw: yup.number().min(0),
 })
 
+// VCID field width per CCSDS: 6 bits for TC and AOS, 3 bits for TM
+export const maxVcid = (type) => type === "TM" ? 7 : 63
+
+// SCID field width per CCSDS: 8 bits for AOS, 10 bits for TC and TM
+export const maxScid = (type) => type === "AOS" ? 255 : 1023
+
+// a value that already exists on the SA being edited is accepted, so legacy rows can still be saved
+const fitsField = (max, label, type, original) => yup.number().integer('must be an integer').min(0)
+    .test('field-width', `${label} must be at most ${max} for ${type} frames`,
+        v => v === undefined || v <= max || v === original)
+    .required(`${label} is required`)
+
+export const validationSchemaFor = (type, original) => baseValidationSchema.shape({
+    scid: fitsField(maxScid(type), 'SCID', type, original?.scid),
+    vcid: fitsField(maxVcid(type), 'VCID', type, original?.vcid),
+})
+
 export default function SaModalForm({
                                         type,
                                         data,
@@ -118,6 +135,7 @@ export default function SaModalForm({
                                     }) {
 
     const {enqueueSnackbar} = useSnackbar()
+    const validationSchema = useMemo(() => validationSchemaFor(type, isUpdate ? data : undefined), [type, isUpdate, data])
 
     const createResponseCallback = (msg) => {
         return (resp) => {
