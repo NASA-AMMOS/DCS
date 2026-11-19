@@ -64,6 +64,16 @@ describe('SaModalForm', () => {
         expect(values).toMatchObject({serviceType, ...flags, ...keys, id: {spi: '7', scid: '46'}})
     })
 
+    it.each(['TC', 'TM', 'AOS'])('creates the SA for the %s tab from the defaults', async (type) => {
+        const user = userEvent.setup()
+        renderForm({type})
+        await fill(user, 'spi', '137')
+        await submit(user)
+        await waitFor(() => expect(createSa).toHaveBeenCalledTimes(1))
+        expect(createSa.mock.calls[0][0]).toBe(type)
+        expect(createSa.mock.calls[0][1]).toMatchObject({spi: '137', serviceType: 'PLAINTEXT', saState: 1, est: 0, ast: 0})
+    })
+
     it('creates an AUTHENTICATION SA once an ACS is chosen', async () => {
         const user = userEvent.setup()
         renderForm()

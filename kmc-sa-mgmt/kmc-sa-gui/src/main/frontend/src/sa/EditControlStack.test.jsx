@@ -174,4 +174,20 @@ describe('EditControlStack', () => {
         }
         expectNoStrayAttributes(document.body)
     })
+    it('deletes the SA after confirmation and closes the edit dialog', async () => {
+        const user = userEvent.setup()
+        const deleteAction = vi.fn()
+        const setModalOpen = vi.fn()
+        render(<EditControlStack type="tm" data={data} id={data.id} saState={1} defaultValues={data}
+                                 refresh={() => {}} setModalOpen={setModalOpen} deleteAction={deleteAction}/>)
+        await user.click(screen.getByRole('button', {name: 'Delete'}))
+        expect(screen.getByText(/This action will permanently delete\s+SA 1\/2/)).toBeTruthy()
+        await user.click(screen.getByRole('button', {name: 'Cancel'}))
+        await waitFor(() => expect(screen.queryByText(/This action will permanently delete/)).toBeNull())
+        expect(deleteAction).not.toHaveBeenCalled()
+        await user.click(screen.getByRole('button', {name: 'Delete'}))
+        await user.click(screen.getByRole('button', {name: 'Continue'}))
+        expect(deleteAction).toHaveBeenCalledWith(data.id)
+        expect(setModalOpen).toHaveBeenCalledWith(false)
+    })
 })

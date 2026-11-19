@@ -19,7 +19,8 @@ const sa = (spi, overrides = {}) => ({
     arsnLen: 0, arsn: '', arsnw: 5, ...overrides
 })
 
-const serve = (...sas) => listSa.mockImplementation((type, ok) => ok({status: 200, data: sas}))
+// a fresh array per call, as a real fetch returns
+const serve = (...sas) => listSa.mockImplementation((type, ok) => ok({status: 200, data: sas.map(s => ({...s}))}))
 
 const rowFor = (spi) => {
     // body rows carry role="checkbox" (row selection), so find them structurally
@@ -96,5 +97,67 @@ describe('SaTable', () => {
         render(<SaTable type="TC"/>)
         await waitFor(() => expect(enqueueSnackbar).toHaveBeenCalledWith('Error retrieving from the SADB: database down',
             {variant: 'error', preventDuplicate: true}))
+    })
+
+    const filter = async (user, header, value) => {
+        const th = screen.getAllByRole('columnheader').find(h => h.textContent.startsWith(header))
+        await user.click(within(th).getAllByRole('button')[0])
+        await user.type(screen.getAllByRole('textbox').at(-1), value)
+        await user.keyboard('{Escape}')
+    }
+    const spis = () => [...document.querySelectorAll('tbody tr')].map(r => r.querySelectorAll('td')[1].textContent)
+
+    it('filters by SPI, VCID and AKID', async () => {
+        const user = userEvent.setup()
+        serve(sa(22), sa(23, {vcid: 20}), sa(24, {akid: 'kmc/test/KEY130'}), sa(25, {akid: 'kmc/test/NIST_CMAC_90'}))
+        render(<SaTable type="TC"/>)
+        await waitFor(() => expect(spis()).toEqual(['22', '23', '24', '25']))
+        await filter(user, 'SPI', '22')
+        expect(spis()).toEqual(['22'])
+        await user.click(screen.getByRole('button', {name: 'Reload'}))
+        await waitFor(() => expect(spis()).toHaveLength(4))
+        await filter(user, 'VCID', '20')
+        expect(spis()).toEqual(['23'])
+        await user.click(screen.getByRole('button', {name: 'Reload'}))
+        await waitFor(() => expect(spis()).toHaveLength(4))
+        await filter(user, 'AKID', 'KEY130')
+        expect(spis()).toEqual(['24'])
+    })
+
+    it('Reload refetches and clears the filters', async () => {
+        const user = userEvent.setup()
+        serve(sa(22), sa(23))
+        render(<SaTable type="TC"/>)
+        await waitFor(() => expect(spis()).toHaveLength(2))
+        await filter(user, 'SPI', '22')
+        expect(spis()).toEqual(['22'])
+        serve(sa(22), sa(23), sa(24))
+        await user.click(screen.getByRole('button', {name: 'Reload'}))
+        await waitFor(() => expect(spis()).toEqual(['22', '23', '24']))
+        expect(listSa).toHaveBeenCalledTimes(2)
+    })
+
+    it('shows a column chosen in the Columns chooser, remembers it, and Reset hides it again', async () => {
+        const user = userEvent.setup()
+        serve(sa(22))
+        const {unmount} = render(<SaTable type="TC"/>)
+        await waitFor(() => rowFor(22))
+        const headers = () => screen.getAllByRole('columnheader').map(h => h.textContent)
+        expect(headers()).not.toContain('IV Length')
+        await user.click(screen.getByRole('button', {name: 'Columns'}))
+        await user.click(within(document.getElementById('colSel')).getByLabelText('IV Length'))
+        await user.keyboard('{Escape}')
+        expect(headers()).toContain('IV Length')
+        expect(JSON.parse(localStorage.getItem('hiddenCols'))).not.toContain('ivLen')
+
+        unmount()
+        render(<SaTable type="TC"/>)
+        await waitFor(() => rowFor(22))
+        expect(headers()).toContain('IV Length')
+        await user.click(screen.getByRole('button', {name: 'Columns'}))
+        await user.click(within(document.getElementById('colSel')).getByRole('button', {name: 'Reset'}))
+        await user.keyboard('{Escape}')
+        expect(headers()).not.toContain('IV Length')
+        expect(JSON.parse(localStorage.getItem('hiddenCols'))).toContain('ivLen')
     })
 })

@@ -57,3 +57,13 @@ test('reports a conflict instead of overwriting by default', async ({page, reque
     await upload(page, csv)
     await expect(toast(page, 'an SA with the SPI/SCID combination 100/46 already exists')).toBeVisible()
 })
+
+// port of kmc-test SA_Management_Browser.robot "Mass Export"
+test('closes the Bulk dialog when clicking outside it', async ({page}) => {
+    await page.goto('./')
+    await page.getByRole('button', {name: 'Bulk'}).click()
+    const d = dialog(page, 'Upload CSV')
+    await expect(d).toContainText('Bulk creation of SAs by uploading a CSV file')
+    await page.mouse.click(10, 10)
+    await expect(d).toBeHidden()
+})

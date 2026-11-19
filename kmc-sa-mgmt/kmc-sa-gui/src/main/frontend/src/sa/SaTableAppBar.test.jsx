@@ -1,14 +1,15 @@
 import {afterEach, describe, expect, it, vi} from 'vitest'
 import axios from 'axios'
-import {act, cleanup, render, screen, waitFor} from '@testing-library/react'
+import {act, cleanup, render, screen, waitFor, within} from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import SaTableAppBar from './SaTableAppBar'
-import {bulkCreate} from './api'
+import {bulkCreate, downloadCsv} from './api'
 import {expectNoStrayAttributes} from '../test/mui'
 
 vi.mock('./api', async (importOriginal) => ({
     ...(await importOriginal()),
-    bulkCreate: vi.fn()
+    bulkCreate: vi.fn(),
+    downloadCsv: vi.fn()
 }))
 
 describe('SaTableAppBar bulk upload dialog', () => {
@@ -129,5 +130,82 @@ describe('SaTableAppBar bulk upload dialog', () => {
             expect(enqueueSnackbar).toHaveBeenCalledWith('Uploaded CSV', {variant: 'success'})
             expect(refreshTable).toHaveBeenCalledTimes(1)
         })
+    })
+})
+
+// ports of kmc-test SA_Management_Browser.robot checks that do not need a browser
+describe('SaTableAppBar toolbar', () => {
+    afterEach(() => {
+        cleanup()
+        vi.restoreAllMocks()
+    })
+
+    const columns = [{id: 'selection'}, {id: 'spi', Header: 'SPI'}, {id: 'ivLen', Header: 'IV Length'},
+        {id: 'abmLen', Header: 'ABM Length'}].map(c => ({...c, getToggleHiddenProps: () => ({checked: c.id === 'spi', onChange: () => {}})}))
+    const renderBar = (props = {}) => {
+        const handlers = {resetDefaultCols: vi.fn(), hideColumn: vi.fn(), refreshTable: vi.fn(), enqueueSnackbar: vi.fn(),
+            handleRowOpen: vi.fn()}
+        render(<SaTableAppBar allColumns={columns} selectedFlatRows={[]} type="TC" {...handlers} {...props}/>)
+        return handlers
+    }
+
+    it('shows the table controls, with DELETE disabled until rows are selected', () => {
+        renderBar()
+        for (const name of ['Columns', 'DELETE', 'Create', 'Bulk', 'Export', 'Reload']) {
+            expect(screen.getByRole('button', {name})).toBeTruthy()
+        }
+        expect(screen.getByRole('button', {name: 'DELETE'}).disabled).toBe(true)
+    })
+
+    it('lists every column except selection in the Columns chooser, with Reset', async () => {
+        const user = userEvent.setup()
+        const {resetDefaultCols, hideColumn} = renderBar()
+        await user.click(screen.getByRole('button', {name: 'Columns'}))
+        const chooser = document.getElementById('colSel')
+        expect(within(chooser).getAllByRole('checkbox').map(c => c.parentElement.textContent.trim()))
+            .toEqual(['SPI', 'IV Length', 'ABM Length'])
+        await user.click(within(chooser).getByLabelText('IV Length'))
+        expect(hideColumn).toHaveBeenCalledWith('ivLen', true)
+        await user.click(within(chooser).getByRole('button', {name: 'Reset'}))
+        expect(resetDefaultCols).toHaveBeenCalledTimes(1)
+    })
+
+    it('reloads the table', async () => {
+        const user = userEvent.setup()
+        const {refreshTable} = renderBar()
+        await user.click(screen.getByRole('button', {name: 'Reload'}))
+        expect(refreshTable).toHaveBeenCalledTimes(1)
+    })
+
+    it('downloads the CSV under the server-suggested name and confirms it', async () => {
+        const user = userEvent.setup()
+        downloadCsv.mockImplementation((ok) => ok({data: 'a,b', headers: {'x-suggested-filename': 'SADB_x.csv'}}))
+        window.URL.createObjectURL = vi.fn(() => 'blob:sadb')
+        const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function () {
+            this.dataset.clicked = this.getAttribute('download')
+        })
+        const {enqueueSnackbar} = renderBar()
+        await user.click(screen.getByRole('button', {name: 'Export'}))
+        expect(click).toHaveBeenCalledTimes(1)
+        expect(click.mock.contexts[0].getAttribute('download')).toBe('SADB_x.csv')
+        expect(click.mock.contexts[0].href).toBe('blob:sadb')
+        expect(enqueueSnackbar).toHaveBeenCalledWith('Downloaded CSV', {variant: 'success'})
+    })
+
+    it('reports a failed CSV download', async () => {
+        const user = userEvent.setup()
+        downloadCsv.mockImplementation((ok, err) => err(new Error('boom')))
+        const {enqueueSnackbar} = renderBar()
+        await user.click(screen.getByRole('button', {name: 'Export'}))
+        expect(enqueueSnackbar).toHaveBeenCalledWith('Error downloading CSV', {variant: 'error'})
+    })
+
+    it('closes the Bulk dialog when clicking outside it', async () => {
+        const user = userEvent.setup()
+        renderBar()
+        await user.click(screen.getByRole('button', {name: 'Bulk'}))
+        expect(screen.getByText(/Bulk creation of SAs by uploading a CSV file/)).toBeTruthy()
+        await user.click(document.querySelector('.MuiBackdrop-root'))
+        await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
     })
 })
