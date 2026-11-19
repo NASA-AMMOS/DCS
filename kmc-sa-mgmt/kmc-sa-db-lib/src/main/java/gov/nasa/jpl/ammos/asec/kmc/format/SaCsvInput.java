@@ -49,7 +49,7 @@ public class SaCsvInput {
                         sas.add(convertRecord(rec, recType));
                         // else, skip
                     } else if (recType == FrameType.UNKNOWN && LOG.isWarnEnabled()) {
-                        LOG.warn("Unknown frame type encountered, skipping: {}", rec.get("type"));
+                        LOG.warn("Unknown frame type encountered, skipping: {}", Utilities.sanitizeForLog(rec.get("type")));
                     }
                 } else {
                     // unmapped, need to coerce it to desired type, default to TC
@@ -142,7 +142,7 @@ public class SaCsvInput {
         } catch (Exception e) {
             // try to parse out text value
             LOG.warn("Encountered an error while attempting to parse 'service type' as short, " +
-                    "will attempt to parse value as text: {}", e.getMessage());
+                    "will attempt to parse value as text: {}", Utilities.sanitizeForLog(e.getMessage()));
             try {
                 st = ServiceType.valueOf(rec.get("st"));
             } catch (Exception e1) {

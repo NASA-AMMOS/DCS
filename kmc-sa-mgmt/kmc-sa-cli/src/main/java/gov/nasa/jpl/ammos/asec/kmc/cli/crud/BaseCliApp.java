@@ -3,6 +3,7 @@ package gov.nasa.jpl.ammos.asec.kmc.cli.crud;
 import gov.nasa.jpl.ammos.asec.kmc.api.ex.KmcException;
 import gov.nasa.jpl.ammos.asec.kmc.api.sa.FrameType;
 import gov.nasa.jpl.ammos.asec.kmc.api.sadb.IKmcDao;
+import gov.nasa.jpl.ammos.asec.kmc.format.Utilities;
 import gov.nasa.jpl.ammos.asec.kmc.sadb.DaoFactory;
 import gov.nasa.jpl.ammos.asec.kmc.sadb.config.Config;
 import org.apache.commons.codec.DecoderException;
@@ -70,7 +71,7 @@ abstract class BaseCliApp implements Callable<Integer> {
      */
     public void console(String message) {
         spec.commandLine().getOut().println(message);
-        LOG.info(message);
+        LOG.info(Utilities.sanitizeForLog(message));
     }
 
     /**
@@ -80,7 +81,7 @@ abstract class BaseCliApp implements Callable<Integer> {
      */
     public void error(String message) {
         spec.commandLine().getErr().println(message);
-        LOG.error(message);
+        LOG.error(Utilities.sanitizeForLog(message));
     }
 
     /**
@@ -91,7 +92,7 @@ abstract class BaseCliApp implements Callable<Integer> {
      */
     public void error(String message, Exception e) {
         spec.commandLine().getErr().println(message);
-        LOG.error(message, e);
+        LOG.error(Utilities.sanitizeForLog(message), e);
     }
 
     /**
@@ -101,7 +102,7 @@ abstract class BaseCliApp implements Callable<Integer> {
      */
     public void warn(String message) {
         spec.commandLine().getErr().println(message);
-        LOG.warn(message);
+        LOG.warn(Utilities.sanitizeForLog(message));
     }
 
     /**
