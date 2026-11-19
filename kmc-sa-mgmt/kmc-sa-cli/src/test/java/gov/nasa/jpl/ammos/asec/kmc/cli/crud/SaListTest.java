@@ -2,19 +2,28 @@ package gov.nasa.jpl.ammos.asec.kmc.cli.crud;
 
 import gov.nasa.jpl.ammos.asec.kmc.api.ex.KmcException;
 import gov.nasa.jpl.ammos.asec.kmc.api.sa.FrameType;
+import gov.nasa.jpl.ammos.asec.kmc.api.sa.ISecAssn;
+import gov.nasa.jpl.ammos.asec.kmc.api.sa.SpiScid;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import picocli.CommandLine;
 
+import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.file.Files;
+import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.*;
 
 /**
  * Tests for listing SAs
  */
 public class SaListTest extends BaseCommandLineTest {
+
+    @Rule
+    public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     public static final String TYPE_FMT = "--type=%s";
 
@@ -32,8 +41,8 @@ public class SaListTest extends BaseCommandLineTest {
         int          exit = cli.execute("--spi=1", String.format(TYPE_FMT, type.name()));
         assertEquals(0, exit);
         assertEquals("""
-                     "spi","scid","vcid","tfvn","mapid","sa_state","ekid","est","akid","ast","type"
-                     "1","46","0","0","0","3","130","1","","1","%s"
+                     "spi","scid","vcid","tfvn","mapid","sa_state","st","ekid","akid","type"
+                     "1","46","0","0","0","3","AUTHENTICATED_ENCRYPTION","130","","%s"
                      """.formatted(type.name()), w.toString());
     }
 
@@ -50,7 +59,62 @@ public class SaListTest extends BaseCommandLineTest {
         CommandLine  cli  = getCmd(new SaList(), true, out, null);
         int          exit = cli.execute("--scid=1", String.format(TYPE_FMT, type.name()));
         assertEquals(0, exit);
-        assertEquals("\"spi\",\"scid\",\"vcid\",\"tfvn\",\"mapid\",\"sa_state\",\"ekid\",\"est\",\"akid\",\"ast\"," +
+        assertEquals("\"spi\",\"scid\",\"vcid\",\"tfvn\",\"mapid\",\"sa_state\",\"st\",\"ekid\",\"akid\"," +
+                "\"type\"\n", w.toString());
+    }
+
+    @Test
+    public void listFilterVcid() {
+        listFilterVcid(FrameType.TC);
+        listFilterVcid(FrameType.TM);
+        listFilterVcid(FrameType.AOS);
+    }
+
+    public void listFilterVcid(FrameType type) {
+        StringWriter w    = new StringWriter();
+        PrintWriter  out  = new PrintWriter(w);
+        CommandLine  cli  = getCmd(new SaList(), true, out, null);
+        int          exit = cli.execute("--vcid=2", String.format(TYPE_FMT, type.name()));
+        assertEquals(0, exit);
+        assertEquals("""
+                     "spi","scid","vcid","tfvn","mapid","sa_state","st","ekid","akid","type"
+                     "3","46","2","0","0","3","AUTHENTICATED_ENCRYPTION","130","","%s"
+                     """.formatted(type.name()), w.toString());
+    }
+
+    @Test
+    public void listFilterScidVcid() {
+        listFilterScidVcid(FrameType.TC);
+        listFilterScidVcid(FrameType.TM);
+        listFilterScidVcid(FrameType.AOS);
+    }
+
+    public void listFilterScidVcid(FrameType type) {
+        StringWriter w    = new StringWriter();
+        PrintWriter  out  = new PrintWriter(w);
+        CommandLine  cli  = getCmd(new SaList(), true, out, null);
+        int          exit = cli.execute("--scid=46", "--vcid=2", String.format(TYPE_FMT, type.name()));
+        assertEquals(0, exit);
+        assertEquals("""
+                     "spi","scid","vcid","tfvn","mapid","sa_state","st","ekid","akid","type"
+                     "3","46","2","0","0","3","AUTHENTICATED_ENCRYPTION","130","","%s"
+                     """.formatted(type.name()), w.toString());
+    }
+
+    @Test
+    public void listFilterVcidNoMatch() {
+        listFilterVcidNoMatch(FrameType.TC);
+        listFilterVcidNoMatch(FrameType.TM);
+        listFilterVcidNoMatch(FrameType.AOS);
+    }
+
+    public void listFilterVcidNoMatch(FrameType type) {
+        StringWriter w    = new StringWriter();
+        PrintWriter  out  = new PrintWriter(w);
+        CommandLine  cli  = getCmd(new SaList(), true, out, null);
+        int          exit = cli.execute("--vcid=99", String.format(TYPE_FMT, type.name()));
+        assertEquals(0, exit);
+        assertEquals("\"spi\",\"scid\",\"vcid\",\"tfvn\",\"mapid\",\"sa_state\",\"st\",\"ekid\",\"akid\"," +
                 "\"type\"\n", w.toString());
     }
 
@@ -68,8 +132,8 @@ public class SaListTest extends BaseCommandLineTest {
         int          exit = cli.execute("--spi=2", "--scid=46", String.format(TYPE_FMT, type.name()));
         assertEquals(0, exit);
         assertEquals("""
-                     "spi","scid","vcid","tfvn","mapid","sa_state","ekid","est","akid","ast","type"
-                     "2","46","1","0","0","3","130","1","","1","%s"
+                     "spi","scid","vcid","tfvn","mapid","sa_state","st","ekid","akid","type"
+                     "2","46","1","0","0","3","AUTHENTICATED_ENCRYPTION","130","","%s"
                      """.formatted(type.name()), w.toString());
     }
 
@@ -88,12 +152,12 @@ public class SaListTest extends BaseCommandLineTest {
         int         exit = cli.execute("--active", String.format(TYPE_FMT, type.name()));
         assertEquals(0, exit);
         assertEquals("""
-                     "spi","scid","vcid","tfvn","mapid","sa_state","ekid","est","akid","ast","type"
-                     "1","46","0","0","0","3","130","1","","1","%s"
-                     "2","46","1","0","0","3","130","1","","1","%s"
-                     "3","46","2","0","0","3","130","1","","1","%s"
-                     "4","46","3","0","0","3","130","0","","1","%s"
-                     "5","46","7","0","0","3","","0","130","1","%s"
+                     "spi","scid","vcid","tfvn","mapid","sa_state","st","ekid","akid","type"
+                     "1","46","0","0","0","3","AUTHENTICATED_ENCRYPTION","130","","%s"
+                     "2","46","1","0","0","3","AUTHENTICATED_ENCRYPTION","130","","%s"
+                     "3","46","2","0","0","3","AUTHENTICATED_ENCRYPTION","130","","%s"
+                     "4","46","3","0","0","3","AUTHENTICATION","130","","%s"
+                     "5","46","7","0","0","3","AUTHENTICATION","","130","%s"
                      """.formatted(type.name(), type.name(), type.name(), type.name(), type.name()), w.toString());
     }
 
@@ -112,8 +176,8 @@ public class SaListTest extends BaseCommandLineTest {
         int         exit = cli.execute("--inactive", String.format(TYPE_FMT, type.name()));
         assertEquals(0, exit);
         assertEquals("""
-                     "spi","scid","vcid","tfvn","mapid","sa_state","ekid","est","akid","ast","type"
-                     "6","46","0","0","0","1","","0","","0","%s"
+                     "spi","scid","vcid","tfvn","mapid","sa_state","st","ekid","akid","type"
+                     "6","46","0","0","0","1","PLAINTEXT","","","%s"
                      """.formatted(type.name()), w.toString());
     }
 
@@ -147,12 +211,12 @@ public class SaListTest extends BaseCommandLineTest {
         int          exit = cli.execute(String.format(TYPE_FMT, type.name()));
         assertEquals(0, exit);
         assertEquals("""
-                     "spi","scid","vcid","tfvn","mapid","sa_state","ekid","est","akid","ast","type"
-                     "1","46","0","0","0","3","130","1","","1","%s"
-                     "2","46","1","0","0","3","130","1","","1","%s"
-                     "3","46","2","0","0","3","130","1","","1","%s"
-                     "4","46","3","0","0","3","130","0","","1","%s"
-                     "5","46","7","0","0","3","","0","130","1","%s"
+                     "spi","scid","vcid","tfvn","mapid","sa_state","st","ekid","akid","type"
+                     "1","46","0","0","0","3","AUTHENTICATED_ENCRYPTION","130","","%s"
+                     "2","46","1","0","0","3","AUTHENTICATED_ENCRYPTION","130","","%s"
+                     "3","46","2","0","0","3","AUTHENTICATED_ENCRYPTION","130","","%s"
+                     "4","46","3","0","0","3","AUTHENTICATION","130","","%s"
+                     "5","46","7","0","0","3","AUTHENTICATION","","130","%s"
                      """.formatted(type.name(), type.name(), type.name(), type.name(), type.name()), w.toString());
     }
 
@@ -483,5 +547,68 @@ public class SaListTest extends BaseCommandLineTest {
                          }
                      }
                      """.formatted(type.name(), type.name(), type.name(), type.name(), type.name()), w.toString());
+    }
+
+    @Test
+    public void testCsvRoundTrip() throws Exception {
+        testCsvRoundTrip(FrameType.TC);
+        testCsvRoundTrip(FrameType.TM);
+        testCsvRoundTrip(FrameType.AOS);
+    }
+
+    public void testCsvRoundTrip(FrameType type) throws Exception {
+        // Normalize inconsistent seed data: seed row 1 has ecs=0x01 (AES_GCM) with DB default ivLen=0, but AES_GCM requires ivLen=12
+        for (ISecAssn sa : dao.getSas(type)) {
+            if (sa.getEcs() != null && sa.getEcs().length > 0 && sa.getEcs()[0] == 0x01 && sa.getIvLen() == 0) {
+                sa.setIvLen((short) 12);
+                dao.updateSa(sa);
+            }
+        }
+
+        List<ISecAssn> originalSas = dao.getSas(type);
+        StringWriter listOut = new StringWriter();
+        PrintWriter  listPw  = new PrintWriter(listOut);
+        CommandLine  listCmd = getCmd(new SaList(), true, listPw, null);
+        int          exit    = listCmd.execute("--extended", String.format(TYPE_FMT, type.name()));
+        assertEquals(0, exit);
+        String csv = listOut.toString();
+
+        File tmpFile = temporaryFolder.newFile("sa-roundtrip-" + type.name() + ".csv");
+        Files.writeString(tmpFile.toPath(), csv);
+
+        truncateTable(type);
+        assertEquals(0, dao.getSas(type).size());
+
+        StringWriter createOut = new StringWriter();
+        PrintWriter  createPw  = new PrintWriter(createOut);
+        StringWriter createErr = new StringWriter();
+        PrintWriter  createErrPw = new PrintWriter(createErr);
+        CommandLine  createCmd = getCmd(new SaCreate(), true, createPw, createErrPw);
+        int createExit = createCmd.execute("--file=" + tmpFile.getAbsolutePath(), String.format(TYPE_FMT, type.name()));
+        String output = createOut + createErr.toString();
+        if (createExit != 0) {
+            fail("Create failed with exit " + createExit + ":\n" + output);
+        }
+
+        List<ISecAssn> importedSas = dao.getSas(type);
+        assertEquals(originalSas.size(), importedSas.size());
+
+        for (ISecAssn original : originalSas) {
+            ISecAssn imported = dao.getSa(
+                new SpiScid(original.getSpi(), original.getScid()), type);
+            assertNotNull("SA " + original.getSpi() + "/" + original.getScid() + " not imported", imported);
+            assertEquals("SA " + original.getSpi() + " service type", original.getServiceType(), imported.getServiceType());
+            assertEquals("SA " + original.getSpi() + " est", original.getEst(), imported.getEst());
+            assertEquals("SA " + original.getSpi() + " ast", original.getAst(), imported.getAst());
+        }
+    }
+
+    private void truncateTable(FrameType type) throws Exception {
+        switch (type) {
+            case TC -> truncateTc();
+            case TM -> truncateTm();
+            case AOS -> truncateAos();
+            case ALL, UNKNOWN -> throw new IllegalArgumentException("Cannot truncate table for frame type: " + type);
+        }
     }
 }

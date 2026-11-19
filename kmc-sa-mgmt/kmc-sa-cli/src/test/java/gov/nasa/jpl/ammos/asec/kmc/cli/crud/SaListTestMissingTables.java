@@ -51,12 +51,12 @@ public class SaListTestMissingTables extends BaseCommandLineTest {
         assertEquals(0, exit);
         if (type.equals(FrameType.TC)) {
             assertEquals("""
-                         "spi","scid","vcid","tfvn","mapid","sa_state","ekid","est","akid","ast","type"
-                         "1","46","0","0","0","3","130","1","","1","%s"
+                         "spi","scid","vcid","tfvn","mapid","sa_state","st","ekid","akid","type"
+                         "1","46","0","0","0","3","AUTHENTICATED_ENCRYPTION","130","","%s"
                          """.formatted(type.name()), w.toString());
         } else {
             assertEquals("""
-                         "spi","scid","vcid","tfvn","mapid","sa_state","ekid","est","akid","ast","type"
+                         "spi","scid","vcid","tfvn","mapid","sa_state","st","ekid","akid","type"
                          """, w.toString());
         }
     }
@@ -74,7 +74,7 @@ public class SaListTestMissingTables extends BaseCommandLineTest {
         CommandLine  cli  = getCmd(new SaList(), true, out, null);
         int          exit = cli.execute("--scid=1", String.format(TYPE_FMT, type.name()));
         assertEquals(0, exit);
-        assertEquals("\"spi\",\"scid\",\"vcid\",\"tfvn\",\"mapid\",\"sa_state\",\"ekid\",\"est\",\"akid\",\"ast\"," +
+        assertEquals("\"spi\",\"scid\",\"vcid\",\"tfvn\",\"mapid\",\"sa_state\",\"st\",\"ekid\",\"akid\"," +
                 "\"type\"\n", w.toString());
     }
 
@@ -93,12 +93,12 @@ public class SaListTestMissingTables extends BaseCommandLineTest {
         assertEquals(0, exit);
         if (type.equals(FrameType.TC)) {
             assertEquals("""
-                         "spi","scid","vcid","tfvn","mapid","sa_state","ekid","est","akid","ast","type"
-                         "2","46","1","0","0","3","130","1","","1","%s"
+                         "spi","scid","vcid","tfvn","mapid","sa_state","st","ekid","akid","type"
+                         "2","46","1","0","0","3","AUTHENTICATED_ENCRYPTION","130","","%s"
                          """.formatted(type.name()), w.toString());
         } else {
             assertEquals("""
-                         "spi","scid","vcid","tfvn","mapid","sa_state","ekid","est","akid","ast","type"
+                         "spi","scid","vcid","tfvn","mapid","sa_state","st","ekid","akid","type"
                          """, w.toString());
         }
     }
@@ -119,16 +119,16 @@ public class SaListTestMissingTables extends BaseCommandLineTest {
         assertEquals(0, exit);
         if (type.equals(FrameType.TC)) {
             assertEquals("""
-                         "spi","scid","vcid","tfvn","mapid","sa_state","ekid","est","akid","ast","type"
-                         "1","46","0","0","0","3","130","1","","1","%s"
-                         "2","46","1","0","0","3","130","1","","1","%s"
-                         "3","46","2","0","0","3","130","1","","1","%s"
-                         "4","46","3","0","0","3","130","0","","1","%s"
-                         "5","46","7","0","0","3","","0","130","1","%s"
+                         "spi","scid","vcid","tfvn","mapid","sa_state","st","ekid","akid","type"
+                         "1","46","0","0","0","3","AUTHENTICATED_ENCRYPTION","130","","%s"
+                         "2","46","1","0","0","3","AUTHENTICATED_ENCRYPTION","130","","%s"
+                         "3","46","2","0","0","3","AUTHENTICATED_ENCRYPTION","130","","%s"
+                         "4","46","3","0","0","3","AUTHENTICATION","130","","%s"
+                         "5","46","7","0","0","3","AUTHENTICATION","","130","%s"
                          """.formatted(type.name(), type.name(), type.name(), type.name(), type.name()), w.toString());
         } else {
             assertEquals("""
-                         "spi","scid","vcid","tfvn","mapid","sa_state","ekid","est","akid","ast","type"
+                         "spi","scid","vcid","tfvn","mapid","sa_state","st","ekid","akid","type"
                          """, w.toString());
         }
     }
@@ -148,8 +148,8 @@ public class SaListTestMissingTables extends BaseCommandLineTest {
         int         exit = cli.execute("--inactive", String.format(TYPE_FMT, type.name()));
         assertEquals(0, exit);
         assertEquals("""
-                     "spi","scid","vcid","tfvn","mapid","sa_state","ekid","est","akid","ast","type"
-                     "6","46","0","0","0","1","","0","","0","%s"
+                     "spi","scid","vcid","tfvn","mapid","sa_state","st","ekid","akid","type"
+                     "6","46","0","0","0","1","PLAINTEXT","","","%s"
                      """.formatted(type.name()), w.toString());
     }
 
@@ -184,16 +184,16 @@ public class SaListTestMissingTables extends BaseCommandLineTest {
         assertEquals(0, exit);
         if (type.equals(FrameType.TC)) {
             assertEquals("""
-                         "spi","scid","vcid","tfvn","mapid","sa_state","ekid","est","akid","ast","type"
-                         "1","46","0","0","0","3","130","1","","1","%s"
-                         "2","46","1","0","0","3","130","1","","1","%s"
-                         "3","46","2","0","0","3","130","1","","1","%s"
-                         "4","46","3","0","0","3","130","0","","1","%s"
-                         "5","46","7","0","0","3","","0","130","1","%s"
+                         "spi","scid","vcid","tfvn","mapid","sa_state","st","ekid","akid","type"
+                         "1","46","0","0","0","3","AUTHENTICATED_ENCRYPTION","130","","%s"
+                         "2","46","1","0","0","3","AUTHENTICATED_ENCRYPTION","130","","%s"
+                         "3","46","2","0","0","3","AUTHENTICATED_ENCRYPTION","130","","%s"
+                         "4","46","3","0","0","3","AUTHENTICATION","130","","%s"
+                         "5","46","7","0","0","3","AUTHENTICATION","","130","%s"
                          """.formatted(type.name(), type.name(), type.name(), type.name(), type.name()), w.toString());
         } else {
             assertEquals("""
-                         "spi","scid","vcid","tfvn","mapid","sa_state","ekid","est","akid","ast","type"
+                         "spi","scid","vcid","tfvn","mapid","sa_state","st","ekid","akid","type"
                          """, w.toString());
         }
     }
