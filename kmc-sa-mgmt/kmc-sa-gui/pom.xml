@@ -85,9 +85,35 @@
         <DEFAULT_TRUSTSTORE_TYPE>JKS</DEFAULT_TRUSTSTORE_TYPE>
         <DEFAULT_CLIENT_AUTH>NEED</DEFAULT_CLIENT_AUTH>
         <DEFAULT_ENABLED_PROTOCOLS>TLSv1.2</DEFAULT_ENABLED_PROTOCOLS>
+        <skipFrontendTests>false</skipFrontendTests>
     </properties>
 
     <profiles>
+        <profile>
+            <!-- -DskipTests and -Dmaven.test.skip=true must also skip the frontend (vitest) tests -->
+            <id>skip-frontend-tests-skipTests</id>
+            <activation>
+                <property>
+                    <name>skipTests</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <properties>
+                <skipFrontendTests>true</skipFrontendTests>
+            </properties>
+        </profile>
+        <profile>
+            <id>skip-frontend-tests-test-skip</id>
+            <activation>
+                <property>
+                    <name>maven.test.skip</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <properties>
+                <skipFrontendTests>true</skipFrontendTests>
+            </properties>
+        </profile>
         <profile>
             <!-- Build profile that overrides all the output directories to push everything into the testingRoot dir in target, ONLY for use in testing -->
             <id>dev</id>
@@ -120,6 +146,10 @@
                             </execution>
                             <execution>
                                 <id>build-frontend</id>
+                                <phase>none</phase>
+                            </execution>
+                            <execution>
+                                <id>test-frontend</id>
                                 <phase>none</phase>
                             </execution>
                         </executions>
@@ -228,6 +258,17 @@
                         <phase>prepare-package</phase>
                         <configuration>
                             <arguments>build</arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>test-frontend</id>
+                        <goals>
+                            <goal>yarn</goal>
+                        </goals>
+                        <phase>test</phase>
+                        <configuration>
+                            <arguments>test</arguments>
+                            <skip>${skipFrontendTests}</skip>
                         </configuration>
                     </execution>
                 </executions>

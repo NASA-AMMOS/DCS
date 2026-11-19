@@ -272,6 +272,7 @@ export default function SaModalForm({
                                 <EditControlStack
                                     setModalOpen={onClose}
                                     refresh={refresh}
+                                    type={type}
                                     validationSchema={validationSchema}
                                     defaultValues={defaultValues}
                                     data={formik.initialValues}
