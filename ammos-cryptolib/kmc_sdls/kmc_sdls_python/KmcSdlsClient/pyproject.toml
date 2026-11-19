@@ -2,10 +2,12 @@
 # Pinned so builds are repeatable: pip installs exactly these into an isolated build environment (this needs access to
 # PyPI or a mirror configured through PIP_INDEX_URL / pip.conf). wheel is needed by setuptools older than 70.1, which
 # can end up running the build on Debian/Ubuntu (see setup.py). The extension built with this cffi runs against any
-# runtime cffi that satisfies install_requires in setup.py.
+# runtime cffi that satisfies install_requires in setup.py. setuptools 83 and later (the fixes for the sdist and
+# namespace_packages advisories) need Python 3.10, so the Python 3.9 build keeps the last release that supports it.
 requires = [
-    "setuptools==80.9.0",
-    "wheel==0.45.1",
+    "setuptools==84.1.0; python_version >= '3.10'",
+    "setuptools==80.9.0; python_version < '3.10'",
+    "wheel==0.46.2",
     "cffi==2.0.0",
     "pycparser==2.23",
 ]
