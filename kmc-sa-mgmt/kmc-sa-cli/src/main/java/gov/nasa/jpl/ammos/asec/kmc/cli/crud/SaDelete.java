@@ -4,6 +4,7 @@ import gov.nasa.jpl.ammos.asec.kmc.api.ex.KmcException;
 import gov.nasa.jpl.ammos.asec.kmc.api.sa.ISecAssn;
 import gov.nasa.jpl.ammos.asec.kmc.api.sa.SpiScid;
 import gov.nasa.jpl.ammos.asec.kmc.api.sadb.IKmcDao;
+import gov.nasa.jpl.ammos.asec.kmc.format.Utilities;
 import gov.nasa.jpl.ammos.asec.kmc.cli.misc.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,7 +65,7 @@ public class SaDelete extends BaseCliApp {
                     try {
                         dao.deleteSa(id, frameType);
                     } catch (KmcException e) {
-                        LOG.error(e.getMessage());
+                        LOG.error(Utilities.sanitizeForLog(e.getMessage()));
                         return 1;
                     }
                     console(String.format("%s has deleted SA %d/%d", System.getProperty("user.name"), s, scid));
