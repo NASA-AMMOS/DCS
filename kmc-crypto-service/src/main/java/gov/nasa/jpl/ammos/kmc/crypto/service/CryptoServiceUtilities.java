@@ -10,6 +10,9 @@ import org.slf4j.Logger;
 
 import gov.nasa.jpl.ammos.kmc.crypto.KmcCryptoException;
 import gov.nasa.jpl.ammos.kmc.crypto.KmcCryptoException.KmcCryptoErrorCode;
+import gov.nasa.jpl.ammos.kmc.crypto.KmcCryptoFailures;
+import gov.nasa.jpl.ammos.kmc.crypto.KmcCryptoRootCause;
+import gov.nasa.jpl.ammos.kmc.crypto.model.Status;
 
 /**
  * An utility class for Crypto Service.
@@ -19,6 +22,29 @@ import gov.nasa.jpl.ammos.kmc.crypto.KmcCryptoException.KmcCryptoErrorCode;
 public final class CryptoServiceUtilities {
 
     private CryptoServiceUtilities() {
+    }
+
+    /**
+     * Creates the status of a failed service, including the details of the exception that caused it.
+     * Both the error code of the KMC exception and the fine-grained root cause are included.
+     * @param httpCode  HTTP response code.
+     * @param reason    Reason for failed status.
+     * @param cause     Exception that caused the failure, or null.
+     * @return Status of the failed service.
+     */
+    public static Status failureStatus(final int httpCode, final String reason, final Throwable cause) {
+        KmcCryptoRootCause rootCause = KmcCryptoFailures.getRootCause(cause);
+        return new Status(httpCode, reason, KmcCryptoFailures.getErrorCode(cause),
+                rootCause == null ? null : rootCause.name());
+    }
+
+    /**
+     * Returns true if the failure is caused by having no key source configured.
+     * @param cause  Exception that caused the failure.
+     * @return true if any message in the cause chain is the no key source error.
+     */
+    public static boolean isNoKeySource(final Throwable cause) {
+        return KmcCryptoFailures.isNoKeySource(cause);
     }
 
     public static final void logRequestParameters(Logger logger, Logger audit, HttpServletRequest request) {

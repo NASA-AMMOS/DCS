@@ -71,4 +71,12 @@ public class KmcCryptoManagerException extends Exception {
         return this.errorCode;
     }
 
+    /**
+     * Returns the fine-grained root cause of this exception, found from its cause chain.
+     * @return The root cause, UNKNOWN if none of the exceptions in the chain is known.
+     */
+    public final KmcCryptoRootCause getRootCause() {
+        return KmcCryptoFailures.getRootCause(this);
+    }
+
 }
