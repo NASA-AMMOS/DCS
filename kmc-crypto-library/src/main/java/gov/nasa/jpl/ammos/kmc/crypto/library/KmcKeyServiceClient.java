@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import gov.nasa.jpl.ammos.kmc.crypto.KmcCryptoException;
 import gov.nasa.jpl.ammos.kmc.crypto.KmcCryptoException.KmcCryptoErrorCode;
+import gov.nasa.jpl.ammos.kmc.crypto.KmcCryptoFailures;
 import gov.nasa.jpl.ammos.kmc.crypto.KmcCryptoManager;
 
 /**
@@ -17,7 +18,7 @@ import gov.nasa.jpl.ammos.kmc.crypto.KmcCryptoManager;
  */
 public class KmcKeyServiceClient implements KeyServiceClient {
 
-    public static final String NO_KEY_SOURCE_ERROR_MSG = "Neither keystore nor KMS is defined in kmc-crypto.cfg";
+    public static final String NO_KEY_SOURCE_ERROR_MSG = KmcCryptoFailures.NO_KEY_SOURCE_ERROR_MSG;
 
     private KmipKeyServiceClient kmipKeyClient = null;
     private KeystoreKeyServiceClient keystoreKeyClient = null;

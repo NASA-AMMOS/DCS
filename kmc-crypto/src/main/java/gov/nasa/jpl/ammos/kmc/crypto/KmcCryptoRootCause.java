@@ -1,12 +1,12 @@
-package gov.nasa.jpl.ammos.kmc.crypto.model;
+package gov.nasa.jpl.ammos.kmc.crypto;
 
 /**
- * Fine-grained root cause of a failed service.  Unlike the exception class names and messages,
- * these values are owned by the crypto service and do not change with the Java version or crypto provider.
+ * Fine-grained root cause of a failed cryptographic operation.  Unlike the exception class names and messages,
+ * these values are owned by the KMC crypto API and do not change with the Java version or crypto provider.
  *
  *
  */
-public enum RootCause {
+public enum KmcCryptoRootCause {
     /**
      * Authenticated decryption or verification failed because the authentication tag did not match.
      * Causes include a wrong key, IV, AAD or MAC length, or corrupted data.
